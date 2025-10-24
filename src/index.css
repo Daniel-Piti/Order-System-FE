@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-2xl bg-white/30 border border-white/20 shadow-2xl;
+  }
+  
+  .glass-button {
+    @apply backdrop-blur-xl bg-white/50 border-2 border-gray-400/80 
+           hover:bg-gray-200/70 hover:border-gray-500 active:scale-95 
+           transition-all duration-200 ease-out
+           shadow-xl hover:shadow-2xl;
+  }
+  
+  .glass-input {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 
+           focus:bg-white/20 focus:border-white/40 
+           transition-all duration-200
+           placeholder:text-gray-400;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
