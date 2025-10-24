@@ -74,14 +74,14 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to update location');
+        const errorData = await response.json();
+        throw new Error(errorData.userMessage || 'Failed to update location');
       }
 
       onSuccess();
       handleClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to update location');
     } finally {
       setIsLoading(false);
     }

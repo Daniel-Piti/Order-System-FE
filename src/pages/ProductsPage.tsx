@@ -8,12 +8,27 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState('name');
+  const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
+
+  // Filter state
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     categoryId: '',
     originalPrice: '',
     specialPrice: '',
+    description: '',
     pictureUrl: '',
   });
   const [formError, setFormError] = useState('');
@@ -29,22 +44,31 @@ export default function ProductsPage() {
     categoryId: '',
     originalPrice: '',
     specialPrice: '',
+    description: '',
     pictureUrl: '',
   });
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(currentPage);
     fetchCategories();
-  }, []);
+  }, [currentPage, sortBy, sortDirection, pageSize, categoryFilter]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page: number = 0) => {
     try {
       setIsLoading(true);
       setError('');
-      
-      const data = await productAPI.getAllProducts();
-      setProducts(data);
+
+      const pageResponse = await productAPI.getAllProducts(
+        page, 
+        pageSize, 
+        sortBy, 
+        sortDirection, 
+        categoryFilter || undefined
+      );
+      setProducts(pageResponse.content);
+      setTotalPages(pageResponse.totalPages);
+      setTotalElements(pageResponse.totalElements);
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
       if (err.message.includes('401')) {
@@ -64,6 +88,28 @@ export default function ProductsPage() {
     }
   };
 
+  const handleSortChange = (newSortBy: string) => {
+    // If clicking the same sort field, toggle direction
+    if (newSortBy === sortBy) {
+      setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC');
+    } else {
+      // New sort field, default to ASC
+      setSortBy(newSortBy);
+      setSortDirection('ASC');
+    }
+    setCurrentPage(0); // Reset to first page when sorting changes
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(0); // Reset to first page when page size changes
+  };
+
+  const handleCategoryFilterChange = (categoryId: string) => {
+    setCategoryFilter(categoryId);
+    setCurrentPage(0); // Reset to first page when category changes
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -71,7 +117,7 @@ export default function ProductsPage() {
     }).format(price);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -93,6 +139,7 @@ export default function ProductsPage() {
       categoryId: '',
       originalPrice: '',
       specialPrice: '',
+      description: '',
       pictureUrl: '',
     });
     setFormError('');
@@ -107,6 +154,7 @@ export default function ProductsPage() {
       categoryId: product.categoryId || '',
       originalPrice: product.originalPrice.toString(),
       specialPrice: product.specialPrice.toString(),
+      description: product.description,
       pictureUrl: product.pictureUrl || '',
     });
     setIsEditModalOpen(true);
@@ -120,6 +168,7 @@ export default function ProductsPage() {
       categoryId: '',
       originalPrice: '',
       specialPrice: '',
+      description: '',
       pictureUrl: '',
     });
     setFormError('');
@@ -127,7 +176,7 @@ export default function ProductsPage() {
     setShowErrors(false);
   };
 
-  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEditFormData({
       ...editFormData,
@@ -192,6 +241,7 @@ export default function ProductsPage() {
           categoryId: editFormData.categoryId || null,
           originalPrice: Number(editFormData.originalPrice),
           specialPrice: finalSpecialPrice,
+          description: editFormData.description,
           pictureUrl: editFormData.pictureUrl,
         }),
       });
@@ -201,7 +251,8 @@ export default function ProductsPage() {
         throw new Error(errorText || 'Failed to update product');
       }
 
-      await fetchProducts();
+      setCurrentPage(0); // Reset to first page
+      await fetchProducts(0); // Explicitly fetch to ensure refresh
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to update product');
@@ -228,7 +279,8 @@ export default function ProductsPage() {
       }
 
       setProductToDelete(null);
-      fetchProducts();
+      setCurrentPage(0); // Reset to first page
+      await fetchProducts(0); // Explicitly fetch to ensure refresh
     } catch (err: any) {
       setError(err.message || 'Failed to delete product');
     } finally {
@@ -288,6 +340,7 @@ export default function ProductsPage() {
           categoryId: formData.categoryId || null,
           originalPrice: Number(formData.originalPrice),
           specialPrice: finalSpecialPrice,
+          description: formData.description,
           pictureUrl: formData.pictureUrl,
         }),
       });
@@ -298,7 +351,8 @@ export default function ProductsPage() {
       }
 
       // Success - refresh products and close modal
-      await fetchProducts();
+      setCurrentPage(0); // Reset to first page
+      await fetchProducts(0); // Explicitly fetch to ensure refresh
       handleCloseModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create product');
@@ -369,25 +423,221 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* Sort Controls & Pagination Info */}
+      {(products.length > 0 || categoryFilter) && (
+        <div className="glass-card rounded-3xl p-6">
+          <div className="flex flex-col gap-4">
+            {/* Row 1: All controls on one line */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Left side: Category Filter, Sort Controls and Page Size */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                {/* Category Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Category:</span>
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => handleCategoryFilterChange(e.target.value)}
+                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                  >
+                    <option value="">All</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Sort Controls */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700 mr-1">Sort by:</span>
+                  <button
+                    onClick={() => handleSortChange('name')}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                      sortBy === 'name'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    <span>Name</span>
+                    {sortBy === 'name' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {sortDirection === 'ASC' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        )}
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleSortChange('specialPrice')}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                      sortBy === 'specialPrice'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    <span>Price</span>
+                    {sortBy === 'specialPrice' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {sortDirection === 'ASC' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        )}
+                      </svg>
+                    )}
+                  </button>
+                  {sortBy !== 'name' && (
+                    <button
+                      onClick={() => {
+                        setSortBy('name');
+                        setSortDirection('ASC');
+                        setCurrentPage(0);
+                      }}
+                      className="text-sm text-gray-500 hover:text-gray-700 underline ml-1"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                {/* Page Size Dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Show:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                  >
+                    <option value={2}>2</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Right side: Page Navigation */}
+              <div className="flex items-center justify-center lg:justify-end gap-1">
+                {/* Previous button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  const showPage =
+                    page === 0 ||
+                    page === totalPages - 1 ||
+                    Math.abs(page - currentPage) <= 1;
+
+                  const showEllipsis =
+                    (page === 1 && currentPage > 3) ||
+                    (page === totalPages - 2 && currentPage < totalPages - 4);
+
+                  if (!showPage && !showEllipsis) return null;
+
+                  if (showEllipsis) {
+                    return (
+                      <span key={`ellipsis-top-${page}`} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={`top-${page}`}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'glass-button text-gray-800 hover:shadow-md'
+                      }`}
+                    >
+                      {page + 1}
+                    </button>
+                  );
+                })}
+
+                {/* Next button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Row 2: Page Info */}
+            <div className="text-sm text-gray-600 font-medium text-center lg:text-left">
+              Showing <span className="font-semibold text-gray-800">{currentPage * pageSize + 1}</span> to{' '}
+              <span className="font-semibold text-gray-800">
+                {Math.min((currentPage + 1) * pageSize, totalElements)}
+              </span>{' '}
+              of <span className="font-semibold text-gray-800">{totalElements}</span> products
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Products List */}
       {products.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
           <div className="flex flex-col items-center space-y-4">
-            <div className="p-6 rounded-full bg-indigo-100/50">
-              <svg className="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800">No Products Yet</h2>
-            <p className="text-gray-600 max-w-md">
-              You haven't added any products to your catalog yet.
-            </p>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
-            >
-              Add Your First Product
-            </button>
+            {/* Show different message based on whether it's a category filter or no products at all */}
+            {categoryFilter ? (
+              // Category filter with 0 results
+              <>
+                <div className="p-6 rounded-full bg-gray-100/50">
+                  <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">No Products in This Category</h2>
+                <p className="text-gray-600 max-w-md">
+                  There are no products in the selected category yet.
+                </p>
+                <button
+                  onClick={() => handleCategoryFilterChange('')}
+                  className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
+                >
+                  Show All Products
+                </button>
+              </>
+            ) : (
+              // No products at all
+              <>
+                <div className="p-6 rounded-full bg-indigo-100/50">
+                  <svg className="w-16 h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">No Products Yet</h2>
+                <p className="text-gray-600 max-w-md">
+                  You haven't added any products to your catalog yet.
+                </p>
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
+                >
+                  Add Your First Product
+                </button>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -475,6 +725,75 @@ export default function ProductsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Page Navigation */}
+      {!isLoading && products.length > 0 && (
+        <div className="glass-card rounded-3xl p-6 mt-4">
+          <div className="flex items-center justify-center">
+            {/* Page numbers */}
+            <div className="flex items-center space-x-2">
+              {/* Previous button */}
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 0}
+                className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                // Show first page, last page, current page, and pages around current
+                const showPage =
+                  page === 0 ||
+                  page === totalPages - 1 ||
+                  Math.abs(page - currentPage) <= 1;
+
+                const showEllipsis =
+                  (page === 1 && currentPage > 3) ||
+                  (page === totalPages - 2 && currentPage < totalPages - 4);
+
+                if (!showPage && !showEllipsis) return null;
+
+                if (showEllipsis) {
+                  return (
+                    <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    {page + 1}
+                  </button>
+                );
+              })}
+
+              {/* Next button */}
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages - 1}
+                className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -601,6 +920,21 @@ export default function ProductsPage() {
                     <p className="text-red-500 text-xs mt-1">{fieldErrors.specialPrice}</p>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  placeholder="Product description (optional)"
+                  rows={3}
+                />
               </div>
 
               <div>
@@ -794,6 +1128,21 @@ export default function ProductsPage() {
                     <p className="text-red-500 text-xs mt-1">{fieldErrors.specialPrice}</p>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  id="edit-description"
+                  name="description"
+                  value={editFormData.description}
+                  onChange={handleEditInputChange}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  placeholder="Product description (optional)"
+                  rows={3}
+                />
               </div>
 
               <div>

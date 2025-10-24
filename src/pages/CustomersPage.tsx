@@ -128,7 +128,7 @@ export default function CustomersPage() {
       await fetchCustomers();
       handleCloseModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create customer');
+      setFormError(err.response?.data?.userMessage || err.message || 'Failed to create customer');
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +167,7 @@ export default function CustomersPage() {
       await fetchCustomers();
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to update customer');
+      setFormError(err.response?.data?.userMessage || err.message || 'Failed to update customer');
     } finally {
       setIsSubmitting(false);
     }

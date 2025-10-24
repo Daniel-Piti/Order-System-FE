@@ -175,7 +175,18 @@ export interface Product {
   categoryId: string | null;
   originalPrice: number;
   specialPrice: number;
+  description: string;
   pictureUrl: string | null;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
 }
 
 export interface Customer {
@@ -217,8 +228,12 @@ export const categoryAPI = {
 };
 
 export const productAPI = {
-  getAllProducts: async (): Promise<Product[]> => {
-    const response = await api.get<Product[]>('/products');
+  getAllProducts: async (page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'ASC', categoryId?: string): Promise<PageResponse<Product>> => {
+    const params: any = { page, size, sortBy, sortDirection };
+    if (categoryId) {
+      params.categoryId = categoryId;
+    }
+    const response = await api.get<PageResponse<Product>>('/products', { params });
     return response.data;
   },
 };

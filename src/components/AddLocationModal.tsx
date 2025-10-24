@@ -54,14 +54,14 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to create location');
+        const errorData = await response.json();
+        throw new Error(errorData.userMessage || 'Failed to create location');
       }
 
       onSuccess();
       handleClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to create location');
     } finally {
       setIsLoading(false);
     }
