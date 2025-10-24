@@ -9,7 +9,10 @@ export default function CustomersPage() {
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<Customer | null>(null);
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -79,6 +82,34 @@ export default function CustomersPage() {
       email: customer.email,
     });
     setIsEditModalOpen(true);
+  };
+
+  const handleDeleteCustomer = (customer: Customer) => {
+    setCustomerToDelete(customer);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setCustomerToDelete(null);
+    setDeleteConfirmText('');
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!customerToDelete || deleteConfirmText !== 'I Understand') {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await customerAPI.deleteCustomer(customerToDelete.id);
+      await fetchCustomers();
+      handleCloseDeleteModal();
+    } catch (err: any) {
+      setFormError(err.response?.data?.userMessage || err.message || 'Failed to delete customer');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -288,16 +319,26 @@ export default function CustomersPage() {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleEditCustomer(customer)}
-                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2 flex-shrink-0 ml-4"
-                  title="Edit customer"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  <span className="hidden sm:inline">Edit</span>
-                </button>
+                <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
+                  <button
+                    onClick={() => handleEditCustomer(customer)}
+                    className="glass-button p-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
+                    title="Edit customer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCustomer(customer)}
+                    className="glass-button p-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50/50 hover:shadow-md transition-all"
+                    title="Delete customer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -584,6 +625,92 @@ export default function CustomersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && customerToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Delete Customer</h2>
+            
+            <div className="space-y-4">
+              <div className="glass-card rounded-xl p-4 bg-red-50/50 border-red-200">
+                <p className="text-sm text-gray-700 mb-2">
+                  You are about to delete customer:
+                </p>
+                <p className="font-bold text-gray-900">{customerToDelete.name}</p>
+                <p className="text-sm text-gray-600">{customerToDelete.email}</p>
+                <p className="text-sm text-red-600 mt-3">
+                  ⚠️ This action cannot be undone. All orders and product overrides for this customer will be affected.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type "I Understand" to confirm deletion:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500"
+                  placeholder="I Understand"
+                />
+              </div>
+
+              {formError && (
+                <div className="glass-card rounded-xl p-3 bg-red-50/50 border-red-200">
+                  <p className="text-red-600 text-sm">{formError}</p>
+                </div>
+              )}
+
+              <div className="flex space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleCloseDeleteModal}
+                  disabled={isSubmitting}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-500 hover:border-gray-600 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={deleteConfirmText !== 'I Understand' || isSubmitting}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <span>Delete Customer</span>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -16,6 +16,7 @@ export default function UserLayout() {
     { name: 'Orders', path: '/dashboard/orders', icon: '📦' },
     { name: 'Customers', path: '/dashboard/customers', icon: '👥' },
     { name: 'Products', path: '/dashboard/products', icon: '🏷️' },
+    { name: 'Overrides', path: '/dashboard/overrides', icon: '💰' },
     { name: 'Categories', path: '/dashboard/categories', icon: '📂' },
     { name: 'Locations', path: '/dashboard/locations', icon: '📍' },
   ];

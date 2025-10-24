@@ -7,6 +7,7 @@ import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CustomersPage from './pages/CustomersPage';
 import ProductsPage from './pages/ProductsPage';
+import OverridesPage from './pages/OverridesPage';
 import CategoriesPage from './pages/CategoriesPage';
 import LocationsPage from './pages/LocationsPage';
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="products" element={<ProductsPage />} />
+          <Route path="overrides" element={<OverridesPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="locations" element={<LocationsPage />} />
         </Route>

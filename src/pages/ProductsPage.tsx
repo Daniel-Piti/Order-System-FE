@@ -511,6 +511,7 @@ export default function ProductsPage() {
                     onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                     className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
                   >
+                    <option value={1}>1</option>
                     <option value={2}>2</option>
                     <option value={20}>20</option>
                     <option value={50}>50</option>
