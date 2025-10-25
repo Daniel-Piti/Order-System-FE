@@ -13,6 +13,7 @@ interface ProductOverride {
 interface Product {
   id: string;
   name: string;
+  specialPrice: number;
 }
 
 interface Customer {
@@ -130,7 +131,7 @@ export default function OverridesPage() {
 
       if (response.ok) {
         const data: PageResponse<any> = await response.json();
-        setProducts(data.content.map(p => ({ id: p.id, name: p.name })));
+        setProducts(data.content.map(p => ({ id: p.id, name: p.name, specialPrice: p.specialPrice })));
       }
     } catch (err) {
       console.error('Failed to fetch products:', err);
@@ -423,12 +424,12 @@ export default function OverridesPage() {
                   <select
                     value={productFilter}
                     onChange={(e) => handleProductFilterChange(e.target.value)}
-                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
+                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-48"
                   >
                     <option value="">All</option>
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>
-                        {product.name}
+                        {product.name} - {formatPrice(product.specialPrice)}
                       </option>
                     ))}
                   </select>
@@ -690,7 +691,7 @@ export default function OverridesPage() {
                   <option value="">Select a product</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {product.name} - {formatPrice(product.specialPrice)}
                     </option>
                   ))}
                 </select>

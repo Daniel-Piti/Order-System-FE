@@ -46,7 +46,7 @@ export default function CustomerOverridesPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  // Edit modal
+  // Edit customer modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -57,6 +57,24 @@ export default function CustomerOverridesPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Edit override modal
+  const [isEditOverrideModalOpen, setIsEditOverrideModalOpen] = useState(false);
+  const [overrideToEdit, setOverrideToEdit] = useState<ProductOverride | null>(null);
+  const [editOverridePrice, setEditOverridePrice] = useState('');
+  const [overrideFormError, setOverrideFormError] = useState('');
+  const [isSubmittingOverride, setIsSubmittingOverride] = useState(false);
+
+  // Delete override modal
+  const [overrideToDelete, setOverrideToDelete] = useState<ProductOverride | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Add override modal
+  const [isAddOverrideModalOpen, setIsAddOverrideModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [newOverridePrice, setNewOverridePrice] = useState('');
+  const [addOverrideError, setAddOverrideError] = useState('');
+  const [isSubmittingNewOverride, setIsSubmittingNewOverride] = useState(false);
 
   useEffect(() => {
     if (customerId) {
@@ -234,6 +252,157 @@ export default function CustomerOverridesPage() {
     }
   };
 
+  const handleEditOverride = (override: ProductOverride) => {
+    setOverrideToEdit(override);
+    setEditOverridePrice(override.overridePrice.toString());
+    setOverrideFormError('');
+    setIsEditOverrideModalOpen(true);
+  };
+
+  const handleCloseEditOverrideModal = () => {
+    setIsEditOverrideModalOpen(false);
+    setOverrideToEdit(null);
+    setEditOverridePrice('');
+    setOverrideFormError('');
+  };
+
+  const handleEditOverrideSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOverrideFormError('');
+
+    const price = parseFloat(editOverridePrice);
+    if (isNaN(price) || price <= 0) {
+      setOverrideFormError('Please enter a valid price greater than 0');
+      return;
+    }
+
+    if (!overrideToEdit) return;
+
+    try {
+      setIsSubmittingOverride(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:8080/api/product-overrides/${overrideToEdit.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          overridePrice: price
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to update override');
+      }
+
+      await fetchOverrides();
+      handleCloseEditOverrideModal();
+    } catch (err: any) {
+      setOverrideFormError(err.message || 'Failed to update override');
+    } finally {
+      setIsSubmittingOverride(false);
+    }
+  };
+
+  const handleDeleteOverride = async () => {
+    if (!overrideToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`http://localhost:8080/api/product-overrides/${overrideToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete override');
+      }
+
+      setOverrideToDelete(null);
+      await fetchOverrides();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete override');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleOpenAddOverrideModal = () => {
+    setSelectedProductId('');
+    setNewOverridePrice('');
+    setAddOverrideError('');
+    setIsAddOverrideModalOpen(true);
+  };
+
+  const handleCloseAddOverrideModal = () => {
+    setIsAddOverrideModalOpen(false);
+    setSelectedProductId('');
+    setNewOverridePrice('');
+    setAddOverrideError('');
+  };
+
+  const handleAddOverrideSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddOverrideError('');
+
+    if (!selectedProductId) {
+      setAddOverrideError('Please select a product');
+      return;
+    }
+
+    const price = parseFloat(newOverridePrice);
+    if (isNaN(price) || price <= 0) {
+      setAddOverrideError('Please enter a valid price greater than 0');
+      return;
+    }
+
+    if (!customerId) return;
+
+    try {
+      setIsSubmittingNewOverride(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:8080/api/product-overrides', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: selectedProductId,
+          customerId: customerId,
+          overridePrice: price
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = 'Failed to create override';
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.userMessage || errorMessage;
+        } catch (parseError) {
+          // If JSON parsing fails, use the raw error text
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      await fetchOverrides();
+      handleCloseAddOverrideModal();
+    } catch (err: any) {
+      setAddOverrideError(err.message || 'Failed to create override');
+    } finally {
+      setIsSubmittingNewOverride(false);
+    }
+  };
+
   if (error && !customer) {
     return (
       <div className="max-w-6xl mx-auto space-y-4">
@@ -270,15 +439,26 @@ export default function CustomerOverridesPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-3xl font-bold text-gray-800">Price Overrides</h1>
-              <button
-                onClick={handleEditCustomer}
-                className="glass-button px-4 py-2 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all flex items-center space-x-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                <span>Edit Customer</span>
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleOpenAddOverrideModal}
+                  className="glass-button px-4 py-2 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Add Override</span>
+                </button>
+                <button
+                  onClick={handleEditCustomer}
+                  className="glass-button px-4 py-2 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Edit Customer</span>
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="glass-card p-4 rounded-xl">
@@ -435,35 +615,55 @@ export default function CustomerOverridesPage() {
             {overrides.map((override) => {
               const product = productMap.get(override.productId);
               return (
-                <div key={override.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all">
+                <div key={override.id} className="glass-card rounded-xl p-3 hover:shadow-md transition-all">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <div className="p-1.5 rounded-lg bg-indigo-100/50 flex-shrink-0">
+                        <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-lg font-bold text-gray-800">
+                        <h3 className="text-base font-bold text-gray-800">
                           {product?.name || 'Unknown Product'}
                         </h3>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
                       <div className="text-right">
-                        <p className="text-xs text-gray-500 mb-1">Original Price</p>
+                        <p className="text-xs text-gray-500 mb-0.5">Original Price</p>
                         <p className="text-sm text-gray-500 line-through">
                           {formatPrice(override.originalPrice)}
                         </p>
                       </div>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                       <div className="text-right">
-                        <p className="text-xs text-gray-500 mb-1">Override Price</p>
-                        <p className="text-xl font-bold text-indigo-600">
+                        <p className="text-xs text-gray-500 mb-0.5">Override Price</p>
+                        <p className="text-lg font-bold text-indigo-600">
                           {formatPrice(override.overridePrice)}
                         </p>
+                      </div>
+                      <div className="flex space-x-1.5 ml-6">
+                        <button
+                          onClick={() => handleEditOverride(override)}
+                          className="glass-button p-1.5 rounded-lg hover:shadow-md transition-all ml-3"
+                          title="Edit override"
+                        >
+                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => setOverrideToDelete(override)}
+                          className="glass-button p-1.5 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                          title="Delete override"
+                        >
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -607,6 +807,327 @@ export default function CustomerOverridesPage() {
                     </>
                   ) : (
                     <span>Update Customer</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Override Modal */}
+      {isEditOverrideModalOpen && overrideToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Edit Price Override</h2>
+              <button
+                onClick={handleCloseEditOverrideModal}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {overrideFormError && (
+              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+                {overrideFormError}
+              </div>
+            )}
+
+            <div className="mb-4 glass-card bg-gray-50/50 rounded-xl p-4">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Product</h3>
+              <p className="text-base font-bold text-gray-800">
+                {productMap.get(overrideToEdit.productId)?.name || 'Unknown Product'}
+              </p>
+              <div className="mt-3 flex items-center space-x-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Original: </span>
+                  <span className="font-semibold text-gray-700">{formatPrice(overrideToEdit.originalPrice)}</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleEditOverrideSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="override-price" className="block text-sm font-medium text-gray-700 mb-2">
+                  Override Price *
+                </label>
+                <input
+                  id="override-price"
+                  name="overridePrice"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={editOverridePrice}
+                  onChange={(e) => setEditOverridePrice(e.target.value)}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="e.g., 29.99"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseEditOverrideModal}
+                  disabled={isSubmittingOverride}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingOverride}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isSubmittingOverride ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Updating...</span>
+                    </>
+                  ) : (
+                    <span>Update Price</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Override Confirmation Modal */}
+      {overrideToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Delete Override</h2>
+              <button
+                onClick={() => setOverrideToDelete(null)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to delete the price override for{' '}
+                <span className="font-semibold">
+                  {productMap.get(overrideToDelete.productId)?.name || 'this product'}
+                </span>
+                ? This action cannot be undone.
+              </p>
+              <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
+                <div className="flex items-start space-x-2">
+                  <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p className="text-sm text-yellow-800">
+                    The customer will be charged the standard product price after deletion.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setOverrideToDelete(null)}
+                disabled={isDeleting}
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteOverride}
+                disabled={isDeleting}
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Override</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Override Modal */}
+      {isAddOverrideModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Add Price Override</h2>
+              <button
+                onClick={handleCloseAddOverrideModal}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {addOverrideError && (
+              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+                {addOverrideError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddOverrideSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="product-select" className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Product *
+                </label>
+                <select
+                  id="product-select"
+                  value={selectedProductId}
+                  onChange={(e) => setSelectedProductId(e.target.value)}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">-- Select a product --</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name} - {formatPrice(product.specialPrice)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="new-override-price" className="block text-sm font-medium text-gray-700 mb-2">
+                  Override Price *
+                </label>
+                <input
+                  id="new-override-price"
+                  name="newOverridePrice"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={newOverridePrice}
+                  onChange={(e) => setNewOverridePrice(e.target.value)}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="e.g., 29.99"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseAddOverrideModal}
+                  disabled={isSubmittingNewOverride}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingNewOverride}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isSubmittingNewOverride ? (
+                    <>
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <span>Create Override</span>
                   )}
                 </button>
               </div>
