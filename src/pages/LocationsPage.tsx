@@ -223,74 +223,57 @@ export default function LocationsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {locations.map((location) => (
-            <div key={location.id} className="glass-card rounded-2xl p-4 hover:shadow-xl transition-shadow">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <div className="p-1.5 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-base font-bold text-gray-800 truncate">{location.name}</h3>
-                </div>
-                <div className="flex space-x-1 flex-shrink-0 ml-2">
-                  <button 
-                    onClick={() => handleEditLocation(location)}
-                    className="p-1.5 rounded-lg hover:bg-white/40 transition-colors"
-                    title="Edit location"
-                  >
-                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setLocationToDelete(location);
-                      setDeleteError('');
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-red-50/40 transition-colors"
-                    title="Delete location"
-                  >
-                    <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+            <div key={location.id} className="glass-card rounded-2xl p-5 hover:shadow-xl transition-shadow flex flex-col">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-gray-800 truncate">{location.name}</h3>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-4 flex-1">
                 <div className="flex items-start space-x-2">
-                  <svg className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <p className="text-xs text-gray-700 line-clamp-2">{location.address}</p>
+                  <p className="text-sm text-gray-700 line-clamp-2">{location.address}</p>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <p className="text-xs text-gray-700">{formatPhoneNumber(location.phoneNumber)}</p>
+                  <p className="text-sm text-gray-700">{formatPhoneNumber(location.phoneNumber)}</p>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                   </svg>
-                  <p className="text-xs text-gray-500 font-mono truncate">{location.id}</p>
+                  <p className="text-sm text-gray-500 font-mono truncate">{location.id}</p>
                 </div>
+              </div>
+
+              <div className="flex space-x-1.5 mt-2 pt-2 border-t border-gray-200/50">
+                <button 
+                  onClick={() => handleEditLocation(location)}
+                  className="glass-button flex-1 p-1.5 rounded-lg hover:bg-white/40 transition-colors"
+                  title="Edit location"
+                >
+                  <svg className="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => {
+                    setLocationToDelete(location);
+                    setDeleteError('');
+                  }}
+                  className="glass-button flex-1 p-1.5 rounded-lg hover:bg-red-50/40 transition-colors border-red-500 hover:border-red-600"
+                  title="Delete location"
+                >
+                  <svg className="w-4 h-4 text-red-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
             </div>
           ))}
