@@ -3,8 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { categoryAPI } from '../services/api';
 import type { Category } from '../services/api';
 
+interface Product {
+  id: string;
+  categoryId: string | null;
+}
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -15,10 +21,13 @@ export default function CategoriesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(1);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
+    fetchProducts();
   }, []);
 
   // Calculate pagination
@@ -29,6 +38,17 @@ export default function CategoriesPage() {
     const total = Math.ceil(categories.length / pageSize);
     return { paginatedCategories: paginated, totalPages: total };
   }, [categories, currentPage, pageSize]);
+
+  // Count products per category
+  const productCountByCategory = useMemo(() => {
+    const countMap = new Map<string, number>();
+    products.forEach(product => {
+      if (product.categoryId) {
+        countMap.set(product.categoryId, (countMap.get(product.categoryId) || 0) + 1);
+      }
+    });
+    return countMap;
+  }, [products]);
 
   const fetchCategories = async () => {
     try {
@@ -45,6 +65,24 @@ export default function CategoriesPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:8080/api/products?page=0&size=1000', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data.content.map((p: any) => ({ id: p.id, categoryId: p.categoryId })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
     }
   };
 
@@ -142,6 +180,34 @@ export default function CategoriesPage() {
       setFormError(err.message || 'Failed to update category');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      const token = localStorage.getItem('authToken');
+      
+      const response = await fetch(`http://localhost:8080/api/categories/${categoryToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to delete category');
+      }
+
+      await fetchCategories();
+      setCategoryToDelete(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete category');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -329,22 +395,35 @@ export default function CategoriesPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                       </svg>
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex items-center space-x-2">
                       <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
                         {category.category}
                       </h3>
+                      <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                        {productCountByCategory.get(category.id) || 0}
+                      </span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleEditCategory(category)}
-                    className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2 flex-shrink-0 ml-4"
-                    title="Edit category"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <span className="hidden sm:inline">Edit</span>
-                  </button>
+                  <div className="flex space-x-2 ml-4">
+                    <button
+                      onClick={() => handleEditCategory(category)}
+                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all"
+                      title="Edit category"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setCategoryToDelete(category)}
+                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                      title="Delete category"
+                    >
+                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -542,6 +621,94 @@ export default function CategoriesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Category Modal */}
+      {categoryToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Delete Category</h2>
+              <button
+                onClick={() => setCategoryToDelete(null)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to delete the category <span className="font-semibold">{categoryToDelete.category}</span>? This action cannot be undone.
+              </p>
+              <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
+                <div className="flex items-start space-x-2">
+                  <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <p className="text-sm text-yellow-800">
+                    Products associated with this category will become uncategorized.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setCategoryToDelete(null)}
+                disabled={isDeleting}
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCategory}
+                disabled={isDeleting}
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete Category</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

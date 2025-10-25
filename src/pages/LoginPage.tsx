@@ -12,6 +12,17 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate inputs
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -19,7 +30,8 @@ export default function LoginPage() {
       localStorage.setItem('authToken', response.token);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Invalid email or password');
+      // Always show the same message for security (prevent user enumeration)
+      setError('Invalid email or password');
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +86,6 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="you@example.com"
-              required
             />
           </div>
 
@@ -89,11 +100,10 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="••••••••"
-              required
             />
           </div>
 
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center text-sm">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -101,9 +111,6 @@ export default function LoginPage() {
               />
               <span className="ml-2 text-gray-600">Remember me</span>
             </label>
-            <a href="#" className="text-purple-600 hover:text-purple-700 font-medium">
-              Forgot password?
-            </a>
           </div>
 
           <button

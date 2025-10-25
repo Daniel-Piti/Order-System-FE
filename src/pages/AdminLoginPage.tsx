@@ -13,6 +13,17 @@ export default function AdminLoginPage() {
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate inputs
+    if (!adminUserName.trim()) {
+      setError('Please enter your admin username');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your admin password');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -25,7 +36,8 @@ export default function AdminLoginPage() {
       localStorage.setItem('userRole', 'admin');
       navigate('/admin/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Invalid admin credentials');
+      // Always show the same message for security (prevent user enumeration)
+      setError('Invalid admin credentials');
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +92,6 @@ export default function AdminLoginPage() {
               onChange={(e) => setAdminUserName(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="admin"
-              required
             />
           </div>
 
@@ -95,7 +106,6 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="••••••••"
-              required
             />
           </div>
 
