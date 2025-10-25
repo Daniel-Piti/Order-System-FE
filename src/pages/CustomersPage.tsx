@@ -1,10 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { customerAPI } from '../services/api';
 import type { Customer } from '../services/api';
 
+interface CustomerOverrideData {
+  overrides: never[];
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  isLoading: boolean;
+}
+
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customerOverridesData, setCustomerOverridesData] = useState<Map<string, CustomerOverrideData>>(new Map());
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -50,11 +62,85 @@ export default function CustomersPage() {
     }
   };
 
+  const fetchOverrideCount = async (customerId: string) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(
+        `http://localhost:8080/api/product-overrides?customerId=${customerId}&page=0&size=1`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (!response.ok) throw new Error('Failed to fetch override count');
+      const data = await response.json();
+      
+      setCustomerOverridesData(prev => {
+        const newMap = new Map(prev);
+        newMap.set(customerId, {
+          overrides: [],
+          currentPage: 0,
+          totalPages: data.totalPages || 0,
+          totalElements: data.totalElements || 0,
+          isLoading: false
+        });
+        return newMap;
+      });
+    } catch (err) {
+      console.error(`Failed to fetch override count for customer ${customerId}:`, err);
+    }
+  };
+
+  // Sort customers by name
+  const sortedCustomers = useMemo(() => {
+    const sorted = [...customers].sort((a, b) => {
+      const comparison = a.name.localeCompare(b.name);
+      return sortDirection === 'ASC' ? comparison : -comparison;
+    });
+    return sorted;
+  }, [customers, sortDirection]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedCustomers.length / pageSize);
+  const paginatedCustomers = useMemo(() => {
+    const start = currentPage * pageSize;
+    const end = start + pageSize;
+    return sortedCustomers.slice(start, end);
+  }, [sortedCustomers, currentPage, pageSize]);
+
+  // Fetch override counts for visible customers
+  useEffect(() => {
+    if (paginatedCustomers.length > 0) {
+      paginatedCustomers.forEach(customer => {
+        // Only fetch if we don't have data for this customer yet
+        if (!customerOverridesData.has(customer.id)) {
+          fetchOverrideCount(customer.id);
+        }
+      });
+    }
+  }, [paginatedCustomers]);
+
   const formatPhoneNumber = (phone: string) => {
     if (phone.length >= 3) {
       return `${phone.substring(0, 3)}-${phone.substring(3)}`;
     }
     return phone;
+  };
+
+  const handleViewOverrides = (customerId: string) => {
+    navigate(`/dashboard/customers/${customerId}/overrides`);
+  };
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(0); // Reset to first page
+  };
+
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'ASC' ? 'DESC' : 'ASC');
+    setCurrentPage(0); // Reset to first page
   };
 
   const handleCloseModal = () => {
@@ -266,6 +352,110 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      {/* Pagination Controls */}
+      {customers.length > 0 && (
+        <div className="glass-card rounded-3xl p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Left side: Page Size and Sort */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Page Size */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Show:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                >
+                  <option value={2}>2</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+
+              {/* Sort By Name */}
+              <button
+                onClick={toggleSortDirection}
+                className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2"
+              >
+                <span>Sort by Name</span>
+                {sortDirection === 'ASC' ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Right side: Page Navigation */}
+            <div className="flex items-center gap-1">
+                {/* Previous button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  const showPage =
+                    page === 0 ||
+                    page === totalPages - 1 ||
+                    Math.abs(page - currentPage) <= 1;
+
+                  const showEllipsis =
+                    (page === 1 && currentPage > 3) ||
+                    (page === totalPages - 2 && currentPage < totalPages - 4);
+
+                  if (!showPage && !showEllipsis) return null;
+
+                  if (showEllipsis) {
+                    return (
+                      <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'glass-button text-gray-800 hover:shadow-md'
+                      }`}
+                    >
+                      {page + 1}
+                    </button>
+                  );
+                })}
+
+                {/* Next button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+        </div>
+      )}
+
       {/* Customers List */}
       {customers.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
@@ -290,57 +480,95 @@ export default function CustomersPage() {
       ) : (
         <div className="glass-card rounded-3xl p-6 md:p-8">
           <div className="space-y-2">
-            {customers.map((customer) => (
-              <div key={customer.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
-                <div className="flex items-center space-x-4 flex-1 min-w-0">
-                  <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+            {paginatedCustomers.map((customer) => {
+              const customerData = customerOverridesData.get(customer.id);
+              const totalOverrides = customerData?.totalElements || 0;
+              const isLoadingOverrides = customerData?.isLoading || false;
+              
+              return (
+                <div key={customer.id} className="glass-card rounded-xl overflow-hidden">
+                {/* Customer Info Row */}
+                <div className="p-4 hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Left side: Customer info */}
+                    <div className="flex items-center space-x-4 flex-1 min-w-0">
+                      <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">Name</p>
+                          <h3 className="text-sm font-bold text-gray-800 truncate" title={customer.name}>
+                            {customer.name}
+                          </h3>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">Phone</p>
+                          <p className="text-sm text-gray-800 truncate">
+                            {formatPhoneNumber(customer.phoneNumber)}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 mb-0.5">Email</p>
+                          <p className="text-sm text-gray-800 truncate" title={customer.email}>
+                            {customer.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right side: Action buttons */}
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      {/* View overrides button */}
+                      <button
+                        onClick={() => handleViewOverrides(customer.id)}
+                        className={`glass-button px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all min-w-[120px] text-indigo-600 hover:shadow-md cursor-pointer`}
+                        title={`View price overrides${totalOverrides > 0 ? ` (${totalOverrides} total)` : ''}`}
+                      >
+                        {isLoadingOverrides ? (
+                          <>
+                            <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span className="hidden sm:inline">Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="hidden sm:inline">{totalOverrides} Override{totalOverrides !== 1 ? 's' : ''}</span>
+                            <span className="sm:hidden">{totalOverrides}</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleEditCustomer(customer)}
+                        className="glass-button p-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
+                        title="Edit customer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCustomer(customer)}
+                        className="glass-button p-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50/50 hover:shadow-md transition-all"
+                        title="Delete customer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500 mb-0.5">Name</p>
-                      <h3 className="text-sm font-bold text-gray-800 truncate" title={customer.name}>
-                        {customer.name}
-                      </h3>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500 mb-0.5">Phone</p>
-                      <p className="text-sm text-gray-800 truncate">
-                        {formatPhoneNumber(customer.phoneNumber)}
-                      </p>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs text-gray-500 mb-0.5">Email</p>
-                      <p className="text-sm text-gray-800 truncate" title={customer.email}>
-                        {customer.email}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 flex-shrink-0 ml-4">
-                  <button
-                    onClick={() => handleEditCustomer(customer)}
-                    className="glass-button p-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
-                    title="Edit customer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCustomer(customer)}
-                    className="glass-button p-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50/50 hover:shadow-md transition-all"
-                    title="Delete customer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
