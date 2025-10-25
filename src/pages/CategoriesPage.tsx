@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { categoryAPI } from '../services/api';
 import type { Category } from '../services/api';
@@ -13,11 +13,22 @@ export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState('');
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Calculate pagination
+  const { paginatedCategories, totalPages } = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = categories.slice(startIndex, endIndex);
+    const total = Math.ceil(categories.length / pageSize);
+    return { paginatedCategories: paginated, totalPages: total };
+  }, [categories, currentPage, pageSize]);
 
   const fetchCategories = async () => {
     try {
@@ -26,6 +37,7 @@ export default function CategoriesPage() {
       
       const data = await categoryAPI.getAllCategories();
       setCategories(data);
+      setCurrentPage(1); // Reset to first page when data changes
     } catch (err: any) {
       setError(err.message || 'Failed to load categories');
       if (err.message.includes('401') || err.message.includes('User ID not found')) {
@@ -181,7 +193,10 @@ export default function CategoriesPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Categories</h1>
-            <p className="text-gray-600">Manage your product categories ({categories.length} categories)</p>
+            <p className="text-gray-600">
+              Manage your product categories ({categories.length} total)
+              {categories.length > 0 && ` - Showing ${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, categories.length)}`}
+            </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -217,34 +232,122 @@ export default function CategoriesPage() {
           </div>
         </div>
       ) : (
-        <div className="glass-card rounded-3xl p-6 md:p-8">
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <div key={category.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
-                      {category.category}
-                    </h3>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleEditCategory(category)}
-                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2 flex-shrink-0 ml-4"
-                  title="Edit category"
+        <div className="space-y-4">
+          {/* Pagination Controls */}
+          <div className="glass-card rounded-3xl p-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Page Size Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Show:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  <option value={1}>1</option>
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              {/* Page Navigation */}
+              <div className="flex items-center gap-1">
+                {/* Previous button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  <span className="hidden sm:inline">Edit</span>
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  const showPage =
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - currentPage) <= 1;
+
+                  const showEllipsis =
+                    (page === 2 && currentPage > 4) ||
+                    (page === totalPages - 1 && currentPage < totalPages - 3);
+
+                  if (!showPage && !showEllipsis) return null;
+
+                  if (showEllipsis) {
+                    return (
+                      <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'glass-button text-gray-800 hover:shadow-md'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+                {/* Next button */}
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
-            ))}
+            </div>
+          </div>
+
+          <div className="glass-card rounded-3xl p-6 md:p-8">
+            <div className="space-y-2">
+              {paginatedCategories.map((category) => (
+                <div key={category.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
+                        {category.category}
+                      </h3>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleEditCategory(category)}
+                    className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2 flex-shrink-0 ml-4"
+                    title="Edit category"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span className="hidden sm:inline">Edit</span>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
