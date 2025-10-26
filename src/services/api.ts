@@ -133,13 +133,15 @@ export interface Location {
   id: string;
   userId: string;
   name: string;
-  address: string;
+  streetAddress: string;
+  city: string;
   phoneNumber: string;
 }
 
 export interface LocationRequest {
   name: string;
-  address: string;
+  streetAddress: string;
+  city: string;
   phoneNumber: string;
 }
 

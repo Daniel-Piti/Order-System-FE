@@ -7,7 +7,8 @@ interface EditLocationModalProps {
   location: {
     id: string;
     name: string;
-    address: string;
+    streetAddress: string;
+    city: string;
     phoneNumber: string;
   };
 }
@@ -15,7 +16,8 @@ interface EditLocationModalProps {
 export default function EditLocationModal({ isOpen, onClose, onSuccess, location }: EditLocationModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    address: '',
+    streetAddress: '',
+    city: '',
     phoneNumber: '',
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +30,8 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
     if (isOpen) {
       setFormData({
         name: location.name,
-        address: location.address,
+        streetAddress: location.streetAddress,
+        city: location.city,
         phoneNumber: location.phoneNumber,
       });
       setShowErrors(false);
@@ -43,7 +46,8 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
     const errors: Record<string, string> = {};
 
     if (!formData.name.trim()) errors.name = 'Location name is required';
-    if (!formData.address.trim()) errors.address = 'Address is required';
+    if (!formData.streetAddress.trim()) errors.streetAddress = 'Street address is required';
+    if (!formData.city.trim()) errors.city = 'City is required';
     if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
 
     setFieldErrors(errors);
@@ -105,7 +109,8 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
   const handleClose = () => {
     setFormData({
       name: '',
-      address: '',
+      streetAddress: '',
+      city: '',
       phoneNumber: '',
     });
     setError('');
@@ -167,22 +172,42 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
           </div>
 
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-              Address *
+            <label htmlFor="streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+              Street Address *
             </label>
             <input
-              id="address"
-              name="address"
+              id="streetAddress"
+              name="streetAddress"
               type="text"
-              value={formData.address}
+              value={formData.streetAddress}
               onChange={handleChange}
               className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                showErrors && fieldErrors.address ? 'border-red-400 focus:ring-red-400' : ''
+                showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St, City, Country"
+              placeholder="123 Main St"
             />
-            {showErrors && fieldErrors.address && (
-              <p className="text-red-500 text-xs mt-1">{fieldErrors.address}</p>
+            {showErrors && fieldErrors.streetAddress && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+              City *
+            </label>
+            <input
+              id="city"
+              name="city"
+              type="text"
+              value={formData.city}
+              onChange={handleChange}
+              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
+              }`}
+              placeholder="New York"
+            />
+            {showErrors && fieldErrors.city && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
             )}
           </div>
 
