@@ -10,7 +10,8 @@ interface UserProfile {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
-  mainAddress: string;
+  streetAddress: string;
+  city: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -221,13 +222,23 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Main Address */}
+          {/* Street Address */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Main Address
+              Street Address
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
-              {profile.mainAddress}
+              {profile.streetAddress}
+            </div>
+          </div>
+
+          {/* City */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              City
+            </label>
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
+              {profile.city}
             </div>
           </div>
 
@@ -278,7 +289,8 @@ export default function ProfilePage() {
             lastName: profile.lastName,
             phoneNumber: profile.phoneNumber,
             dateOfBirth: profile.dateOfBirth,
-            mainAddress: profile.mainAddress,
+            streetAddress: profile.streetAddress,
+            city: profile.city,
           }}
         />
       )}

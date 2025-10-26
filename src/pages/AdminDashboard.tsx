@@ -270,7 +270,7 @@ export default function AdminDashboard() {
                         {formatDate(user.dateOfBirth)}
                       </td>
                       <td className="py-3 px-4 text-gray-700 max-w-xs truncate">
-                        {user.mainAddress}
+                        {user.streetAddress}, {user.city}
                       </td>
                       <td className="py-3 px-4 text-gray-700">
                         {formatDate(user.createdAt)}

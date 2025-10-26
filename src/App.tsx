@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserLayout from './components/UserLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CustomersPage from './pages/CustomersPage';
@@ -18,10 +19,24 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute redirectTo="/admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* User Dashboard Routes */}
-        <Route path="/dashboard" element={<UserLayout />}>
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Navigate to="/dashboard/profile" replace />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="orders" element={<OrdersPage />} />

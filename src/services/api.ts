@@ -40,7 +40,8 @@ export interface User {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
-  mainAddress: string;
+  streetAddress: string;
+  city: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,7 +65,8 @@ export interface NewUserRequest {
   password: string;
   phoneNumber: string;
   dateOfBirth: string;
-  mainAddress: string;
+  streetAddress: string;
+  city: string;
 }
 
 export interface UpdateUserDetailsRequest {
@@ -72,7 +74,8 @@ export interface UpdateUserDetailsRequest {
   lastName: string;
   phoneNumber: string;
   dateOfBirth: string;
-  mainAddress: string;
+  streetAddress: string;
+  city: string;
 }
 
 export const userAPI = {

@@ -18,6 +18,14 @@ export default function LoginPage() {
       setError('Please enter your email address');
       return;
     }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
     if (!password.trim()) {
       setError('Please enter your password');
       return;
@@ -81,11 +89,12 @@ export default function LoginPage() {
             </label>
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="you@example.com"
+              autoComplete="email"
             />
           </div>
 

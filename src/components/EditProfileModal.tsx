@@ -9,7 +9,8 @@ interface EditProfileModalProps {
     lastName: string;
     phoneNumber: string;
     dateOfBirth: string;
-    mainAddress: string;
+    streetAddress: string;
+    city: string;
   };
 }
 
@@ -19,7 +20,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     lastName: '',
     phoneNumber: '',
     dateOfBirth: '',
-    mainAddress: '',
+    streetAddress: '',
+    city: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,7 +36,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
         lastName: currentProfile.lastName,
         phoneNumber: currentProfile.phoneNumber,
         dateOfBirth: currentProfile.dateOfBirth,
-        mainAddress: currentProfile.mainAddress,
+        streetAddress: currentProfile.streetAddress,
+        city: currentProfile.city,
       });
       setShowErrors(false);
       setFieldErrors({});
@@ -51,7 +54,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
     if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
     if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
-    if (!formData.mainAddress.trim()) errors.mainAddress = 'Address is required';
+    if (!formData.streetAddress.trim()) errors.streetAddress = 'Street address is required';
+    if (!formData.city.trim()) errors.city = 'City is required';
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -115,7 +119,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
       lastName: '',
       phoneNumber: '',
       dateOfBirth: '',
-      mainAddress: '',
+      streetAddress: '',
+      city: '',
     });
     setError('');
     setFieldErrors({});
@@ -237,22 +242,42 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
           </div>
 
           <div>
-            <label htmlFor="mainAddress" className="block text-xs font-medium text-gray-700 mb-1">
-              Main Address *
+            <label htmlFor="streetAddress" className="block text-xs font-medium text-gray-700 mb-1">
+              Street Address *
             </label>
             <input
-              id="mainAddress"
-              name="mainAddress"
+              id="streetAddress"
+              name="streetAddress"
               type="text"
-              value={formData.mainAddress}
+              value={formData.streetAddress}
               onChange={handleChange}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                showErrors && fieldErrors.mainAddress ? 'border-red-400 focus:ring-red-400' : ''
+                showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St, City, Country"
+              placeholder="123 Main St"
             />
-            {showErrors && fieldErrors.mainAddress && (
-              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.mainAddress}</p>
+            {showErrors && fieldErrors.streetAddress && (
+              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.streetAddress}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
+              City *
+            </label>
+            <input
+              id="city"
+              name="city"
+              type="text"
+              value={formData.city}
+              onChange={handleChange}
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
+              }`}
+              placeholder="New York"
+            />
+            {showErrors && fieldErrors.city && (
+              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.city}</p>
             )}
           </div>
 

@@ -23,6 +23,15 @@ export default function AdminLoginPage() {
       setError('Please enter your admin password');
       return;
     }
+    
+    // Validate email format if provided
+    if (userEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userEmail)) {
+        setError('Please enter a valid user email address');
+        return;
+      }
+    }
 
     setIsLoading(true);
 
@@ -115,11 +124,12 @@ export default function AdminLoginPage() {
             </label>
             <input
               id="userEmail"
-              type="email"
+              type="text"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="user@example.com"
+              autoComplete="email"
             />
             <p className="text-xs text-gray-500 mt-1">
               Leave empty to login as pure admin, or enter a user email to login as that user with admin privileges
