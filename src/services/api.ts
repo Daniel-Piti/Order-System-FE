@@ -275,5 +275,55 @@ export const customerAPI = {
   },
 };
 
+export interface ProductDataForOrder {
+  productId: string;
+  productName: string;
+  quantity: number;
+  pricePerUnit: number;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  userStreetAddress: string | null;
+  userCity: string | null;
+  userPhoneNumber: string | null;
+  customerId: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  customerEmail: string | null;
+  customerStreetAddress: string | null;
+  customerCity: string | null;
+  status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
+  products: ProductDataForOrder[];
+  productsVersion: number;
+  totalPrice: number;
+  deliveryDate: string | null;
+  linkExpiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEmptyOrderRequest {
+  customerId?: string | null;
+}
+
+export const orderAPI = {
+  getAllOrders: async (): Promise<Order[]> => {
+    const response = await api.get<Order[]>('/orders');
+    return response.data;
+  },
+
+  getOrderById: async (orderId: string): Promise<Order> => {
+    const response = await api.get<Order>(`/orders/${orderId}`);
+    return response.data;
+  },
+
+  createEmptyOrder: async (data: CreateEmptyOrderRequest): Promise<string> => {
+    const response = await api.post<string>('/orders', data);
+    return response.data;
+  },
+};
+
 export default api;
 
