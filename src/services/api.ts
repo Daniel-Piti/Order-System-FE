@@ -200,6 +200,8 @@ export interface Customer {
   name: string;
   phoneNumber: string;
   email: string;
+  streetAddress: string;
+  city: string;
 }
 
 export const categoryAPI = {
@@ -247,6 +249,8 @@ export interface CustomerRequest {
   name: string;
   phoneNumber: string;
   email: string;
+  streetAddress: string;
+  city: string;
 }
 
 export const customerAPI = {

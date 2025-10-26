@@ -29,11 +29,15 @@ export default function CustomersPage() {
     name: '',
     phoneNumber: '',
     email: '',
+    streetAddress: '',
+    city: '',
   });
   const [editFormData, setEditFormData] = useState({
     name: '',
     phoneNumber: '',
     email: '',
+    streetAddress: '',
+    city: '',
   });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -145,7 +149,7 @@ export default function CustomersPage() {
 
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
-    setFormData({ name: '', phoneNumber: '', email: '' });
+    setFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '' });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -154,7 +158,7 @@ export default function CustomersPage() {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setCustomerToEdit(null);
-    setEditFormData({ name: '', phoneNumber: '', email: '' });
+    setEditFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '' });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -166,6 +170,8 @@ export default function CustomersPage() {
       name: customer.name,
       phoneNumber: customer.phoneNumber,
       email: customer.email,
+      streetAddress: customer.streetAddress,
+      city: customer.city,
     });
     setIsEditModalOpen(true);
   };
@@ -233,6 +239,12 @@ export default function CustomersPage() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
+    if (!formData.streetAddress.trim()) {
+      errors.streetAddress = 'Street address is required';
+    }
+    if (!formData.city.trim()) {
+      errors.city = 'City is required';
+    }
 
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -269,6 +281,12 @@ export default function CustomersPage() {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
       errors.email = 'Please enter a valid email address';
+    }
+    if (!editFormData.streetAddress.trim()) {
+      errors.streetAddress = 'Street address is required';
+    }
+    if (!editFormData.city.trim()) {
+      errors.city = 'City is required';
     }
 
     setFieldErrors(errors);
@@ -478,98 +496,123 @@ export default function CustomersPage() {
           </div>
         </div>
       ) : (
-        <div className="glass-card rounded-3xl p-6 md:p-8">
-          <div className="space-y-2">
-            {paginatedCustomers.map((customer) => {
-              const customerData = customerOverridesData.get(customer.id);
-              const totalOverrides = customerData?.totalElements || 0;
-              const isLoadingOverrides = customerData?.isLoading || false;
-              
-              return (
-                <div key={customer.id} className="glass-card rounded-xl overflow-hidden">
-                {/* Customer Info Row */}
-                <div className="p-4 hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Left side: Customer info */}
-                    <div className="flex items-center space-x-4 flex-1 min-w-0">
-                      <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
-                        <div className="min-w-0">
-                          <p className="text-xs text-gray-500 mb-0.5">Name</p>
-                          <h3 className="text-sm font-bold text-gray-800 truncate" title={customer.name}>
-                            {customer.name}
-                          </h3>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-gray-500 mb-0.5">Phone</p>
-                          <p className="text-sm text-gray-800 truncate">
-                            {formatPhoneNumber(customer.phoneNumber)}
-                          </p>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-gray-500 mb-0.5">Email</p>
-                          <p className="text-sm text-gray-800 truncate" title={customer.email}>
-                            {customer.email}
-                          </p>
-                        </div>
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {paginatedCustomers.map((customer) => {
+            const customerData = customerOverridesData.get(customer.id);
+            const totalOverrides = customerData?.totalElements || 0;
+            const isLoadingOverrides = customerData?.isLoading || false;
+            
+            return (
+              <div 
+                key={customer.id} 
+                className="glass-card rounded-2xl p-5 hover:shadow-xl transition-all cursor-pointer group"
+                onClick={() => handleViewOverrides(customer.id)}
+              >
+                {/* Customer Icon & Name */}
+                <div className="flex items-start space-x-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-indigo-100/50 flex-shrink-0">
+                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-gray-800 truncate" title={customer.name}>
+                      {customer.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Customer</p>
+                  </div>
+                </div>
+
+                {/* Customer Details */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-start space-x-2">
+                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700">{formatPhoneNumber(customer.phoneNumber)}</p>
                     </div>
-                    
-                    {/* Right side: Action buttons */}
-                    <div className="flex items-center space-x-2 flex-shrink-0">
-                      {/* View overrides button */}
-                      <button
-                        onClick={() => handleViewOverrides(customer.id)}
-                        className={`glass-button px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all min-w-[120px] text-indigo-600 hover:shadow-md cursor-pointer`}
-                        title={`View price overrides${totalOverrides > 0 ? ` (${totalOverrides} total)` : ''}`}
-                      >
+                  </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 truncate" title={customer.email}>{customer.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-2">
+                    <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-700 line-clamp-1" title={customer.streetAddress}>{customer.streetAddress}</p>
+                      <p className="text-sm text-gray-600 font-medium">{customer.city}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                      <div className="flex-1">
                         {isLoadingOverrides ? (
-                          <>
-                            <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <div className="flex items-center space-x-1">
+                            <svg className="animate-spin h-3 w-3 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span className="hidden sm:inline">Loading...</span>
-                          </>
+                            <span className="text-xs text-gray-600">Loading overrides...</span>
+                          </div>
                         ) : (
-                          <>
-                            <span className="hidden sm:inline">{totalOverrides} Override{totalOverrides !== 1 ? 's' : ''}</span>
-                            <span className="sm:hidden">{totalOverrides}</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </>
+                          <p className="text-sm text-indigo-600 font-medium">
+                            {totalOverrides} Price Override{totalOverrides !== 1 ? 's' : ''}
+                          </p>
                         )}
-                      </button>
-                      <button
-                        onClick={() => handleEditCustomer(customer)}
-                        className="glass-button p-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
-                        title="Edit customer"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCustomer(customer)}
-                        className="glass-button p-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50/50 hover:shadow-md transition-all"
-                        title="Delete customer"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      </div>
                     </div>
+                    <svg className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200/50">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditCustomer(customer);
+                    }}
+                    className="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-center space-x-1.5"
+                    title="Edit customer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Edit</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCustomer(customer);
+                    }}
+                    className="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-red-600 border-red-600 hover:bg-red-50/50 hover:shadow-md transition-all flex items-center justify-center space-x-1.5"
+                    title="Delete customer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
-              );
-            })}
-          </div>
+            );
+          })}
         </div>
       )}
 
@@ -664,6 +707,46 @@ export default function CustomersPage() {
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                  Street Address *
+                </label>
+                <input
+                  id="streetAddress"
+                  name="streetAddress"
+                  type="text"
+                  value={formData.streetAddress}
+                  onChange={handleInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., 123 Main Street"
+                />
+                {showErrors && fieldErrors.streetAddress && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                  City *
+                </label>
+                <input
+                  id="city"
+                  name="city"
+                  type="text"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., Tel Aviv"
+                />
+                {showErrors && fieldErrors.city && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
                 )}
               </div>
 
@@ -806,6 +889,46 @@ export default function CustomersPage() {
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="editStreetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                  Street Address *
+                </label>
+                <input
+                  id="editStreetAddress"
+                  name="streetAddress"
+                  type="text"
+                  value={editFormData.streetAddress}
+                  onChange={handleEditInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., 123 Main Street"
+                />
+                {showErrors && fieldErrors.streetAddress && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="editCity" className="block text-sm font-medium text-gray-700 mb-2">
+                  City *
+                </label>
+                <input
+                  id="editCity"
+                  name="city"
+                  type="text"
+                  value={editFormData.city}
+                  onChange={handleEditInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., Tel Aviv"
+                />
+                {showErrors && fieldErrors.city && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
                 )}
               </div>
 

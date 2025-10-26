@@ -14,20 +14,25 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
 
+    // Trim inputs
+    const trimmedAdminUserName = adminUserName.trim();
+    const trimmedPassword = password.trim();
+    const trimmedUserEmail = userEmail.trim();
+
     // Validate inputs
-    if (!adminUserName.trim()) {
+    if (!trimmedAdminUserName) {
       setError('Please enter your admin username');
       return;
     }
-    if (!password.trim()) {
+    if (!trimmedPassword) {
       setError('Please enter your admin password');
       return;
     }
     
     // Validate email format if provided
-    if (userEmail.trim()) {
+    if (trimmedUserEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(userEmail)) {
+      if (!emailRegex.test(trimmedUserEmail)) {
         setError('Please enter a valid user email address');
         return;
       }
@@ -37,9 +42,9 @@ export default function AdminLoginPage() {
 
     try {
       const response = await authAPI.loginAdmin({
-        adminUserName,
-        password,
-        userEmail: userEmail || undefined,
+        adminUserName: trimmedAdminUserName,
+        password: trimmedPassword,
+        userEmail: trimmedUserEmail || undefined,
       });
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userRole', 'admin');

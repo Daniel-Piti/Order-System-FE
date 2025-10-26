@@ -13,20 +13,24 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
+    // Trim inputs
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
     // Validate inputs
-    if (!email.trim()) {
+    if (!trimmedEmail) {
       setError('Please enter your email address');
       return;
     }
     
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       setError('Please enter a valid email address');
       return;
     }
     
-    if (!password.trim()) {
+    if (!trimmedPassword) {
       setError('Please enter your password');
       return;
     }
@@ -34,7 +38,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.loginUser({ email, password });
+      const response = await authAPI.loginUser({ email: trimmedEmail, password: trimmedPassword });
       localStorage.setItem('authToken', response.token);
       navigate('/dashboard');
     } catch (err: any) {
