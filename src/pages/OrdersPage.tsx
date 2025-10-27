@@ -13,18 +13,42 @@ export default function OrdersPage() {
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
-  const fetchOrders = async () => {
+  // Sorting state
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('DESC');
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<string>('');
+
+  useEffect(() => {
+    fetchOrders(currentPage);
+  }, [currentPage, sortBy, sortDirection, pageSize, statusFilter]);
+
+  const fetchOrders = async (page: number = 0) => {
     setIsLoading(true);
     setError('');
     try {
-      const data = await orderAPI.getAllOrders();
-      setOrders(data);
+      const pageResponse = await orderAPI.getAllOrders(
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        statusFilter || undefined
+      );
+      setOrders(pageResponse?.content || []);
+      setTotalPages(pageResponse?.totalPages || 0);
+      setTotalElements(pageResponse?.totalElements || 0);
     } catch (err: any) {
       setError('Failed to load orders');
+      setOrders([]); // Reset to empty array on error
+      setTotalPages(0);
+      setTotalElements(0);
       console.error('Error fetching orders:', err);
     } finally {
       setIsLoading(false);
@@ -50,7 +74,8 @@ export default function OrdersPage() {
       console.log('Order created:', newOrderId);
       setShowCreateModal(false);
       setSelectedCustomerId(null);
-      await fetchOrders();
+      setCurrentPage(0); // Reset to first page
+      await fetchOrders(0);
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'Failed to create order');
     } finally {
@@ -89,20 +114,25 @@ export default function OrdersPage() {
     setViewingOrder(null);
   };
 
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'ASC' ? 'DESC' : 'ASC');
+    setCurrentPage(0);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'EMPTY':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
       case 'PLACED':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-100 text-blue-700 border-2 border-blue-700';
       case 'DONE':
-        return 'bg-green-100 text-green-700';
+        return 'bg-green-100 text-green-700 border-2 border-green-700';
       case 'EXPIRED':
-        return 'bg-orange-100 text-orange-700';
+        return 'bg-orange-100 text-orange-700 border-2 border-orange-700';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-700';
+        return 'bg-red-100 text-red-700 border-2 border-red-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
     }
   };
 
@@ -131,12 +161,12 @@ export default function OrdersPage() {
   });
 
   if (isLoading) {
-    return (
+  return (
       <div className="flex justify-center items-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -157,8 +187,98 @@ export default function OrdersPage() {
         </button>
       </div>
 
+      {/* Filters and Sorting */}
+      <div className="glass-card rounded-2xl p-4 mb-6">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          {/* Left side: Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+            {/* Status Filter */}
+            <div className="w-[140px]">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+              >
+                <option value="">All Statuses</option>
+                <option value="EMPTY">Empty</option>
+                <option value="PLACED">Placed</option>
+                <option value="DONE">Done</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div className="w-[140px]">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+              >
+                <option value="createdAt">Created Date</option>
+                <option value="status">Status</option>
+                <option value="totalPrice">Total Price</option>
+              </select>
+            </div>
+
+            {/* Sort Direction Toggle */}
+            <div className="w-[140px]">
+              <label className="block text-xs font-medium text-gray-600 mb-1">&nbsp;</label>
+              <button
+                onClick={toggleSortDirection}
+                className="glass-button w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-center space-x-2"
+              >
+                <span>{sortDirection === 'ASC' ? 'Ascending' : 'Descending'}</span>
+                {sortDirection === 'ASC' ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Page Size */}
+            <div className="w-[90px]">
+              <label className="block text-xs font-medium text-gray-600 mb-1">Per Page</label>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(0);
+                }}
+                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+              >
+                <option value="2">2</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Right side: Results info */}
+          <div className="text-sm text-gray-600 whitespace-nowrap">
+            Showing {(orders?.length || 0) === 0 ? 0 : currentPage * pageSize + 1}-
+            {Math.min((currentPage + 1) * pageSize, totalElements)} of {totalElements} orders
+          </div>
+        </div>
+      </div>
+
       {/* Orders List */}
-      {orders.length === 0 ? (
+      {!orders || orders.length === 0 ? (
         <div className="glass-card rounded-2xl p-12 text-center">
           <svg
             className="w-16 h-16 text-gray-400 mx-auto mb-4"
@@ -184,49 +304,47 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {orders.map((order) => (
+          {orders && orders.map((order) => (
             <div
               key={order.id}
               onClick={() => handleViewOrder(order)}
-              className="glass-card rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-400 hover:border-indigo-400"
+              className="glass-card rounded-xl p-3 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-300 hover:border-indigo-400 flex flex-col"
             >
-              {/* Order Header */}
+              {/* Order Header - Status & ID */}
               <div className="flex items-center justify-between mb-3">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
                   {order.status}
                 </span>
-                <p className="text-xs text-gray-500">#{order.id.slice(0, 6)}</p>
+                <p className="text-xs text-gray-500">#{order.id.slice(0, 8)}</p>
               </div>
 
-              {/* Customer Info */}
-              <div className="mb-3">
+              {/* Customer Info - Fixed height */}
+              <div className="mb-3 h-9 flex items-start">
                 {order.customerName ? (
-                  <div>
-                    <p className="text-sm font-medium text-gray-800 truncate">{order.customerName}</p>
+                  <div className="w-full">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{order.customerName}</p>
                     {order.customerPhone && (
-                      <p className="text-xs text-gray-600 truncate">{order.customerPhone}</p>
+                      <p className="text-xs text-gray-500 truncate">{order.customerPhone}</p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 italic">No customer</p>
+                  <p className="text-sm text-gray-400 italic">No customer</p>
                 )}
               </div>
 
-              {/* Order Details */}
-              <div className="space-y-1 mb-3 pb-3 border-t border-gray-200/50 pt-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Products</span>
-                  <span className="font-semibold text-gray-800">{order.products.length}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Total</span>
-                  <span className="font-semibold text-gray-800">${order.totalPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Created</span>
-                  <span className="text-gray-700">{formatDate(order.createdAt)}</span>
-                </div>
+              {/* Total Price - Prominent */}
+              <div className="mb-2">
+                <p className="text-xs text-gray-500 mb-0.5">Total</p>
+                <p className="text-xl font-bold text-indigo-600">${order.totalPrice.toFixed(2)}</p>
               </div>
+
+              {/* Created Date - Subtle */}
+              <div className="mb-2">
+                <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
+              </div>
+
+              {/* Spacer to push button to bottom */}
+              <div className="flex-grow"></div>
 
               {/* Actions */}
               {order.status === 'EMPTY' && (
@@ -263,6 +381,73 @@ export default function OrdersPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {orders && orders.length > 0 && (
+        <div className="glass-card rounded-2xl p-4 mt-6">
+          <div className="flex items-center justify-center gap-1">
+            {/* Previous page */}
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            {/* Page numbers */}
+            {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+              // Show first page, last page, current page, and pages around current
+              const showPage =
+                page === 0 ||
+                page === totalPages - 1 ||
+                Math.abs(page - currentPage) <= 1;
+
+              // Show ellipsis if there's a gap
+              const prevPage = page - 1;
+              const showEllipsis = !showPage && prevPage >= 0 && 
+                (prevPage === 0 || prevPage === totalPages - 1 || Math.abs(prevPage - currentPage) <= 1);
+
+              if (!showPage && !showEllipsis) return null;
+
+              if (showEllipsis) {
+                return (
+                  <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    currentPage === page
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'glass-button text-gray-800 hover:shadow-md'
+                  }`}
+                >
+                  {page + 1}
+                </button>
+              );
+            })}
+
+            {/* Next page */}
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage >= totalPages - 1}
+              className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
 

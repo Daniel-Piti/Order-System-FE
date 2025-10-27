@@ -131,7 +131,15 @@ export default function CategoriesPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to create category');
+        let errorMessage = 'Failed to create category';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.userMessage || errorData.message || 'Failed to create category';
+        } catch (parseError) {
+          // If JSON parse fails, use the raw error text
+          errorMessage = errorText || 'Failed to create category';
+        }
+        throw new Error(errorMessage);
       }
 
       await fetchCategories();
@@ -171,7 +179,15 @@ export default function CategoriesPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to update category');
+        let errorMessage = 'Failed to update category';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.userMessage || errorData.message || 'Failed to update category';
+        } catch (parseError) {
+          // If JSON parse fails, use the raw error text
+          errorMessage = errorText || 'Failed to update category';
+        }
+        throw new Error(errorMessage);
       }
 
       await fetchCategories();
@@ -199,7 +215,15 @@ export default function CategoriesPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to delete category');
+        let errorMessage = 'Failed to delete category';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.userMessage || errorData.message || 'Failed to delete category';
+        } catch (parseError) {
+          // If JSON parse fails, use the raw error text
+          errorMessage = errorText || 'Failed to delete category';
+        }
+        throw new Error(errorMessage);
       }
 
       await fetchCategories();

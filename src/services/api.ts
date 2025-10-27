@@ -309,8 +309,18 @@ export interface CreateEmptyOrderRequest {
 }
 
 export const orderAPI = {
-  getAllOrders: async (): Promise<Order[]> => {
-    const response = await api.get<Order[]>('/orders');
+  getAllOrders: async (
+    page: number = 0,
+    size: number = 20,
+    sortBy: string = 'createdAt',
+    sortDirection: string = 'DESC',
+    status?: string
+  ): Promise<PageResponse<Order>> => {
+    const params: any = { page, size, sortBy, sortDirection };
+    if (status) {
+      params.status = status;
+    }
+    const response = await api.get<PageResponse<Order>>('/orders', { params });
     return response.data;
   },
 
