@@ -72,9 +72,9 @@ export default function CustomersPage() {
       const response = await fetch(
         `http://localhost:8080/api/product-overrides?customerId=${customerId}&page=0&size=1`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
         }
       );
       
@@ -497,12 +497,12 @@ export default function CustomersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {paginatedCustomers.map((customer) => {
+            {paginatedCustomers.map((customer) => {
             const customerData = customerOverridesData.get(customer.id);
             const totalOverrides = customerData?.totalElements || 0;
             const isLoadingOverrides = customerData?.isLoading || false;
-            
-            return (
+              
+              return (
               <div 
                 key={customer.id} 
                 className="glass-card rounded-2xl p-5 hover:shadow-xl transition-all cursor-pointer group"
@@ -512,16 +512,16 @@ export default function CustomersPage() {
                 <div className="flex items-start space-x-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-indigo-100/50 flex-shrink-0">
                     <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-gray-800 truncate" title={customer.name}>
-                      {customer.name}
-                    </h3>
+                            {customer.name}
+                          </h3>
                     <p className="text-xs text-gray-500 mt-0.5">Customer</p>
-                  </div>
-                </div>
+                        </div>
+                        </div>
 
                 {/* Customer Details */}
                 <div className="space-y-3 mb-4">
@@ -531,7 +531,7 @@ export default function CustomersPage() {
                     </svg>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-700">{formatPhoneNumber(customer.phoneNumber)}</p>
-                    </div>
+                        </div>
                   </div>
                   
                   <div className="flex items-start space-x-2">
@@ -540,14 +540,14 @@ export default function CustomersPage() {
                     </svg>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-700 truncate" title={customer.email}>{customer.email}</p>
+                      </div>
                     </div>
-                  </div>
-                  
+                    
                   <div className="flex items-start space-x-2">
                     <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                          </svg>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-700 line-clamp-1" title={customer.streetAddress}>{customer.streetAddress}</p>
                       <p className="text-sm text-gray-600 font-medium">{customer.city}</p>
@@ -583,36 +583,36 @@ export default function CustomersPage() {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200/50">
-                  <button
+                      <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEditCustomer(customer);
                     }}
                     className="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-center space-x-1.5"
-                    title="Edit customer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                        title="Edit customer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                     <span>Edit</span>
-                  </button>
-                  <button
+                      </button>
+                      <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteCustomer(customer);
                     }}
                     className="glass-button px-4 py-2 rounded-xl text-xs font-semibold text-red-600 border-red-600 hover:bg-red-50/50 hover:shadow-md transition-all flex items-center justify-center space-x-1.5"
-                    title="Delete customer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                        title="Delete customer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                     <span>Delete</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                      </button>
+                              </div>
+                            </div>
+                          );
+                        })}
         </div>
       )}
 

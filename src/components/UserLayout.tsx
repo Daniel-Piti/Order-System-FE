@@ -53,7 +53,7 @@ export default function UserLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 glass-card border-r border-white/20 z-50 transition-transform duration-300
+          fixed top-0 left-0 h-full w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
@@ -70,10 +70,10 @@ export default function UserLayout() {
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all backdrop-blur-sm border-2 ${
                     isActive
-                      ? 'bg-indigo-500/20 text-indigo-700 font-semibold'
-                      : 'text-gray-700 hover:bg-white/30'
+                      ? 'bg-indigo-500/20 text-indigo-700 font-semibold border-indigo-400/50 shadow-md'
+                      : 'text-gray-700 hover:bg-white/40 border-white/30 hover:border-white/50 hover:shadow-md'
                   }`
                 }
               >
@@ -86,7 +86,7 @@ export default function UserLayout() {
           <div className="absolute bottom-6 left-6 right-6">
             <button
               onClick={handleLogout}
-              className="glass-button w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 hover:bg-red-100/30"
+              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-sm bg-white/40 hover:bg-red-100/40 border-2 border-white/30 hover:border-red-400/50 hover:shadow-md transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

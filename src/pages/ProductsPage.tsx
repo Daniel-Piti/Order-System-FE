@@ -440,6 +440,7 @@ export default function ProductsPage() {
                     className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
                   >
                     <option value="">All</option>
+                    <option value="NONE">None</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.category}

@@ -52,6 +52,8 @@ export default function CustomerOverridesPage() {
     name: '',
     phoneNumber: '',
     email: '',
+    streetAddress: '',
+    city: '',
   });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -174,6 +176,8 @@ export default function CustomerOverridesPage() {
       name: customer.name,
       phoneNumber: customer.phoneNumber,
       email: customer.email,
+      streetAddress: customer.streetAddress,
+      city: customer.city,
     });
     setIsEditModalOpen(true);
   };
@@ -184,6 +188,8 @@ export default function CustomerOverridesPage() {
       name: '',
       phoneNumber: '',
       email: '',
+      streetAddress: '',
+      city: '',
     });
     setFormError('');
     setFieldErrors({});
@@ -216,6 +222,12 @@ export default function CustomerOverridesPage() {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
       errors.email = 'Please enter a valid email address';
+    }
+    if (!editFormData.streetAddress.trim()) {
+      errors.streetAddress = 'Street address is required';
+    }
+    if (!editFormData.city.trim()) {
+      errors.city = 'City is required';
     }
 
     setFieldErrors(errors);
@@ -764,6 +776,46 @@ export default function CustomerOverridesPage() {
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="edit-streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                  Street Address *
+                </label>
+                <input
+                  id="edit-streetAddress"
+                  name="streetAddress"
+                  type="text"
+                  value={editFormData.streetAddress}
+                  onChange={handleEditInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., 123 Main St"
+                />
+                {showErrors && fieldErrors.streetAddress && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="edit-city" className="block text-sm font-medium text-gray-700 mb-2">
+                  City *
+                </label>
+                <input
+                  id="edit-city"
+                  name="city"
+                  type="text"
+                  value={editFormData.city}
+                  onChange={handleEditInputChange}
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  placeholder="e.g., New York"
+                />
+                {showErrors && fieldErrors.city && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
                 )}
               </div>
 

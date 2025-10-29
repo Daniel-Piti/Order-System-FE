@@ -206,16 +206,7 @@ export interface Customer {
 
 export const categoryAPI = {
   getAllCategories: async (): Promise<Category[]> => {
-    const token = localStorage.getItem('authToken');
-    // Extract userId from token
-    const payload = token ? JSON.parse(atob(token.split('.')[1])) : null;
-    const userId = payload?.userId;
-    
-    if (!userId) {
-      throw new Error('User ID not found');
-    }
-    
-    const response = await api.get<Category[]>(`/categories/user/${userId}`);
+    const response = await api.get<Category[]>('/categories');
     return response.data;
   },
 
@@ -232,7 +223,21 @@ export const categoryAPI = {
     });
     return response.data;
   },
+
+  deleteCategory: async (categoryId: string): Promise<string> => {
+    const response = await api.delete<string>(`/categories/${categoryId}`);
+    return response.data;
+  },
 };
+
+export interface ProductRequest {
+  name: string;
+  categoryId: string | null;
+  originalPrice: number;
+  specialPrice: number;
+  description: string;
+  pictureUrl: string | null;
+}
 
 export const productAPI = {
   getAllProducts: async (page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'ASC', categoryId?: string): Promise<PageResponse<Product>> => {
@@ -241,6 +246,21 @@ export const productAPI = {
       params.categoryId = categoryId;
     }
     const response = await api.get<PageResponse<Product>>('/products', { params });
+    return response.data;
+  },
+
+  createProduct: async (data: ProductRequest): Promise<string> => {
+    const response = await api.post<string>('/products', data);
+    return response.data;
+  },
+
+  updateProduct: async (productId: string, data: ProductRequest): Promise<string> => {
+    const response = await api.put<string>(`/products/${productId}`, data);
+    return response.data;
+  },
+
+  deleteProduct: async (productId: string): Promise<string> => {
+    const response = await api.delete<string>(`/products/${productId}`);
     return response.data;
   },
 };
@@ -300,6 +320,7 @@ export interface Order {
   totalPrice: number;
   deliveryDate: string | null;
   linkExpiresAt: string;
+  notes: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -332,6 +353,51 @@ export const orderAPI = {
   createEmptyOrder: async (data: CreateEmptyOrderRequest): Promise<string> => {
     const response = await api.post<string>('/orders', data);
     return response.data;
+  },
+};
+
+// Public API (no authentication required) - for customers
+export const publicAPI = {
+  products: {
+    // Get all products for a user (seller)
+    getAllByUserId: async (userId: string): Promise<Product[]> => {
+      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/user/${userId}`);
+      return response.data;
+    },
+
+    // Get single product by userId and productId
+    getByUserIdAndProductId: async (userId: string, productId: string): Promise<Product> => {
+      const response = await axios.get<Product>(`${API_BASE_URL}/public/products/user/${userId}/product/${productId}`);
+      return response.data;
+    },
+
+    // Get products for a specific order (with overrides applied)
+    getAllByOrderId: async (orderId: string): Promise<Product[]> => {
+      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/order/${orderId}`);
+      return response.data;
+    },
+  },
+
+  categories: {
+    // Get all categories for a user (seller)
+    getAllByUserId: async (userId: string): Promise<Category[]> => {
+      const response = await axios.get<Category[]>(`${API_BASE_URL}/public/categories/user/${userId}`);
+      return response.data;
+    },
+
+    // Get single category by userId and categoryId
+    getByUserIdAndCategoryId: async (userId: string, categoryId: string): Promise<Category> => {
+      const response = await axios.get<Category>(`${API_BASE_URL}/public/categories/user/${userId}/category/${categoryId}`);
+      return response.data;
+    },
+  },
+
+  orders: {
+    // Get order details (for customer viewing via link)
+    getById: async (orderId: string): Promise<Order> => {
+      const response = await axios.get<Order>(`${API_BASE_URL}/public/orders/${orderId}`);
+      return response.data;
+    },
   },
 };
 
