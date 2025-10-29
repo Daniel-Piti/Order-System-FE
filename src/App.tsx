@@ -12,6 +12,7 @@ import ProductsPage from './pages/ProductsPage';
 import OverridesPage from './pages/OverridesPage';
 import CategoriesPage from './pages/CategoriesPage';
 import LocationsPage from './pages/LocationsPage';
+import StorePage from './pages/StorePage';
 
 function App() {
   return (
@@ -19,6 +20,10 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
+        
+        {/* Public Store Route */}
+        <Route path="/store/:userId" element={<StorePage />} />
+        
         <Route 
           path="/admin/dashboard" 
           element={

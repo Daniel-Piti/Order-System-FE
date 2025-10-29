@@ -359,9 +359,20 @@ export const orderAPI = {
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {
-    // Get all products for a user (seller)
-    getAllByUserId: async (userId: string): Promise<Product[]> => {
-      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/user/${userId}`);
+    // Get all products for a user (seller) with pagination
+    getAllByUserId: async (
+      userId: string,
+      page: number = 0,
+      size: number = 20,
+      sortBy: string = 'name',
+      sortDirection: string = 'ASC',
+      categoryId?: string
+    ): Promise<PageResponse<Product>> => {
+      const params: any = { page, size, sortBy, sortDirection };
+      if (categoryId) {
+        params.categoryId = categoryId;
+      }
+      const response = await axios.get<PageResponse<Product>>(`${API_BASE_URL}/public/products/user/${userId}`, { params });
       return response.data;
     },
 
