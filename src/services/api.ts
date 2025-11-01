@@ -130,7 +130,7 @@ export const userAPI = {
 };
 
 export interface Location {
-  id: string;
+  id: number;
   userId: string;
   name: string;
   streetAddress: string;
@@ -151,17 +151,17 @@ export const locationAPI = {
     return response.data;
   },
 
-  createLocation: async (data: LocationRequest): Promise<string> => {
-    const response = await api.post<string>('/locations', data);
+  createLocation: async (data: LocationRequest): Promise<number> => {
+    const response = await api.post<number>('/locations', data);
     return response.data;
   },
 
-  updateLocation: async (locationId: string, data: LocationRequest): Promise<string> => {
-    const response = await api.put<string>(`/locations/${locationId}`, data);
+  updateLocation: async (locationId: number, data: LocationRequest): Promise<number> => {
+    const response = await api.put<number>(`/locations/${locationId}`, data);
     return response.data;
   },
 
-  deleteLocation: async (locationId: string): Promise<string> => {
+  deleteLocation: async (locationId: number): Promise<string> => {
     const response = await api.delete<string>(`/locations/${locationId}`);
     return response.data;
   },
@@ -209,15 +209,15 @@ export const categoryAPI = {
     return response.data;
   },
 
-  createCategory: async (categoryName: string): Promise<string> => {
-    const response = await api.post<string>('/categories', {
+  createCategory: async (categoryName: string): Promise<number> => {
+    const response = await api.post<number>('/categories', {
       category: categoryName,
     });
     return response.data;
   },
 
-  updateCategory: async (categoryId: number, categoryName: string): Promise<string> => {
-    const response = await api.put<string>(`/categories/${categoryId}`, {
+  updateCategory: async (categoryId: number, categoryName: string): Promise<number> => {
+    const response = await api.put<number>(`/categories/${categoryId}`, {
       category: categoryName,
     });
     return response.data;
