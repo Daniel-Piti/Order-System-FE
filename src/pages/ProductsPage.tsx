@@ -9,6 +9,11 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Store product images: productId -> array of image URLs
+  const [productImages, setProductImages] = useState<Record<string, string[]>>({});
+  // Store current image index for each product: productId -> currentIndex
+  const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -30,12 +35,25 @@ export default function ProductsPage() {
     specialPrice: '',
     description: '',
   });
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  
+  // Product image states for edit modal
+  interface ProductImage {
+    id: number;
+    url: string;
+    fileName: string;
+  }
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
+  const [originalImages, setOriginalImages] = useState<ProductImage[]>([]);
+  const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
+  const [newImagesToAdd, setNewImagesToAdd] = useState<File[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -88,6 +106,10 @@ export default function ProductsPage() {
       setProducts(pageResponse.content);
       setTotalPages(pageResponse.totalPages);
       setTotalElements(pageResponse.totalElements);
+      
+      // Clear old images and fetch images for all products in parallel
+      setProductImages({});
+      await fetchProductImagesForAll(pageResponse.content);
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
       if (err.message.includes('401')) {
@@ -95,6 +117,35 @@ export default function ProductsPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchProductImagesForAll = async (productsList: Product[]) => {
+    if (!userId || productsList.length === 0) return;
+    
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const imagePromises = productsList.map(async (product) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
+          if (response.ok) {
+            const images: ProductImage[] = await response.json();
+            return { productId: product.id, imageUrls: images.map(img => img.url) };
+          }
+        } catch (err) {
+          console.error(`Failed to fetch images for product ${product.id}:`, err);
+        }
+        return { productId: product.id, imageUrls: [] };
+      });
+      
+      const results = await Promise.all(imagePromises);
+      const imagesMap: Record<string, string[]> = {};
+      results.forEach(({ productId, imageUrls }) => {
+        imagesMap[productId] = imageUrls;
+      });
+      setProductImages(prev => ({ ...prev, ...imagesMap }));
+    } catch (err) {
+      console.error('Failed to fetch product images:', err);
     }
   };
 
@@ -160,12 +211,126 @@ export default function ProductsPage() {
       specialPrice: '',
       description: '',
     });
+    setSelectedImages([]);
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
   };
 
-  const handleEditProduct = (product: Product) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    // Check total count (existing + new)
+    if (selectedImages.length + newFiles.length > 5) {
+      setFormError(`Maximum 5 images allowed. You already have ${selectedImages.length} image(s) selected.`);
+      e.target.value = ''; // Reset input
+      return;
+    }
+
+    // Validate each file
+    newFiles.forEach((file) => {
+      // Check file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+        return;
+      }
+
+      // Check file size (5MB = 5 * 1024 * 1024 bytes)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        errors.push(`${file.name}: File size exceeds 5MB limit.`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (errors.length > 0) {
+      setFormError(errors.join(' '));
+    } else if (validFiles.length > 0) {
+      setSelectedImages((prev) => [...prev, ...validFiles]);
+      setFormError('');
+    }
+
+    e.target.value = ''; // Reset input to allow selecting same file again
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Edit modal image handlers
+  const handleDeleteExistingImage = (imageId: number) => {
+    setImagesToDelete((prev) => {
+      if (prev.includes(imageId)) return prev; // Already marked for deletion
+      return [...prev, imageId];
+    });
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  const handleUndoDeleteImage = (imageId: number) => {
+    // Restore the image from originalImages
+    const imageToRestore = originalImages.find(img => img.id === imageId);
+    if (imageToRestore) {
+      setImagesToDelete((prev) => prev.filter((id) => id !== imageId));
+      setExistingImages((prev) => [...prev, imageToRestore].sort((a, b) => a.id - b.id));
+    }
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    // Check total count (existing visible + new to add)
+    const currentImageCount = existingImages.length + newImagesToAdd.length;
+    if (currentImageCount + newFiles.length > 5) {
+      setFormError(`Maximum 5 images allowed. Current: ${currentImageCount}, trying to add: ${newFiles.length}`);
+      e.target.value = '';
+      return;
+    }
+
+    // Validate each file
+    newFiles.forEach((file) => {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        errors.push(`${file.name}: File size exceeds 5MB limit.`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (errors.length > 0) {
+      setFormError(errors.join(' '));
+    } else if (validFiles.length > 0) {
+      setNewImagesToAdd((prev) => [...prev, ...validFiles]);
+      setFormError('');
+    }
+
+    e.target.value = '';
+  };
+
+  const handleRemoveNewImage = (index: number) => {
+    setNewImagesToAdd((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditProduct = async (product: Product) => {
     setProductToEdit(product);
     setEditFormData({
       name: product.name,
@@ -174,7 +339,32 @@ export default function ProductsPage() {
       specialPrice: product.specialPrice.toString(),
       description: product.description,
     });
+    setExistingImages([]);
+    setOriginalImages([]);
+    setImagesToDelete([]);
+    setNewImagesToAdd([]);
     setIsEditModalOpen(true);
+    
+    // Fetch existing images
+    await fetchProductImages(product.userId, product.id);
+  };
+
+  const fetchProductImages = async (userId: string, productId: string) => {
+    try {
+      setIsLoadingImages(true);
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${productId}/images`);
+      
+      if (response.ok) {
+        const images: ProductImage[] = await response.json();
+        setExistingImages(images);
+        setOriginalImages(images); // Store original for undo
+      }
+    } catch (err) {
+      console.error('Failed to fetch product images:', err);
+    } finally {
+      setIsLoadingImages(false);
+    }
   };
 
   const handleCloseEditModal = () => {
@@ -187,6 +377,10 @@ export default function ProductsPage() {
       specialPrice: '',
       description: '',
     });
+    setExistingImages([]);
+    setOriginalImages([]);
+    setImagesToDelete([]);
+    setNewImagesToAdd([]);
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -231,6 +425,13 @@ export default function ProductsPage() {
       errors.specialPrice = 'Special price cannot be greater than original price';
     }
 
+    // Validate image count (existing visible + new to add)
+    const currentImageCount = existingImages.length + newImagesToAdd.length;
+    if (currentImageCount > 5) {
+      setFormError('Maximum 5 images allowed per product');
+      return;
+    }
+
     setFieldErrors(errors);
     
     if (Object.keys(errors).length > 0) {
@@ -240,10 +441,12 @@ export default function ProductsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
       const finalSpecialPrice = editFormData.specialPrice ? Number(editFormData.specialPrice) : Number(editFormData.originalPrice);
       
-      const response = await fetch(`http://localhost:8080/api/products/${productToEdit.id}`, {
+      // Update product data
+      const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -261,6 +464,38 @@ export default function ProductsPage() {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || 'Failed to update product');
+      }
+
+      // Delete images
+      for (const imageId of imagesToDelete) {
+        const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images/${imageId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (!deleteResponse.ok) {
+          console.error(`Failed to delete image ${imageId}`);
+        }
+      }
+
+      // Upload new images
+      for (const imageFile of newImagesToAdd) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        
+        const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          console.error(`Failed to upload image ${imageFile.name}`);
+        }
       }
 
       setCurrentPage(0); // Reset to first page
@@ -325,6 +560,12 @@ export default function ProductsPage() {
       errors.specialPrice = 'Special price cannot be greater than original price';
     }
 
+    // Validate image count
+    if (selectedImages.length > 5) {
+      setFormError('Maximum 5 images allowed per product');
+      return;
+    }
+
     setFieldErrors(errors);
     
     if (Object.keys(errors).length > 0) {
@@ -338,19 +579,29 @@ export default function ProductsPage() {
       // Use originalPrice as specialPrice if specialPrice is not provided
       const finalSpecialPrice = formData.specialPrice ? Number(formData.specialPrice) : Number(formData.originalPrice);
       
-      const response = await fetch('http://localhost:8080/api/products', {
+      // Create FormData
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.name);
+      if (formData.categoryId) {
+        formDataToSend.append('categoryId', formData.categoryId);
+      }
+      formDataToSend.append('originalPrice', formData.originalPrice);
+      formDataToSend.append('specialPrice', finalSpecialPrice.toString());
+      formDataToSend.append('description', formData.description || ''); // Always send, even if empty
+      
+      // Add images
+      selectedImages.forEach(image => {
+        formDataToSend.append('images', image);
+      });
+      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
         },
-        body: JSON.stringify({
-          name: formData.name,
-          categoryId: formData.categoryId ? Number(formData.categoryId) : null,
-          originalPrice: Number(formData.originalPrice),
-          specialPrice: finalSpecialPrice,
-          description: formData.description,
-        }),
+        body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -585,22 +836,71 @@ export default function ProductsPage() {
             return (
               <div key={product.id} className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Product Image */}
-                <div className="aspect-square bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden">
-                  {/* Placeholder for future product images */}
-                  {false ? (
-                    <img
-                      src=""
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
+                <div className="aspect-square bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden group">
+                  {productImages[product.id] && productImages[product.id].length > 0 ? (
+                    <>
+                      <img
+                        src={productImages[product.id][productImageIndices[product.id] || 0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
+                          if (placeholder) {
+                            (placeholder as HTMLElement).style.display = 'flex';
+                          }
+                        }}
+                      />
+                      {/* Navigation arrows - only show if multiple images */}
+                      {productImages[product.id].length > 1 && (
+                        <>
+                          {/* Left Arrow */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentIndex = productImageIndices[product.id] || 0;
+                              const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
+                              setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                            title="Previous image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          {/* Right Arrow */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const currentIndex = productImageIndices[product.id] || 0;
+                              const newIndex = (currentIndex + 1) % productImages[product.id].length;
+                              setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                            title="Next image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                    </>
+                  ) : null}
+                  {(!productImages[product.id] || productImages[product.id].length === 0) && (
+                    <div className="image-placeholder w-full h-full flex items-center justify-center">
                       <svg className="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
+                    </div>
+                  )}
+                  {/* Show image count badge if multiple images */}
+                  {productImages[product.id] && productImages[product.id].length > 1 && (
+                    <div className="absolute bottom-2 left-2">
+                      <span className="px-2 py-1 text-xs font-semibold bg-black/60 text-white rounded-full backdrop-blur-sm">
+                        {(productImageIndices[product.id] || 0) + 1} / {productImages[product.id].length}
+                      </span>
                     </div>
                   )}
                   
@@ -876,6 +1176,75 @@ export default function ProductsPage() {
                 />
               </div>
 
+              {/* Image Upload Section */}
+              <div>
+                <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images <span className="text-gray-500 text-xs">(up to 5, optional)</span>
+                </label>
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      id="images"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      onChange={handleImageChange}
+                      className="hidden"
+                      disabled={selectedImages.length >= 5}
+                    />
+                    <label
+                      htmlFor="images"
+                      className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                        selectedImages.length >= 5
+                          ? 'opacity-50 cursor-not-allowed border-gray-300'
+                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm font-medium">
+                        {selectedImages.length >= 5
+                          ? 'Maximum 5 images reached'
+                          : `Select Images (${selectedImages.length}/5)`}
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Image Previews */}
+                  {selectedImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {selectedImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={URL.createObjectURL(image)}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                            title="Remove image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          <p className="text-xs text-gray-600 truncate mt-1" title={image.name}>
+                            {image.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -1062,6 +1431,153 @@ export default function ProductsPage() {
                   placeholder="Product description (optional)"
                   rows={3}
                 />
+              </div>
+
+              {/* Image Management Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Product Images <span className="text-gray-500 text-xs">(up to 5 total)</span>
+                </label>
+                <div className="space-y-3">
+                  {/* Loading State */}
+                  {isLoadingImages && (
+                    <div className="text-center py-4">
+                      <svg className="animate-spin h-6 w-6 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <p className="text-xs text-gray-500 mt-2">Loading images...</p>
+                    </div>
+                  )}
+
+                  {/* Existing Images */}
+                  {!isLoadingImages && existingImages.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-600 mb-2">Existing Images:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {existingImages.map((image) => (
+                          <div key={image.id} className="relative group">
+                            <img
+                              src={image.url}
+                              alt={image.fileName}
+                              className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteExistingImage(image.id)}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              title="Delete image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            <p className="text-xs text-gray-600 truncate mt-1" title={image.fileName}>
+                              {image.fileName}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Images Marked for Deletion */}
+                  {imagesToDelete.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-red-600 mb-2">Images to be deleted ({imagesToDelete.length}):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {imagesToDelete.map((imageId) => {
+                          const deletedImage = originalImages.find(img => img.id === imageId);
+                          if (!deletedImage) return null;
+                          return (
+                            <div key={imageId} className="relative opacity-50 border-2 border-red-300 rounded-lg p-1">
+                              <img
+                                src={deletedImage.url}
+                                alt={deletedImage.fileName}
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleUndoDeleteImage(imageId)}
+                                className="absolute -top-1 -right-1 p-1 bg-green-500 text-white rounded-full shadow-lg"
+                                title="Undo delete"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* New Images to Add */}
+                  {newImagesToAdd.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-green-600 mb-2">New Images to Add:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {newImagesToAdd.map((image, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`New ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border-2 border-green-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNewImage(index)}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              title="Remove image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            <p className="text-xs text-gray-600 truncate mt-1" title={image.name}>
+                              {image.name}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add More Images Input */}
+                  <div className="relative">
+                    <input
+                      id="edit-images"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      onChange={handleEditImageChange}
+                      className="hidden"
+                      disabled={(existingImages.length + newImagesToAdd.length) >= 5}
+                    />
+                    <label
+                      htmlFor="edit-images"
+                      className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                        (existingImages.length + newImagesToAdd.length) >= 5
+                          ? 'opacity-50 cursor-not-allowed border-gray-300'
+                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm font-medium">
+                        {(existingImages.length + newImagesToAdd.length) >= 5
+                          ? 'Maximum 5 images reached'
+                          : `Add More Images (${existingImages.length + newImagesToAdd.length}/5)`}
+                      </span>
+                    </label>
+                  </div>
+
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
+                  </p>
+                </div>
               </div>
 
               <div className="flex space-x-3 pt-4">

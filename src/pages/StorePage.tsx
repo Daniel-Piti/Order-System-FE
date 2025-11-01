@@ -18,6 +18,11 @@ export default function StorePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Store product images: productId -> array of image URLs
+  const [productImages, setProductImages] = useState<Record<string, string[]>>({});
+  // Store current image index for each product: productId -> currentIndex
+  const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -123,6 +128,9 @@ export default function StorePage() {
         setProducts(paginatedProducts);
         setTotalPages(Math.ceil(sortedProducts.length / pageSize));
         setTotalElements(sortedProducts.length);
+        
+        // Fetch images for products
+        await fetchProductImagesForAll(paginatedProducts);
       } else {
         // Regular store - use paginated endpoint
         const pageResponse = await publicAPI.products.getAllByUserId(
@@ -137,6 +145,9 @@ export default function StorePage() {
         setProducts(pageResponse.content);
         setTotalPages(pageResponse.totalPages);
         setTotalElements(pageResponse.totalElements);
+        
+        // Fetch images for products
+        await fetchProductImagesForAll(pageResponse.content);
       }
     } catch (err: any) {
       console.error('Store error:', err);
@@ -153,6 +164,35 @@ export default function StorePage() {
       setIsLoading(false);
     }
   }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategory]);
+
+  const fetchProductImagesForAll = async (productsList: Product[]) => {
+    if (!userId || productsList.length === 0) return;
+    
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const imagePromises = productsList.map(async (product) => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
+          if (response.ok) {
+            const images: Array<{ id: number; url: string; fileName: string }> = await response.json();
+            return { productId: product.id, imageUrls: images.map(img => img.url) };
+          }
+        } catch (err) {
+          console.error(`Failed to fetch images for product ${product.id}:`, err);
+        }
+        return { productId: product.id, imageUrls: [] };
+      });
+      
+      const results = await Promise.all(imagePromises);
+      const imagesMap: Record<string, string[]> = {};
+      results.forEach(({ productId, imageUrls }) => {
+        imagesMap[productId] = imageUrls;
+      });
+      setProductImages(prev => ({ ...prev, ...imagesMap }));
+    } catch (err) {
+      console.error('Failed to fetch product images:', err);
+    }
+  };
 
   useEffect(() => {
     if (userId) {
@@ -456,17 +496,69 @@ export default function StorePage() {
                   className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col"
                 >
                   {/* Product Image */}
-                  <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0">
-                    {/* Placeholder for future product images */}
-                    {false ? (
-                      <img
-                        src=""
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl opacity-40">
+                  <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
+                    {productImages[product.id] && productImages[product.id].length > 0 ? (
+                      <>
+                        <img
+                          src={productImages[product.id][productImageIndices[product.id] || 0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
+                            if (placeholder) {
+                              (placeholder as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                        {/* Navigation arrows - only show if multiple images */}
+                        {productImages[product.id].length > 1 && (
+                          <>
+                            {/* Left Arrow */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentIndex = productImageIndices[product.id] || 0;
+                                const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
+                                setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                              }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              title="Previous image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            {/* Right Arrow */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentIndex = productImageIndices[product.id] || 0;
+                                const newIndex = (currentIndex + 1) % productImages[product.id].length;
+                                setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                              }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              title="Next image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </>
+                        )}
+                      </>
+                    ) : null}
+                    {(!productImages[product.id] || productImages[product.id].length === 0) && (
+                      <div className="image-placeholder w-full h-full flex items-center justify-center text-4xl opacity-40">
                         📦
+                      </div>
+                    )}
+                    {/* Show image count badge if multiple images */}
+                    {productImages[product.id] && productImages[product.id].length > 1 && (
+                      <div className="absolute bottom-2 left-2">
+                        <span className="px-2 py-1 text-xs font-semibold bg-black/60 text-white rounded-full backdrop-blur-sm">
+                          {(productImageIndices[product.id] || 0) + 1} / {productImages[product.id].length}
+                        </span>
                       </div>
                     )}
                     
