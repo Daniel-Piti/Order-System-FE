@@ -29,7 +29,6 @@ export default function ProductsPage() {
     originalPrice: '',
     specialPrice: '',
     description: '',
-    pictureUrl: '',
   });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -45,7 +44,6 @@ export default function ProductsPage() {
     originalPrice: '',
     specialPrice: '',
     description: '',
-    pictureUrl: '',
   });
   const navigate = useNavigate();
 
@@ -155,7 +153,6 @@ export default function ProductsPage() {
       originalPrice: product.originalPrice.toString(),
       specialPrice: product.specialPrice.toString(),
       description: product.description,
-      pictureUrl: product.pictureUrl || '',
     });
     setIsEditModalOpen(true);
   };
@@ -214,9 +211,6 @@ export default function ProductsPage() {
     if (editFormData.specialPrice && editFormData.originalPrice && Number(editFormData.specialPrice) > Number(editFormData.originalPrice)) {
       errors.specialPrice = 'Special price cannot be greater than original price';
     }
-    if (!editFormData.pictureUrl.trim()) {
-      errors.pictureUrl = 'Picture URL is required';
-    }
 
     setFieldErrors(errors);
     
@@ -242,7 +236,6 @@ export default function ProductsPage() {
           originalPrice: Number(editFormData.originalPrice),
           specialPrice: finalSpecialPrice,
           description: editFormData.description,
-          pictureUrl: editFormData.pictureUrl,
         }),
       });
 
@@ -312,9 +305,6 @@ export default function ProductsPage() {
     if (formData.specialPrice && formData.originalPrice && Number(formData.specialPrice) > Number(formData.originalPrice)) {
       errors.specialPrice = 'Special price cannot be greater than original price';
     }
-    if (!formData.pictureUrl.trim()) {
-      errors.pictureUrl = 'Picture URL is required';
-    }
 
     setFieldErrors(errors);
     
@@ -341,7 +331,6 @@ export default function ProductsPage() {
           originalPrice: Number(formData.originalPrice),
           specialPrice: finalSpecialPrice,
           description: formData.description,
-          pictureUrl: formData.pictureUrl,
         }),
       });
 
@@ -579,9 +568,10 @@ export default function ProductsPage() {
               <div key={product.id} className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Product Image */}
                 <div className="aspect-square bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden">
-                  {product.pictureUrl ? (
+                  {/* Placeholder for future product images */}
+                  {false ? (
                     <img
-                      src={product.pictureUrl}
+                      src=""
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -868,26 +858,6 @@ export default function ProductsPage() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="pictureUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                  Picture URL *
-                </label>
-                <input
-                  id="pictureUrl"
-                  name="pictureUrl"
-                  type="url"
-                  value={formData.pictureUrl}
-                  onChange={handleInputChange}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.pictureUrl ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
-                  placeholder="https://example.com/image.jpg"
-                />
-                {showErrors && fieldErrors.pictureUrl && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.pictureUrl}</p>
-                )}
-              </div>
-
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -1074,26 +1044,6 @@ export default function ProductsPage() {
                   placeholder="Product description (optional)"
                   rows={3}
                 />
-              </div>
-
-              <div>
-                <label htmlFor="edit-pictureUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                  Picture URL *
-                </label>
-                <input
-                  id="edit-pictureUrl"
-                  name="pictureUrl"
-                  type="url"
-                  value={editFormData.pictureUrl}
-                  onChange={handleEditInputChange}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.pictureUrl ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
-                  placeholder="https://example.com/image.jpg"
-                />
-                {showErrors && fieldErrors.pictureUrl && (
-                  <p className="text-red-500 text-xs mt-1">{fieldErrors.pictureUrl}</p>
-                )}
               </div>
 
               <div className="flex space-x-3 pt-4">

@@ -181,7 +181,6 @@ export interface Product {
   originalPrice: number;
   specialPrice: number;
   description: string;
-  pictureUrl: string | null;
 }
 
 export interface PageResponse<T> {
@@ -236,7 +235,6 @@ export interface ProductRequest {
   originalPrice: number;
   specialPrice: number;
   description: string;
-  pictureUrl: string | null;
 }
 
 export const productAPI = {

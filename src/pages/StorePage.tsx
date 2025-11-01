@@ -372,9 +372,10 @@ export default function StorePage() {
                 >
                   {/* Product Image */}
                   <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0">
-                    {product.pictureUrl ? (
+                    {/* Placeholder for future product images */}
+                    {false ? (
                       <img
-                        src={product.pictureUrl}
+                        src=""
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -653,9 +654,10 @@ export default function StorePage() {
                       >
                         <div className="flex items-start space-x-3">
                           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {item.product.pictureUrl ? (
+                            {/* Placeholder for future product images */}
+                            {false ? (
                               <img
-                                src={item.product.pictureUrl}
+                                src=""
                                 alt={item.product.name}
                                 className="w-full h-full object-cover"
                               />
