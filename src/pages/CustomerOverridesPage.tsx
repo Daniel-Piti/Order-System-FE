@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 interface ProductOverride {
-  id: string;
+  id: number;
   productId: string;
   customerId: string;
   overridePrice: number;

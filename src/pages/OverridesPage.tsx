@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { userAPI, publicAPI } from '../services/api';
 
 interface ProductOverride {
-  id: string;
+  id: number;
   productId: string;
   userId: string;
   customerId: string;
@@ -66,14 +67,21 @@ export default function OverridesPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchOverrides();
-    fetchProducts();
-    fetchCustomers();
-  }, [currentPage, pageSize, productFilter, customerFilter]);
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchOverrides();
+      fetchProducts();
+      fetchCustomers();
+    }
+  }, [userId, currentPage, pageSize, productFilter, customerFilter]);
 
   const fetchOverrides = async () => {
     try {
@@ -120,19 +128,23 @@ export default function OverridesPage() {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchUserId = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/products?page=0&size=1000', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data: PageResponse<any> = await response.json();
-        setProducts(data.content.map(p => ({ id: p.id, name: p.name, specialPrice: p.specialPrice })));
+      const user = await userAPI.getCurrentUser();
+      setUserId(user.id);
+    } catch (err: any) {
+      if (err.message?.includes('401')) {
+        navigate('/login');
       }
+    }
+  };
+
+  const fetchProducts = async () => {
+    if (!userId) return;
+    
+    try {
+      const data = await publicAPI.products.getAllByUserId(userId, 0, 1000);
+      setProducts(data.content.map(p => ({ id: p.id, name: p.name, specialPrice: p.specialPrice })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

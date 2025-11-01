@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categoryAPI } from '../services/api';
+import { categoryAPI, userAPI, publicAPI } from '../services/api';
 import type { Category } from '../services/api';
 
 interface Product {
@@ -23,12 +23,19 @@ export default function CategoriesPage() {
   const [pageSize, setPageSize] = useState(1);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    fetchUserId();
   }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchCategories();
+      fetchProducts();
+    }
+  }, [userId]);
 
   // Calculate pagination
   const { paginatedCategories, totalPages } = useMemo(() => {
@@ -68,19 +75,23 @@ export default function CategoriesPage() {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchUserId = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/products?page=0&size=1000', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data.content.map((p: any) => ({ id: p.id, categoryId: p.categoryId })));
+      const user = await userAPI.getCurrentUser();
+      setUserId(user.id);
+    } catch (err: any) {
+      if (err.message?.includes('401')) {
+        navigate('/login');
       }
+    }
+  };
+
+  const fetchProducts = async () => {
+    if (!userId) return;
+    
+    try {
+      const data = await publicAPI.products.getAllByUserId(userId, 0, 1000);
+      setProducts(data.content.map((p: any) => ({ id: p.id, categoryId: p.categoryId })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

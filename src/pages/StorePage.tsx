@@ -275,7 +275,6 @@ export default function StorePage() {
                 className="glass-select px-4 py-3 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer min-w-[140px]"
               >
                 <option value="">All</option>
-                <option value="none">None</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.category}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productAPI, categoryAPI } from '../services/api';
+import { categoryAPI, userAPI, publicAPI } from '../services/api';
 import type { Product, Category } from '../services/api';
 
 export default function ProductsPage() {
@@ -45,19 +45,40 @@ export default function ProductsPage() {
     specialPrice: '',
     description: '',
   });
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts(currentPage);
-    fetchCategories();
-  }, [currentPage, sortBy, sortDirection, pageSize, categoryFilter]);
+    fetchUserId();
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchProducts(currentPage);
+      fetchCategories();
+    }
+  }, [userId, currentPage, sortBy, sortDirection, pageSize, categoryFilter]);
+
+  const fetchUserId = async () => {
+    try {
+      const user = await userAPI.getCurrentUser();
+      setUserId(user.id);
+    } catch (err: any) {
+      if (err.message?.includes('401')) {
+        navigate('/login');
+      }
+    }
+  };
 
   const fetchProducts = async (page: number = 0) => {
+    if (!userId) return;
+    
     try {
       setIsLoading(true);
       setError('');
 
-      const pageResponse = await productAPI.getAllProducts(
+      const pageResponse = await publicAPI.products.getAllByUserId(
+        userId,
         page, 
         pageSize, 
         sortBy, 
@@ -138,7 +159,6 @@ export default function ProductsPage() {
       originalPrice: '',
       specialPrice: '',
       description: '',
-      pictureUrl: '',
     });
     setFormError('');
     setFieldErrors({});
@@ -166,7 +186,6 @@ export default function ProductsPage() {
       originalPrice: '',
       specialPrice: '',
       description: '',
-      pictureUrl: '',
     });
     setFormError('');
     setFieldErrors({});
@@ -429,7 +448,6 @@ export default function ProductsPage() {
                     className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
                   >
                     <option value="">All</option>
-                    <option value="NONE">None</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.category}

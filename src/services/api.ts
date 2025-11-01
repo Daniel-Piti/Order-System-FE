@@ -238,14 +238,6 @@ export interface ProductRequest {
 }
 
 export const productAPI = {
-  getAllProducts: async (page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'ASC', categoryId?: number): Promise<PageResponse<Product>> => {
-    const params: any = { page, size, sortBy, sortDirection };
-    if (categoryId) {
-      params.categoryId = categoryId;
-    }
-    const response = await api.get<PageResponse<Product>>('/products', { params });
-    return response.data;
-  },
 
   createProduct: async (data: ProductRequest): Promise<string> => {
     const response = await api.post<string>('/products', data);
