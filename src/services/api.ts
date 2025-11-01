@@ -372,9 +372,11 @@ export const publicAPI = {
       return response.data;
     },
 
-    // Get products for a specific order (with overrides applied)
+    // Get all products for a specific order (with overrides applied) - no pagination, no category filter
     getAllByOrderId: async (orderId: string): Promise<Product[]> => {
-      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/order/${orderId}`);
+      const response = await axios.get<Product[]>(
+        `${API_BASE_URL}/public/products/order/${orderId}`
+      );
       return response.data;
     },
   },

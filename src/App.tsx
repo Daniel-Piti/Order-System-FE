@@ -21,7 +21,8 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         
-        {/* Public Store Route */}
+        {/* Public Store Routes - more specific route first */}
+        <Route path="/store/order/:orderId" element={<StorePage />} />
         <Route path="/store/:userId" element={<StorePage />} />
         
         <Route 

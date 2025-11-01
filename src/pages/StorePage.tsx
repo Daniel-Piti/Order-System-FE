@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { publicAPI } from '../services/api';
 import type { Product, Category } from '../services/api';
@@ -9,9 +9,10 @@ interface CartItem {
 }
 
 export default function StorePage() {
-  const { userId } = useParams<{ userId: string }>();
+  const { userId: userIdParam, orderId } = useParams<{ userId?: string; orderId?: string }>();
   const navigate = useNavigate();
   
+  const [userId, setUserId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,28 +39,105 @@ export default function StorePage() {
   // Track which products just got added (for success animation)
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
 
+  // Fetch userId from order if orderId is provided, otherwise use userIdParam
   useEffect(() => {
-    if (userId) {
-      fetchProducts();
-      fetchCategories();
-    }
-  }, [userId, currentPage, pageSize, sortBy, sortDirection, selectedCategory]);
+    const fetchUserId = async () => {
+      setError('');
+      
+      if (userIdParam) {
+        setUserId(userIdParam);
+        // Don't set loading to false here - fetchProducts will handle loading state
+      } else if (orderId) {
+        try {
+          setIsLoading(true);
+          const order = await publicAPI.orders.getById(orderId);
+          setUserId(order.userId);
+          // Don't set loading to false here - fetchProducts will handle loading state
+        } catch (err: any) {
+          console.error('Error fetching order:', err);
+          setError('Failed to load order');
+          setIsLoading(false);
+        }
+      } else {
+        // No userId or orderId in URL - invalid route
+        setError('Invalid store URL');
+        setIsLoading(false);
+      }
+    };
+    fetchUserId();
+  }, [userIdParam, orderId]);
 
-  const fetchProducts = async () => {
+  const fetchCategories = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const data = await publicAPI.categories.getAllByUserId(userId);
+      setCategories(data);
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    }
+  }, [userId]);
+
+  const fetchProducts = useCallback(async () => {
+    if (!userId) return;
+    
     try {
       setIsLoading(true);
       setError('');
-      const pageResponse = await publicAPI.products.getAllByUserId(
-        userId!,
-        currentPage,
-        pageSize,
-        sortBy,
-        sortDirection,
-        selectedCategory ? Number(selectedCategory) : undefined
-      );
-      setProducts(pageResponse.content);
-      setTotalPages(pageResponse.totalPages);
-      setTotalElements(pageResponse.totalElements);
+      
+      // If orderId exists, use order-specific endpoint (with price overrides) - returns all products
+      // Otherwise use regular store endpoint with pagination
+      if (orderId) {
+        const allProducts = await publicAPI.products.getAllByOrderId(orderId);
+        
+        // Filter by category client-side if selected
+        let filteredProducts = allProducts;
+        if (selectedCategory) {
+          filteredProducts = allProducts.filter(p => p.categoryId === Number(selectedCategory));
+        }
+        
+        // Sort client-side
+        let sortedProducts = [...filteredProducts];
+        if (sortBy === 'name') {
+          sortedProducts.sort((a, b) => {
+            const comparison = a.name.localeCompare(b.name);
+            return sortDirection === 'ASC' ? comparison : -comparison;
+          });
+        } else if (sortBy === 'specialPrice') {
+          sortedProducts.sort((a, b) => {
+            const comparison = a.specialPrice - b.specialPrice;
+            return sortDirection === 'ASC' ? comparison : -comparison;
+          });
+        } else if (sortBy === 'originalPrice') {
+          sortedProducts.sort((a, b) => {
+            const comparison = a.originalPrice - b.originalPrice;
+            return sortDirection === 'ASC' ? comparison : -comparison;
+          });
+        }
+        
+        // Paginate client-side
+        const startIndex = currentPage * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+        
+        setProducts(paginatedProducts);
+        setTotalPages(Math.ceil(sortedProducts.length / pageSize));
+        setTotalElements(sortedProducts.length);
+      } else {
+        // Regular store - use paginated endpoint
+        const pageResponse = await publicAPI.products.getAllByUserId(
+          userId,
+          currentPage,
+          pageSize,
+          sortBy,
+          sortDirection,
+          selectedCategory ? Number(selectedCategory) : undefined
+        );
+        
+        setProducts(pageResponse.content);
+        setTotalPages(pageResponse.totalPages);
+        setTotalElements(pageResponse.totalElements);
+      }
     } catch (err: any) {
       console.error('Store error:', err);
       
@@ -74,16 +152,14 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategory]);
 
-  const fetchCategories = async () => {
-    try {
-      const data = await publicAPI.categories.getAllByUserId(userId!);
-      setCategories(data);
-    } catch (err) {
-      console.error('Failed to fetch categories:', err);
+  useEffect(() => {
+    if (userId) {
+      fetchProducts();
+      fetchCategories();
     }
-  };
+  }, [userId, fetchProducts, fetchCategories]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -263,6 +339,16 @@ export default function StorePage() {
               )}
             </button>
           </div>
+
+          {/* Order Context Banner */}
+          {orderId && (
+            <div className="mt-4 mb-2 p-3 bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-300 rounded-xl">
+              <p className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                <span>🎯</span>
+                Viewing products for this order - Prices shown are customer-specific
+              </p>
+            </div>
+          )}
 
           {/* Filters and Controls Bar */}
           <div className="mt-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
