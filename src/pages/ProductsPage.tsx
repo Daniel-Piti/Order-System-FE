@@ -62,7 +62,7 @@ export default function ProductsPage() {
         pageSize, 
         sortBy, 
         sortDirection, 
-        categoryFilter || undefined
+        categoryFilter ? Number(categoryFilter) : undefined
       );
       setProducts(pageResponse.content);
       setTotalPages(pageResponse.totalPages);
@@ -149,7 +149,7 @@ export default function ProductsPage() {
     setProductToEdit(product);
     setEditFormData({
       name: product.name,
-      categoryId: product.categoryId || '',
+      categoryId: product.categoryId?.toString() || '',
       originalPrice: product.originalPrice.toString(),
       specialPrice: product.specialPrice.toString(),
       description: product.description,
@@ -232,7 +232,7 @@ export default function ProductsPage() {
         },
         body: JSON.stringify({
           name: editFormData.name,
-          categoryId: editFormData.categoryId || null,
+          categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
           originalPrice: Number(editFormData.originalPrice),
           specialPrice: finalSpecialPrice,
           description: editFormData.description,
@@ -327,7 +327,7 @@ export default function ProductsPage() {
         },
         body: JSON.stringify({
           name: formData.name,
-          categoryId: formData.categoryId || null,
+          categoryId: formData.categoryId ? Number(formData.categoryId) : null,
           originalPrice: Number(formData.originalPrice),
           specialPrice: finalSpecialPrice,
           description: formData.description,

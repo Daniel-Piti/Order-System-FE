@@ -168,7 +168,7 @@ export const locationAPI = {
 };
 
 export interface Category {
-  id: string;
+  id: number;
   userId: string;
   category: string;
 }
@@ -177,7 +177,7 @@ export interface Product {
   id: string;
   userId: string;
   name: string;
-  categoryId: string | null;
+  categoryId: number | null;
   originalPrice: number;
   specialPrice: number;
   description: string;
@@ -216,14 +216,14 @@ export const categoryAPI = {
     return response.data;
   },
 
-  updateCategory: async (categoryId: string, categoryName: string): Promise<string> => {
+  updateCategory: async (categoryId: number, categoryName: string): Promise<string> => {
     const response = await api.put<string>(`/categories/${categoryId}`, {
       category: categoryName,
     });
     return response.data;
   },
 
-  deleteCategory: async (categoryId: string): Promise<string> => {
+  deleteCategory: async (categoryId: number): Promise<string> => {
     const response = await api.delete<string>(`/categories/${categoryId}`);
     return response.data;
   },
@@ -231,14 +231,14 @@ export const categoryAPI = {
 
 export interface ProductRequest {
   name: string;
-  categoryId: string | null;
+  categoryId: number | null;
   originalPrice: number;
   specialPrice: number;
   description: string;
 }
 
 export const productAPI = {
-  getAllProducts: async (page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'ASC', categoryId?: string): Promise<PageResponse<Product>> => {
+  getAllProducts: async (page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'ASC', categoryId?: number): Promise<PageResponse<Product>> => {
     const params: any = { page, size, sortBy, sortDirection };
     if (categoryId) {
       params.categoryId = categoryId;
@@ -364,7 +364,7 @@ export const publicAPI = {
       size: number = 20,
       sortBy: string = 'name',
       sortDirection: string = 'ASC',
-      categoryId?: string
+      categoryId?: number
     ): Promise<PageResponse<Product>> => {
       const params: any = { page, size, sortBy, sortDirection };
       if (categoryId) {
@@ -395,7 +395,7 @@ export const publicAPI = {
     },
 
     // Get single category by userId and categoryId
-    getByUserIdAndCategoryId: async (userId: string, categoryId: string): Promise<Category> => {
+    getByUserIdAndCategoryId: async (userId: string, categoryId: number): Promise<Category> => {
       const response = await axios.get<Category>(`${API_BASE_URL}/public/categories/user/${userId}/category/${categoryId}`);
       return response.data;
     },

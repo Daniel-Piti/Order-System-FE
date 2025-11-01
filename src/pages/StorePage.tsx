@@ -55,7 +55,7 @@ export default function StorePage() {
         pageSize,
         sortBy,
         sortDirection,
-        selectedCategory || undefined
+        selectedCategory ? Number(selectedCategory) : undefined
       );
       setProducts(pageResponse.content);
       setTotalPages(pageResponse.totalPages);

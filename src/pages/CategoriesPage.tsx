@@ -5,7 +5,7 @@ import type { Category } from '../services/api';
 
 interface Product {
   id: string;
-  categoryId: string | null;
+  categoryId: number | null;
 }
 
 export default function CategoriesPage() {
@@ -41,7 +41,7 @@ export default function CategoriesPage() {
 
   // Count products per category
   const productCountByCategory = useMemo(() => {
-    const countMap = new Map<string, number>();
+    const countMap = new Map<number, number>();
     products.forEach(product => {
       if (product.categoryId) {
         countMap.set(product.categoryId, (countMap.get(product.categoryId) || 0) + 1);
