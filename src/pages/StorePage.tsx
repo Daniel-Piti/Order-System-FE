@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { publicAPI } from '../services/api';
-import type { Product, Category } from '../services/api';
+import type { Product, Category, OrderPublic } from '../services/api';
 
 interface CartItem {
   product: Product;
@@ -13,6 +13,7 @@ export default function StorePage() {
   const navigate = useNavigate();
   
   const [userId, setUserId] = useState<string | null>(null);
+  const [order, setOrder] = useState<OrderPublic | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +56,9 @@ export default function StorePage() {
       } else if (orderId) {
         try {
           setIsLoading(true);
-          const order = await publicAPI.orders.getById(orderId);
-          setUserId(order.userId);
+          const fetchedOrder = await publicAPI.orders.getById(orderId);
+          setOrder(fetchedOrder);
+          setUserId(fetchedOrder.userId);
           // Don't set loading to false here - fetchProducts will handle loading state
         } catch (err: any) {
           console.error('Error fetching order:', err);
@@ -302,6 +304,68 @@ export default function StorePage() {
     }
     return true;
   });
+
+  // Check if order status is EXPIRED, CANCELLED, DONE, or PLACED (only if we have an orderId in the URL)
+  const isLinkExpired = orderId && order && order.status === 'EXPIRED';
+  const isLinkCancelled = orderId && order && order.status === 'CANCELLED';
+  const isOrderDone = orderId && order && order.status === 'DONE';
+  const isOrderPlaced = orderId && order && order.status === 'PLACED';
+
+  if (isLinkExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+        <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
+          <div className="text-6xl mb-6">⏰</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Link Expired</h1>
+          <p className="text-lg text-gray-600">
+            This order link has expired. Please contact the seller for a new link or check your order status.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLinkCancelled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+        <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
+          <div className="text-6xl mb-6">🚫</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Cancelled</h1>
+          <p className="text-lg text-gray-600">
+            This order has been cancelled. Please contact the seller if you have any questions or need assistance.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isOrderDone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+        <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
+          <div className="text-6xl mb-6">✅</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Already Done</h1>
+          <p className="text-lg text-gray-600">
+            This order has already been completed.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isOrderPlaced) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+        <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
+          <div className="text-6xl mb-6">📋</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Already Placed</h1>
+          <p className="text-lg text-gray-600">
+            This order has already been placed.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -793,16 +857,19 @@ export default function StorePage() {
       </main>
 
       {/* Shopping Cart Sidebar */}
-      {isCartOpen && (
-        <>
-          {/* Overlay */}
+      <>
+        {/* Overlay */}
+        {isCartOpen && (
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
             onClick={() => setIsCartOpen(false)}
           ></div>
+        )}
 
-          {/* Cart Sidebar */}
-          <div className="fixed right-0 top-0 h-full w-full sm:w-96 glass-card border-l-2 border-white/40 z-50 shadow-2xl overflow-y-auto">
+        {/* Cart Sidebar */}
+        <div className={`fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl overflow-y-auto transform transition-transform duration-300 ease-out ${
+          isCartOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
             <div className="p-6">
               {/* Cart Header */}
               <div className="flex items-center justify-between mb-6">
@@ -909,8 +976,7 @@ export default function StorePage() {
               )}
             </div>
           </div>
-        </>
-      )}
+      </>
     </div>
   );
 }

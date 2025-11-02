@@ -315,6 +315,13 @@ export interface Order {
   updatedAt: string;
 }
 
+// Minimal public order DTO (for order links)
+export interface OrderPublic {
+  userId: string;
+  status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
+  customerId: string | null;
+}
+
 export interface CreateEmptyOrderRequest {
   customerId?: string | null;
 }
@@ -396,9 +403,9 @@ export const publicAPI = {
   },
 
   orders: {
-    // Get order details (for customer viewing via link)
-    getById: async (orderId: string): Promise<Order> => {
-      const response = await axios.get<Order>(`${API_BASE_URL}/public/orders/${orderId}`);
+    // Get minimal order info (for customer viewing via link)
+    getById: async (orderId: string): Promise<OrderPublic> => {
+      const response = await axios.get<OrderPublic>(`${API_BASE_URL}/public/orders/${orderId}`);
       return response.data;
     },
   },
