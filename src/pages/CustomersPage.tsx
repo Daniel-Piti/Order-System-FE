@@ -370,107 +370,42 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Pagination Controls */}
+      {/* Controls Bar */}
       {customers.length > 0 && (
         <div className="glass-card rounded-3xl p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Left side: Page Size and Sort */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {/* Page Size */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Show:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
-                >
-                  <option value={2}>2</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-              </div>
-
-              {/* Sort By Name */}
-              <button
-                onClick={toggleSortDirection}
-                className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2"
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Page Size */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Show:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
               >
-                <span>Sort by Name</span>
-                {sortDirection === 'ASC' ? (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                )}
-              </button>
+                <option value={2}>2</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
             </div>
 
-            {/* Right side: Page Navigation */}
-            <div className="flex items-center gap-1">
-                {/* Previous button */}
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 0}
-                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                {/* Page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                  // Show first page, last page, current page, and pages around current
-                  const showPage =
-                    page === 0 ||
-                    page === totalPages - 1 ||
-                    Math.abs(page - currentPage) <= 1;
-
-                  const showEllipsis =
-                    (page === 1 && currentPage > 3) ||
-                    (page === totalPages - 2 && currentPage < totalPages - 4);
-
-                  if (!showPage && !showEllipsis) return null;
-
-                  if (showEllipsis) {
-                    return (
-                      <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                        ...
-                      </span>
-                    );
-                  }
-
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                        currentPage === page
-                          ? 'bg-indigo-600 text-white shadow-md'
-                          : 'glass-button text-gray-800 hover:shadow-md'
-                      }`}
-                    >
-                      {page + 1}
-                    </button>
-                  );
-                })}
-
-                {/* Next button */}
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+            {/* Sort By Name */}
+            <button
+              onClick={toggleSortDirection}
+              className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center space-x-2"
+            >
+              <span>Sort by Name</span>
+              {sortDirection === 'ASC' ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       )}
 
@@ -613,6 +548,87 @@ export default function CustomersPage() {
                             </div>
                           );
                         })}
+        </div>
+      )}
+
+      {/* Pagination Controls - Bottom */}
+      {customers.length > 0 && totalPages > 0 && (
+        <div className="glass-card rounded-3xl p-6 mt-4">
+          <div className="flex flex-col items-center gap-4">
+            {/* Page Navigation */}
+            <div className="flex items-center justify-center gap-1 flex-wrap">
+              {/* Previous button */}
+              {totalPages > 1 && (
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Page numbers */}
+              {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                const showPage =
+                  page === 0 ||
+                  page === totalPages - 1 ||
+                  Math.abs(page - currentPage) <= 1;
+
+                const showEllipsis =
+                  (page === 1 && currentPage > 3) ||
+                  (page === totalPages - 2 && currentPage < totalPages - 4);
+
+                if (!showPage && !showEllipsis) return null;
+
+                if (showEllipsis) {
+                  return (
+                    <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                      ...
+                    </span>
+                  );
+                }
+
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    {page + 1}
+                  </button>
+                );
+              })}
+
+              {/* Next button */}
+              {totalPages > 1 && (
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Page Info */}
+            <div className="text-sm text-gray-600 font-medium text-center">
+              Showing <span className="font-semibold text-gray-800">{currentPage * pageSize + 1}</span> to{' '}
+              <span className="font-semibold text-gray-800">
+                {Math.min((currentPage + 1) * pageSize, customers.length)}
+              </span>{' '}
+              of <span className="font-semibold text-gray-800">{customers.length}</span> customers
+            </div>
+          </div>
         </div>
       )}
 

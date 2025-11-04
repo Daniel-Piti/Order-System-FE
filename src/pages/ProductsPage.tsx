@@ -960,26 +960,27 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Page Navigation */}
-      {!isLoading && products.length > 0 && (
+      {/* Pagination Controls - Bottom */}
+      {!isLoading && products.length > 0 && totalPages > 0 && (
         <div className="glass-card rounded-3xl p-6 mt-4">
-          <div className="flex items-center justify-center">
-            {/* Page numbers */}
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-col items-center gap-4">
+            {/* Page Navigation */}
+            <div className="flex items-center justify-center gap-1 flex-wrap">
               {/* Previous button */}
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 0}
-                className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+              {totalPages > 1 && (
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
 
               {/* Page numbers */}
               {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                // Show first page, last page, current page, and pages around current
                 const showPage =
                   page === 0 ||
                   page === totalPages - 1 ||
@@ -1015,15 +1016,26 @@ export default function ProductsPage() {
               })}
 
               {/* Next button */}
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages - 1}
-                className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              {totalPages > 1 && (
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages - 1}
+                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Page Info */}
+            <div className="text-sm text-gray-600 font-medium text-center">
+              Showing <span className="font-semibold text-gray-800">{currentPage * pageSize + 1}</span> to{' '}
+              <span className="font-semibold text-gray-800">
+                {Math.min((currentPage + 1) * pageSize, totalElements)}
+              </span>{' '}
+              of <span className="font-semibold text-gray-800">{totalElements}</span> products
             </div>
           </div>
         </div>

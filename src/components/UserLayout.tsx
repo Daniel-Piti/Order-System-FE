@@ -70,7 +70,7 @@ export default function UserLayout() {
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
                     isActive
                       ? 'backdrop-blur-2xl bg-indigo-400/30 text-indigo-800 font-semibold border border-indigo-300/60 shadow-2xl shadow-indigo-400/40 ring-2 ring-indigo-200/30'
                       : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
@@ -86,7 +86,7 @@ export default function UserLayout() {
           <div className="absolute bottom-6 left-6 right-6">
             <button
               onClick={handleLogout}
-              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200"
+              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
