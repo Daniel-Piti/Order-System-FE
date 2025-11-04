@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { publicAPI } from '../services/api';
 import type { Product, Category, OrderPublic } from '../services/api';
+import CheckoutFlow from '../components/CheckoutFlow';
 
 interface CartItem {
   product: Product;
@@ -36,6 +37,7 @@ export default function StorePage() {
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -422,7 +424,7 @@ export default function StorePage() {
             <div className="flex items-center space-x-4">
               <div className="text-4xl">🛍️</div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold text-purple-600">
                   Our Store
                 </h1>
                 <p className="text-sm text-gray-600">Browse our products</p>
@@ -437,7 +439,7 @@ export default function StorePage() {
               <span className="text-2xl">🛒</span>
               <span>Cart</span>
               {getTotalItems() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg">
+                          <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg">
                   {getTotalItems()}
                 </span>
               )}
@@ -635,7 +637,7 @@ export default function StorePage() {
 
                     {/* In Cart Badge */}
                     {inCart && (
-                      <div className="absolute top-2 right-2 backdrop-blur-xl bg-green-500/90 px-2 py-0.5 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
+                      <div className="absolute top-2 right-2 backdrop-blur-xl bg-green-600/90 px-2 py-0.5 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
                         <span>✓</span>
                         <span>{cartItem!.quantity}</span>
                       </div>
@@ -654,23 +656,23 @@ export default function StorePage() {
                       {product.description || ''}
                     </p>
 
-                    {/* Price */}
-                    <div className="mb-2">
-                      {product.originalPrice !== product.specialPrice ? (
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            ${product.specialPrice.toFixed(2)}
-                          </span>
-                          <span className="text-xs text-gray-400 line-through">
-                            ${product.originalPrice.toFixed(2)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xl font-bold text-gray-900">
-                          ${product.specialPrice.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
+                                {/* Price */}
+                                <div className="mb-2">
+                                  {product.originalPrice !== product.specialPrice ? (
+                                    <div className="flex items-baseline gap-1.5">
+                                      <span className="text-xl font-bold text-purple-600">
+                                        ${product.specialPrice.toFixed(2)}
+                                      </span>
+                                      <span className="text-xs text-gray-400 line-through">
+                                        ${product.originalPrice.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-xl font-bold text-purple-600">
+                                      ${product.specialPrice.toFixed(2)}
+                                    </span>
+                                  )}
+                                </div>
 
                     {/* Quantity and Add to Cart */}
                     <div className="flex items-center gap-1.5 mt-auto">
@@ -703,14 +705,14 @@ export default function StorePage() {
                       <button
                         onClick={() => !showSuccess && addToCart(product, getPendingQuantity(product.id))}
                         disabled={showSuccess}
-                        className="flex-1 font-semibold py-1.5 px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-xl hover:scale-105 transition-transform duration-200 text-sm"
+                        className="flex-1 font-semibold py-1.5 px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-purple-600 text-white hover:bg-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-200 text-sm"
                       >
                         {/* Purple background (always there) */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-purple-600 transition-opacity duration-500"></div>
                         
                         {/* Green success overlay */}
                         <div 
-                          className={`absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 transition-opacity duration-500 ${
+                          className={`absolute inset-0 bg-green-600 transition-opacity duration-500 ${
                             showSuccess ? 'opacity-100' : 'opacity-0'
                           }`}
                         ></div>
@@ -867,97 +869,117 @@ export default function StorePage() {
         )}
 
         {/* Cart Sidebar */}
-        <div className={`fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl overflow-y-auto transform transition-transform duration-300 ease-out ${
+        <div className={`fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
           isCartOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
-            <div className="p-6">
-              {/* Cart Header */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Your Cart</h2>
-                <button
-                  onClick={() => setIsCartOpen(false)}
-                  className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
-                >
-                  ×
-                </button>
+            <div className="flex flex-col h-full">
+              {/* Cart Header - Fixed */}
+              <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-800">Your Cart</h2>
+                  <button
+                    onClick={() => setIsCartOpen(false)}
+                    className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
 
-              {/* Cart Items */}
-              {cart.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🛒</div>
-                  <p className="text-gray-600">Your cart is empty</p>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-4 mb-6">
+              {/* Cart Items - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {cart.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🛒</div>
+                    <p className="text-gray-600">Your cart is empty</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
                     {cart.map((item) => (
                       <div
                         key={item.product.id}
-                        className="glass-button rounded-2xl p-4"
+                        className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-gray-300/60 hover:shadow-md transition-all"
                       >
-                        <div className="flex items-start space-x-3">
-                          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {/* Placeholder for future product images */}
-                            {false ? (
+                        <div className="flex items-center gap-4">
+                          {/* Product Image */}
+                          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                            {productImages[item.product.id] && productImages[item.product.id].length > 0 ? (
                               <img
-                                src=""
+                                src={productImages[item.product.id][0]}
                                 alt={item.product.name}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                  const placeholder = (e.target as HTMLImageElement).parentElement;
+                                  if (placeholder) {
+                                    placeholder.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📦</div>';
+                                  }
+                                }}
                               />
                             ) : (
-                              <span className="text-2xl">📦</span>
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📦</div>
                             )}
                           </div>
+                          
+                          {/* Product Info */}
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-800 truncate">
-                              {item.product.name}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              ${item.product.specialPrice.toFixed(2)} × {item.quantity}
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900 text-base leading-tight">
+                                {item.product.name}
+                              </h4>
+                              <button
+                                onClick={() => removeFromCart(item.product.id)}
+                                className="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center flex-shrink-0 transition-colors ml-2"
+                                title="Remove"
+                              >
+                                <span className="text-white text-xs font-bold leading-none">×</span>
+                              </button>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-2">
+                              ${item.product.specialPrice.toFixed(2)} each
                             </p>
-                            <p className="text-lg font-bold text-purple-600 mt-1">
-                              ${(item.product.specialPrice * item.quantity).toFixed(2)}
-                            </p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                  className="w-7 h-7 rounded-md border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
+                                >
+                                  −
+                                </button>
+                                <span className="font-semibold text-gray-900 w-8 text-center">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                  className="w-7 h-7 rounded-md border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <p className="text-lg font-bold text-purple-600">
+                                ${(item.product.specialPrice * item.quantity).toFixed(2)}
+                              </p>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => removeFromCart(item.product.id)}
-                            className="text-red-500 hover:text-red-700 text-xl font-bold"
-                          >
-                            ×
-                          </button>
-                        </div>
-
-                        {/* Quantity Controls */}
-                        <div className="flex items-center justify-center space-x-3 mt-3">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="w-8 h-8 rounded-lg bg-white/50 hover:bg-white/80 flex items-center justify-center font-bold transition-colors"
-                          >
-                            −
-                          </button>
-                          <span className="font-bold text-lg w-12 text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="w-8 h-8 rounded-lg bg-white/50 hover:bg-white/80 flex items-center justify-center font-bold transition-colors"
-                          >
-                            +
-                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
 
+              {/* Total & Checkout - Sticky Bottom */}
+              {cart.length > 0 && (
+                <div className="border-t-2 border-gray-200/50 bg-white/95 backdrop-blur-xl p-6 flex-shrink-0">
                   {/* Total */}
-                  <div className="glass-card rounded-2xl p-6 mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600">Items</span>
-                      <span className="font-semibold">{getTotalItems()}</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-3 border-t-2 border-white/40">
-                      <span className="text-xl font-bold text-gray-800">Total</span>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                        ${getTotalPrice().toFixed(2)}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 mb-4 border-2 border-purple-400/60 shadow-md">
+                    <div className="flex items-center">
+                      <span className="text-base font-semibold text-gray-800">
+                        Total: <span className="text-2xl font-bold text-purple-600">${getTotalPrice().toFixed(2)}</span>
+                      </span>
+                      <div className="flex-1 flex justify-center">
+                        <div className="w-px h-6 bg-purple-300/40"></div>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        Items: <span className="font-bold">{getTotalItems()}</span>
                       </span>
                     </div>
                   </div>
@@ -965,18 +987,36 @@ export default function StorePage() {
                   {/* Checkout Button */}
                   <button
                     onClick={() => {
-                      alert('Checkout functionality coming soon! 🚀');
-                      // TODO: Implement checkout
+                      if (!orderId) {
+                        alert('Please use an order link to place an order');
+                        return;
+                      }
+                      setIsCheckoutOpen(true);
+                      setIsCartOpen(false);
                     }}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-200"
+                    className="w-full bg-purple-600 text-white font-bold py-4 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 shadow-lg"
                   >
                     Proceed to Checkout
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
       </>
+
+      {/* Checkout Flow */}
+      {isCheckoutOpen && orderId && (
+        <CheckoutFlow
+          orderId={orderId}
+          userId={userId || ''}
+          cart={cart}
+          onClose={() => setIsCheckoutOpen(false)}
+          onSuccess={() => {
+            setCart([]);
+            // Keep checkout open to show success screen - no redirect
+          }}
+        />
+      )}
     </div>
   );
 }

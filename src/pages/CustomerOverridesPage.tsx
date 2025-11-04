@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { publicAPI } from '../services/api';
 
 interface ProductOverride {
   id: number;
@@ -17,9 +18,12 @@ interface Product {
 
 interface Customer {
   id: string;
+  userId: string;
   name: string;
   phoneNumber: string;
   email: string;
+  streetAddress: string;
+  city: string;
 }
 
 interface PageResponse<T> {
@@ -81,7 +85,6 @@ export default function CustomerOverridesPage() {
   useEffect(() => {
     if (customerId) {
       fetchCustomer();
-      fetchProducts();
       fetchOverrides();
     }
   }, [customerId, currentPage, pageSize]);
@@ -131,22 +134,22 @@ export default function CustomerOverridesPage() {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
+    if (!customer?.userId) return;
+    
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/products?size=1000', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
+      const data = await publicAPI.products.getAllByUserId(customer.userId, 0, 1000);
       setProducts(data.content || []);
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }
-  };
+  }, [customer?.userId]);
+
+  useEffect(() => {
+    if (customer?.userId) {
+      fetchProducts();
+    }
+  }, [customer?.userId, fetchProducts]);
 
   const productMap = useMemo(() => {
     const map = new Map<string, Product>();

@@ -408,8 +408,34 @@ export const publicAPI = {
       const response = await axios.get<OrderPublic>(`${API_BASE_URL}/public/orders/${orderId}`);
       return response.data;
     },
+
+    // Place an order
+    placeOrder: async (orderId: string, request: PlaceOrderRequest): Promise<string> => {
+      const response = await axios.put<string>(`${API_BASE_URL}/public/orders/${orderId}/place`, request);
+      return response.data;
+    },
+  },
+
+  locations: {
+    // Get all locations for a user (seller)
+    getAllByUserId: async (userId: string): Promise<Location[]> => {
+      const response = await axios.get<Location[]>(`${API_BASE_URL}/public/locations/user/${userId}`);
+      return response.data;
+    },
   },
 };
+
+export interface PlaceOrderRequest {
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  customerStreetAddress: string;
+  customerCity: string;
+  pickupLocationId: number;
+  products: ProductDataForOrder[];
+  deliveryDate?: string | null;
+  notes?: string;
+}
 
 export default api;
 
