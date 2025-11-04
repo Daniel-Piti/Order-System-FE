@@ -165,7 +165,9 @@ export default function CustomerOverridesPage() {
   };
 
   const formatPrice = (price: number) => {
-    return `₪${price.toFixed(2)}`;
+    // Format number with thousand separators and 2 decimal places
+    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return `₪${formattedNumber}`;
   };
 
   const handlePageSizeChange = (newSize: number) => {
@@ -920,18 +922,21 @@ export default function CustomerOverridesPage() {
                 <label htmlFor="override-price" className="block text-sm font-medium text-gray-700 mb-2">
                   Override Price *
                 </label>
-                <input
-                  id="override-price"
-                  name="overridePrice"
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={editOverridePrice}
-                  onChange={(e) => setEditOverridePrice(e.target.value)}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., 29.99"
-                  autoFocus
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <input
+                    id="override-price"
+                    name="overridePrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    value={editOverridePrice}
+                    onChange={(e) => setEditOverridePrice(e.target.value)}
+                    className="glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g., 29.99"
+                    autoFocus
+                  />
+                </div>
               </div>
 
               <div className="flex space-x-3 pt-4">

@@ -335,7 +335,7 @@ export default function OrdersPage() {
               {/* Total Price - Prominent */}
               <div className="mb-2">
                 <p className="text-xs text-gray-500 mb-0.5">Total</p>
-                <p className="text-xl font-bold text-indigo-600">${order.totalPrice.toFixed(2)}</p>
+                <p className="text-xl font-bold text-indigo-600">₪{order.totalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</p>
               </div>
 
               {/* Created Date - Subtle */}
@@ -773,9 +773,9 @@ export default function OrdersPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-gray-800">
-                            ${(product.pricePerUnit * product.quantity).toFixed(2)}
+                            ₪{(product.pricePerUnit * product.quantity).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                           </p>
-                          <p className="text-xs text-gray-600">${product.pricePerUnit.toFixed(2)} each</p>
+                          <p className="text-xs text-gray-600">₪{product.pricePerUnit.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} each</p>
                         </div>
                       </div>
                     ))}
@@ -806,7 +806,7 @@ export default function OrdersPage() {
                 )}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
                   <span className="text-base font-semibold text-gray-800">Total Price</span>
-                  <span className="text-lg font-bold text-indigo-600">${viewingOrder.totalPrice.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-indigo-600">₪{viewingOrder.totalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                 </div>
               </div>
             </div>

@@ -186,10 +186,9 @@ export default function OverridesPage() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    // Format number with thousand separators and 2 decimal places
+    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return `₪${formattedNumber}`;
   };
 
   const handleProductFilterChange = (productId: string) => {
@@ -755,7 +754,7 @@ export default function OverridesPage() {
                   Override Price *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                  <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                   <input
                     id="overridePrice"
                     name="overridePrice"
@@ -841,7 +840,7 @@ export default function OverridesPage() {
                   Override Price *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                  <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                   <input
                     id="edit-overridePrice"
                     name="overridePrice"

@@ -457,14 +457,14 @@ export default function StorePage() {
           )}
 
           {/* Filters and Controls Bar */}
-          <div className="mt-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="mt-4 flex flex-wrap gap-2 sm:gap-3 items-center">
             {/* Category */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Category:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Category:</span>
               <select
                 value={selectedCategory}
                 onChange={(e) => handleCategoryFilterChange(e.target.value)}
-                className="glass-select px-4 py-3 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer min-w-[140px]"
+                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer min-w-[100px] sm:min-w-[140px]"
               >
                 <option value="">All</option>
                 {categories.map((category) => (
@@ -476,11 +476,11 @@ export default function StorePage() {
             </div>
 
             {/* Sort */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Sort:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Sort:</span>
               <button
                 onClick={() => handleSortChange('name')}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1 ${
                   sortBy === 'name'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'glass-button text-gray-800 hover:shadow-md'
@@ -488,7 +488,7 @@ export default function StorePage() {
               >
                 <span>Name</span>
                 {sortBy === 'name' && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {sortDirection === 'ASC' ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     ) : (
@@ -499,7 +499,7 @@ export default function StorePage() {
               </button>
               <button
                 onClick={() => handleSortChange('specialPrice')}
-                className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1 ${
                   sortBy === 'specialPrice'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'glass-button text-gray-800 hover:shadow-md'
@@ -507,7 +507,7 @@ export default function StorePage() {
               >
                 <span>Price</span>
                 {sortBy === 'specialPrice' && (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {sortDirection === 'ASC' ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     ) : (
@@ -519,12 +519,12 @@ export default function StorePage() {
             </div>
 
             {/* Show */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Show:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Show:</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="glass-select px-4 py-3 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer w-16 sm:w-20"
               >
                 <option value={2}>2</option>
                 <option value={10}>10</option>
@@ -550,7 +550,7 @@ export default function StorePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => {
               const cartItem = cart.find(item => item.product.id === product.id);
               const inCart = !!cartItem;
@@ -568,7 +568,7 @@ export default function StorePage() {
                         <img
                           src={productImages[product.id][productImageIndices[product.id] || 0]}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                             const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
@@ -661,15 +661,15 @@ export default function StorePage() {
                                   {product.originalPrice !== product.specialPrice ? (
                                     <div className="flex items-baseline gap-1.5">
                                       <span className="text-xl font-bold text-purple-600">
-                                        ${product.specialPrice.toFixed(2)}
+                                        ₪{product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                       </span>
                                       <span className="text-xs text-gray-400 line-through">
-                                        ${product.originalPrice.toFixed(2)}
+                                        ₪{product.originalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                       </span>
                                     </div>
                                   ) : (
                                     <span className="text-xl font-bold text-purple-600">
-                                      ${product.specialPrice.toFixed(2)}
+                                      ₪{product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                     </span>
                                   )}
                                 </div>
@@ -907,7 +907,7 @@ export default function StorePage() {
                               <img
                                 src={productImages[item.product.id][0]}
                                 alt={item.product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).style.display = 'none';
                                   const placeholder = (e.target as HTMLImageElement).parentElement;
@@ -936,7 +936,7 @@ export default function StorePage() {
                               </button>
                             </div>
                             <p className="text-sm text-gray-500 mb-2">
-                              ${item.product.specialPrice.toFixed(2)} each
+                              ₪{item.product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} each
                             </p>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -955,7 +955,7 @@ export default function StorePage() {
                                 </button>
                               </div>
                               <p className="text-lg font-bold text-purple-600">
-                                ${(item.product.specialPrice * item.quantity).toFixed(2)}
+                                ₪{(item.product.specialPrice * item.quantity).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                               </p>
                             </div>
                           </div>
@@ -973,7 +973,7 @@ export default function StorePage() {
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 mb-4 border-2 border-purple-400/60 shadow-md">
                     <div className="flex items-center">
                       <span className="text-base font-semibold text-gray-800">
-                        Total: <span className="text-2xl font-bold text-purple-600">${getTotalPrice().toFixed(2)}</span>
+                        Total: <span className="text-2xl font-bold text-purple-600">₪{getTotalPrice().toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
                       </span>
                       <div className="flex-1 flex justify-center">
                         <div className="w-px h-6 bg-purple-300/40"></div>

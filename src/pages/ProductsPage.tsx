@@ -181,10 +181,9 @@ export default function ProductsPage() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    // Format number with thousand separators and 2 decimal places
+    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return `₪${formattedNumber}`;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -836,13 +835,13 @@ export default function ProductsPage() {
             return (
               <div key={product.id} className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Product Image */}
-                <div className="aspect-square bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative overflow-hidden group">
+                <div className="relative h-32 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group">
                   {productImages[product.id] && productImages[product.id].length > 0 ? (
                     <>
                       <img
                         src={productImages[product.id][productImageIndices[product.id] || 0]}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                           const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
@@ -942,7 +941,7 @@ export default function ProductsPage() {
                     {product.name}
                   </h3>
 
-                  <div className="flex items-baseline justify-between">
+                  <div className="flex items-baseline">
                     <div className="flex items-baseline space-x-1.5">
                       <span className="text-base font-bold text-indigo-600">
                         {formatPrice(product.specialPrice)}
@@ -953,12 +952,6 @@ export default function ProductsPage() {
                         </span>
                       )}
                     </div>
-                    
-                    {product.originalPrice !== product.specialPrice && (
-                      <span className="px-1.5 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
-                        SALE
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -1115,7 +1108,7 @@ export default function ProductsPage() {
                     Original Price *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="originalPrice"
                       name="originalPrice"
@@ -1140,7 +1133,7 @@ export default function ProductsPage() {
                     Special Price <span className="text-gray-500 text-xs">(optional)</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="specialPrice"
                       name="specialPrice"
@@ -1372,7 +1365,7 @@ export default function ProductsPage() {
                     Original Price *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-originalPrice"
                       name="originalPrice"
@@ -1397,7 +1390,7 @@ export default function ProductsPage() {
                     Special Price <span className="text-gray-500 text-xs">(optional)</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-600 text-sm">$</span>
+                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-specialPrice"
                       name="specialPrice"
