@@ -350,7 +350,7 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
+    <div className="max-w-5xl mx-auto space-y-4 pb-32">
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -553,80 +553,78 @@ export default function CustomersPage() {
 
       {/* Pagination Controls - Bottom */}
       {customers.length > 0 && totalPages > 0 && (
-        <div className="glass-card rounded-3xl p-6 mt-4">
-          <div className="flex flex-col items-center gap-4">
-            {/* Page Navigation */}
-            <div className="flex items-center justify-center gap-1 flex-wrap">
-              {/* Previous button */}
-              {totalPages > 1 && (
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 0}
-                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
+        <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/85 backdrop-blur-sm pt-4 pb-4 border-t border-gray-300/30 shadow-lg z-10">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="flex flex-row items-center justify-center gap-4 relative">
+              {/* Page Info - Left */}
+              <div className="absolute -left-4 sm:-left-2 text-sm text-gray-600 font-medium">
+                Page:
+              </div>
 
-              {/* Page numbers */}
-              {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                const showPage =
-                  page === 0 ||
-                  page === totalPages - 1 ||
-                  Math.abs(page - currentPage) <= 1;
-
-                const showEllipsis =
-                  (page === 1 && currentPage > 3) ||
-                  (page === totalPages - 2 && currentPage < totalPages - 4);
-
-                if (!showPage && !showEllipsis) return null;
-
-                if (showEllipsis) {
-                  return (
-                    <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                      ...
-                    </span>
-                  );
-                }
-
-                return (
+              {/* Page Navigation - Right */}
+              <div className="flex items-center justify-center gap-1 flex-wrap">
+                {/* Previous button */}
+                {totalPages > 1 && (
                   <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                      currentPage === page
-                        ? 'bg-indigo-600 text-white shadow-md'
-                        : 'glass-button text-gray-800 hover:shadow-md'
-                    }`}
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 0}
+                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
                   >
-                    {page + 1}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
                   </button>
-                );
-              })}
+                )}
 
-              {/* Next button */}
-              {totalPages > 1 && (
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages - 1}
-                  className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              )}
-            </div>
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
+                  const showPage =
+                    page === 0 ||
+                    page === totalPages - 1 ||
+                    Math.abs(page - currentPage) <= 1;
 
-            {/* Page Info */}
-            <div className="text-sm text-gray-600 font-medium text-center">
-              Showing <span className="font-semibold text-gray-800">{currentPage * pageSize + 1}</span> to{' '}
-              <span className="font-semibold text-gray-800">
-                {Math.min((currentPage + 1) * pageSize, customers.length)}
-              </span>{' '}
-              of <span className="font-semibold text-gray-800">{customers.length}</span> customers
+                  const showEllipsis =
+                    (page === 1 && currentPage > 3) ||
+                    (page === totalPages - 2 && currentPage < totalPages - 4);
+
+                  if (!showPage && !showEllipsis) return null;
+
+                  if (showEllipsis) {
+                    return (
+                      <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        currentPage === page
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'glass-button text-gray-800 hover:shadow-md'
+                      }`}
+                    >
+                      {page + 1}
+                    </button>
+                  );
+                })}
+
+                {/* Next button */}
+                {totalPages > 1 && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage === totalPages - 1}
+                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
