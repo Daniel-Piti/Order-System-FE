@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { validateLocationForm } from '../utils/validation';
+import type { ValidationErrors } from '../utils/validation';
 
 interface AddLocationModalProps {
   isOpen: boolean;
@@ -15,21 +17,15 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
 
   if (!isOpen) return null;
 
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.name.trim()) errors.name = 'Location name is required';
-    if (!formData.streetAddress.trim()) errors.streetAddress = 'Street address is required';
-    if (!formData.city.trim()) errors.city = 'City is required';
-    if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validateLocationForm(formData);
+    setFieldErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

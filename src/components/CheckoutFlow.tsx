@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { publicAPI, Location, ProductDataForOrder } from '../services/api';
+import { formatPrice } from '../utils/formatPrice';
 
 interface CheckoutFlowProps {
   orderId: string;
@@ -417,7 +418,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                       {item.product.name} × {item.quantity}
                     </span>
                     <span className="font-semibold text-gray-800">
-                      ₪{(item.product.specialPrice * item.quantity).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      {formatPrice(item.product.specialPrice * item.quantity)}
                     </span>
                   </div>
                 ))}
@@ -425,7 +426,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
               <div className="mt-3 pt-3 border-t-2 border-gray-300 flex justify-between items-center">
                 <span className="font-bold text-gray-800">Total</span>
                 <span className="text-xl font-bold text-purple-600">
-                  ₪{totalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  {formatPrice(totalPrice)}
                 </span>
               </div>
             </div>

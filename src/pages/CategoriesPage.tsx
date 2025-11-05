@@ -2,15 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { categoryAPI, userAPI, publicAPI } from '../services/api';
 import type { Category } from '../services/api';
-
-interface Product {
-  id: string;
-  categoryId: number | null;
-}
+import PaginationBar from '../components/PaginationBar';
+import type { ProductWithCategory } from '../utils/types';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -19,7 +16,7 @@ export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState('');
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(1);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -37,14 +34,28 @@ export default function CategoriesPage() {
     }
   }, [userId]);
 
-  // Calculate pagination
+  // Calculate pagination (0-based)
   const { paginatedCategories, totalPages } = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
+    const startIndex = currentPage * pageSize;
     const endIndex = startIndex + pageSize;
     const paginated = categories.slice(startIndex, endIndex);
     const total = Math.ceil(categories.length / pageSize);
+    
+    // Ensure currentPage is valid (in case pageSize changed)
+    if (total > 0 && currentPage >= total) {
+      // This will trigger a re-render, but we'll handle it in useEffect
+      return { paginatedCategories: [], totalPages: total };
+    }
+    
     return { paginatedCategories: paginated, totalPages: total };
   }, [categories, currentPage, pageSize]);
+
+  // Reset currentPage if it's out of bounds after pageSize change
+  useEffect(() => {
+    if (totalPages > 0 && currentPage >= totalPages) {
+      setCurrentPage(0);
+    }
+  }, [totalPages, currentPage]);
 
   // Count products per category
   const productCountByCategory = useMemo(() => {
@@ -64,7 +75,7 @@ export default function CategoriesPage() {
       
       const data = await categoryAPI.getAllCategories();
       setCategories(data);
-      setCurrentPage(1); // Reset to first page when data changes
+      setCurrentPage(0); // Reset to first page when data changes (0-based)
     } catch (err: any) {
       setError(err.message || 'Failed to load categories');
       if (err.message.includes('401') || err.message.includes('User ID not found')) {
@@ -343,7 +354,7 @@ export default function CategoriesPage() {
                   value={pageSize}
                   onChange={(e) => {
                     setPageSize(Number(e.target.value));
-                    setCurrentPage(1);
+                    setCurrentPage(0); // Reset to first page when page size changes (0-based)
                   }}
                   className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
                 >
@@ -404,83 +415,13 @@ export default function CategoriesPage() {
       )}
 
       {/* Pagination Controls - Bottom */}
-      {categories.length > 0 && totalPages > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/85 backdrop-blur-sm pt-4 pb-4 border-t border-gray-300/30 shadow-lg z-10">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="flex flex-row items-center justify-center gap-4 relative">
-              {/* Page Info - Left */}
-              <div className="absolute -left-4 sm:-left-2 text-sm text-gray-600 font-medium">
-                Page:
-              </div>
-
-              {/* Page Navigation - Right */}
-              <div className="flex items-center justify-center gap-1 flex-wrap">
-                {/* Previous button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                )}
-
-                {/* Page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    const showPage =
-                      page === 1 ||
-                      page === totalPages ||
-                      Math.abs(page - currentPage) <= 1;
-
-                    const showEllipsis =
-                      (page === 2 && currentPage > 4) ||
-                      (page === totalPages - 1 && currentPage < totalPages - 3);
-
-                    if (!showPage && !showEllipsis) return null;
-
-                    if (showEllipsis) {
-                      return (
-                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                          currentPage === page
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'glass-button text-gray-800 hover:shadow-md'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-
-                {/* Next button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        maxWidth="max-w-4xl"
+        showCondition={categories.length > 0 && totalPages > 0}
+      />
 
       {/* Add Category Modal */}
       {isAddModalOpen && (

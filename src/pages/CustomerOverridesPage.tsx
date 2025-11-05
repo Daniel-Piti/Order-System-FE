@@ -1,38 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { publicAPI } from '../services/api';
-
-interface ProductOverride {
-  id: number;
-  productId: string;
-  customerId: string;
-  overridePrice: number;
-  originalPrice: number;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  specialPrice: number;
-}
-
-interface Customer {
-  id: string;
-  userId: string;
-  name: string;
-  phoneNumber: string;
-  email: string;
-  streetAddress: string;
-  city: string;
-}
-
-interface PageResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
+import type { PageResponse, Customer } from '../services/api';
+import type { ProductOverride, ProductListItem } from '../utils/types';
+import { formatPrice } from '../utils/formatPrice';
 
 export default function CustomerOverridesPage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -40,7 +11,7 @@ export default function CustomerOverridesPage() {
   
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [overrides, setOverrides] = useState<ProductOverride[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -162,12 +133,6 @@ export default function CustomerOverridesPage() {
       return `${phone.substring(0, 3)}-${phone.substring(3)}`;
     }
     return phone;
-  };
-
-  const formatPrice = (price: number) => {
-    // Format number with thousand separators and 2 decimal places
-    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return `₪${formattedNumber}`;
   };
 
   const handlePageSizeChange = (newSize: number) => {

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { categoryAPI, userAPI, publicAPI } from '../services/api';
 import type { Product, Category } from '../services/api';
+import PaginationBar from '../components/PaginationBar';
+import { formatPrice } from '../utils/formatPrice';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -18,7 +20,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+  const [, setTotalElements] = useState(0);
   
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
@@ -178,12 +180,6 @@ export default function ProductsPage() {
   const handleCategoryFilterChange = (categoryId: string) => {
     setCategoryFilter(categoryId);
     setCurrentPage(0); // Reset to first page when category changes
-  };
-
-  const formatPrice = (price: number) => {
-    // Format number with thousand separators and 2 decimal places
-    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return `₪${formattedNumber}`;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -961,83 +957,13 @@ export default function ProductsPage() {
       )}
 
       {/* Pagination Controls - Bottom */}
-      {!isLoading && products.length > 0 && totalPages > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/85 backdrop-blur-sm pt-4 pb-4 border-t border-gray-300/30 shadow-lg z-10">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="flex flex-row items-center justify-center gap-4 relative">
-                {/* Page Info - Left */}
-                <div className="absolute -left-4 sm:-left-2 text-sm text-gray-600 font-medium">
-                  Page:
-                </div>
-
-              {/* Page Navigation - Right */}
-              <div className="flex items-center justify-center gap-1 flex-wrap">
-                {/* Previous button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                )}
-
-                {/* Page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                    const showPage =
-                      page === 0 ||
-                      page === totalPages - 1 ||
-                      Math.abs(page - currentPage) <= 1;
-
-                    const showEllipsis =
-                      (page === 1 && currentPage > 3) ||
-                      (page === totalPages - 2 && currentPage < totalPages - 4);
-
-                    if (!showPage && !showEllipsis) return null;
-
-                    if (showEllipsis) {
-                      return (
-                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                          currentPage === page
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'glass-button text-gray-800 hover:shadow-md'
-                        }`}
-                      >
-                        {page + 1}
-                      </button>
-                    );
-                  })}
-
-                {/* Next button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages - 1}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        maxWidth="max-w-6xl"
+        showCondition={!isLoading && products.length > 0 && totalPages > 0}
+      />
 
       {/* Add Product Modal */}
       {isAddModalOpen && (

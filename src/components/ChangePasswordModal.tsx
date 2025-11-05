@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { validatePasswordChangeForm } from '../utils/validation';
+import type { ValidationErrors } from '../utils/validation';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -14,32 +16,15 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess }: Chan
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
 
   if (!isOpen) return null;
 
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.oldPassword.trim()) {
-      errors.oldPassword = 'Current password is required';
-    }
-
-    if (!formData.newPassword.trim()) {
-      errors.newPassword = 'New password is required';
-    } else if (formData.newPassword.length < 8) {
-      errors.newPassword = 'Password must be at least 8 characters';
-    }
-
-    if (!formData.newPasswordConfirmation.trim()) {
-      errors.newPasswordConfirmation = 'Please confirm your new password';
-    } else if (formData.newPassword !== formData.newPasswordConfirmation) {
-      errors.newPasswordConfirmation = 'Passwords do not match';
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validatePasswordChangeForm(formData);
+    setFieldErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

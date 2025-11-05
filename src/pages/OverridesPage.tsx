@@ -1,39 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI, publicAPI } from '../services/api';
-
-interface ProductOverride {
-  id: number;
-  productId: string;
-  userId: string;
-  customerId: string;
-  overridePrice: number;
-  originalPrice: number;  // From backend JOIN
-}
-
-interface Product {
-  id: string;
-  name: string;
-  specialPrice: number;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-}
-
-interface PageResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-}
+import type { PageResponse } from '../services/api';
+import PaginationBar from '../components/PaginationBar';
+import type { ProductOverrideWithUserId, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
+import { formatPrice } from '../utils/formatPrice';
 
 export default function OverridesPage() {
-  const [overrides, setOverrides] = useState<ProductOverride[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [overrides, setOverrides] = useState<ProductOverrideWithUserId[]>([]);
+  const [products, setProducts] = useState<ProductListItem[]>([]);
+  const [customers, setCustomers] = useState<CustomerListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -113,7 +89,7 @@ export default function OverridesPage() {
         throw new Error('Failed to fetch overrides');
       }
 
-      const data: PageResponse<ProductOverride> = await response.json();
+      const data: PageResponse<ProductOverrideWithUserId> = await response.json();
       
       setOverrides(data.content);
       setTotalElements(data.totalElements);
@@ -160,8 +136,8 @@ export default function OverridesPage() {
       });
 
       if (response.ok) {
-        const data: Customer[] = await response.json();
-        setCustomers(data);
+        const data = await response.json();
+        setCustomers(data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
       }
     } catch (err) {
       console.error('Failed to fetch customers:', err);
@@ -183,12 +159,6 @@ export default function OverridesPage() {
 
   const getCustomerName = (customerId: string) => {
     return customerMap.get(customerId)?.name ?? customerId;
-  };
-
-  const formatPrice = (price: number) => {
-    // Format number with thousand separators and 2 decimal places
-    const formattedNumber = price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return `₪${formattedNumber}`;
   };
 
   const handleProductFilterChange = (productId: string) => {
@@ -584,83 +554,13 @@ export default function OverridesPage() {
       )}
 
       {/* Pagination Controls - Bottom */}
-      {overrides.length > 0 && totalPages > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/85 backdrop-blur-sm pt-4 pb-4 border-t border-gray-300/30 shadow-lg z-10">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-row items-center justify-center gap-4 relative">
-              {/* Page Info - Left */}
-              <div className="absolute -left-4 sm:-left-2 text-sm text-gray-600 font-medium">
-                Page:
-              </div>
-
-              {/* Page Navigation - Right */}
-              <div className="flex items-center justify-center gap-1 flex-wrap">
-                {/* Previous button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    disabled={currentPage === 0}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                )}
-
-                {/* Page numbers */}
-                {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                    const showPage =
-                      page === 0 ||
-                      page === totalPages - 1 ||
-                      Math.abs(page - currentPage) <= 1;
-
-                    const showEllipsis =
-                      (page === 1 && currentPage > 3) ||
-                      (page === totalPages - 2 && currentPage < totalPages - 4);
-
-                    if (!showPage && !showEllipsis) return null;
-
-                    if (showEllipsis) {
-                      return (
-                        <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                          ...
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                          currentPage === page
-                            ? 'bg-indigo-600 text-white shadow-md'
-                            : 'glass-button text-gray-800 hover:shadow-md'
-                        }`}
-                      >
-                        {page + 1}
-                      </button>
-                    );
-                  })}
-
-                {/* Next button */}
-                {totalPages > 1 && (
-                  <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={currentPage === totalPages - 1}
-                    className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        maxWidth="max-w-7xl"
+        showCondition={overrides.length > 0 && totalPages > 0}
+      />
 
       {/* Add Override Modal */}
       {isAddModalOpen && (

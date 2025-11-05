@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { validateUserProfileForm } from '../utils/validation';
+import type { ValidationErrors } from '../utils/validation';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
 
   // Initialize form with current profile data
@@ -48,17 +50,9 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   if (!isOpen) return null;
 
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
-    if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
-    if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
-    if (!formData.streetAddress.trim()) errors.streetAddress = 'Street address is required';
-    if (!formData.city.trim()) errors.city = 'City is required';
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validateUserProfileForm(formData);
+    setFieldErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

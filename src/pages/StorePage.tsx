@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { publicAPI } from '../services/api';
 import type { Product, Category, OrderPublic } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
+import PaginationBar from '../components/PaginationBar';
+import { formatPrice } from '../utils/formatPrice';
 
 interface CartItem {
   product: Product;
@@ -11,7 +13,6 @@ interface CartItem {
 
 export default function StorePage() {
   const { userId: userIdParam, orderId } = useParams<{ userId?: string; orderId?: string }>();
-  const navigate = useNavigate();
   
   const [userId, setUserId] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderPublic | null>(null);
@@ -29,7 +30,7 @@ export default function StorePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
+  const [, setTotalElements] = useState(0);
   
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
@@ -39,7 +40,6 @@ export default function StorePage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
   
   // Track pending quantities for products not yet in cart
   const [pendingQuantities, setPendingQuantities] = useState<Record<string, number>>({});
@@ -298,14 +298,8 @@ export default function StorePage() {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Client-side search filtering (only filters current page)
-  const filteredProducts = (products || []).filter(product => {
-    if (searchQuery.trim()) {
-      return product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-             (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-    return true;
-  });
+  // Client-side filtering (currently only category filter, search removed as unused)
+  const filteredProducts = products || [];
 
   // Check if order status is EXPIRED, CANCELLED, DONE, or PLACED (only if we have an orderId in the URL)
   const isLinkExpired = orderId && order && order.status === 'EXPIRED';
@@ -446,16 +440,6 @@ export default function StorePage() {
             </button>
           </div>
 
-          {/* Order Context Banner */}
-          {orderId && (
-            <div className="mt-4 mb-2 p-3 bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-300 rounded-xl">
-              <p className="text-sm font-semibold text-blue-800 flex items-center gap-2">
-                <span>🎯</span>
-                Viewing products for this order - Prices shown are customer-specific
-              </p>
-            </div>
-          )}
-
           {/* Filters and Controls Bar */}
           <div className="mt-4 flex flex-wrap gap-2 sm:gap-3 items-center">
             {/* Category */}
@@ -544,7 +528,7 @@ export default function StorePage() {
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">No Products Found</h3>
             <p className="text-gray-600">
-              {searchQuery || selectedCategory
+              {selectedCategory
                 ? 'Try adjusting your filters'
                 : 'Check back later for new products!'}
             </p>
@@ -661,15 +645,15 @@ export default function StorePage() {
                                   {product.originalPrice !== product.specialPrice ? (
                                     <div className="flex items-baseline gap-1.5">
                                       <span className="text-xl font-bold text-purple-600">
-                                        ₪{product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        {formatPrice(product.specialPrice)}
                                       </span>
                                       <span className="text-xs text-gray-400 line-through">
-                                        ₪{product.originalPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                        {formatPrice(product.originalPrice)}
                                       </span>
                                     </div>
                                   ) : (
                                     <span className="text-xl font-bold text-purple-600">
-                                      ₪{product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                      {formatPrice(product.specialPrice)}
                                     </span>
                                   )}
                                 </div>
@@ -780,83 +764,14 @@ export default function StorePage() {
         )}
 
         {/* Pagination Controls - Bottom */}
-        {totalPages > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white/85 backdrop-blur-sm pt-4 pb-4 border-t border-gray-300/30 shadow-lg z-10">
-            <div className="max-w-6xl mx-auto px-6">
-              <div className="flex flex-row items-center justify-center gap-4 relative">
-                {/* Page Info - Left */}
-                <div className="absolute -left-4 sm:-left-2 text-sm text-gray-600 font-medium">
-                  Page:
-                </div>
-
-                {/* Page Navigation - Right */}
-                <div className="flex items-center justify-center gap-1 flex-wrap">
-                  {/* Previous button */}
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 0}
-                      className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                  )}
-
-                  {/* Page numbers */}
-                  {Array.from({ length: totalPages }, (_, i) => i).map((page) => {
-                      const showPage =
-                        page === 0 ||
-                        page === totalPages - 1 ||
-                        Math.abs(page - currentPage) <= 1;
-
-                      const showEllipsis =
-                        (page === 1 && currentPage > 3) ||
-                        (page === totalPages - 2 && currentPage < totalPages - 4);
-
-                      if (!showPage && !showEllipsis) return null;
-
-                      if (showEllipsis) {
-                        return (
-                          <span key={`ellipsis-${page}`} className="px-2 text-gray-400">
-                            ...
-                          </span>
-                        );
-                      }
-
-                      return (
-                        <button
-                          key={page}
-                          onClick={() => setCurrentPage(page)}
-                          className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                            currentPage === page
-                              ? 'bg-indigo-600 text-white shadow-md'
-                              : 'glass-button text-gray-800 hover:shadow-md'
-                          }`}
-                        >
-                          {page + 1}
-                        </button>
-                      );
-                    })}
-
-                  {/* Next button */}
-                  {totalPages > 1 && (
-                    <button
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages - 1}
-                      className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          maxWidth="max-w-6xl"
+          sidebarOffset={false}
+          showCondition={totalPages > 0}
+        />
       </main>
 
       {/* Shopping Cart Sidebar */}
@@ -937,7 +852,7 @@ export default function StorePage() {
                               </button>
                             </div>
                             <p className="text-sm text-gray-500 mb-2">
-                              ₪{item.product.specialPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} each
+                              {formatPrice(item.product.specialPrice)} each
                             </p>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
@@ -956,7 +871,7 @@ export default function StorePage() {
                                 </button>
                               </div>
                               <p className="text-lg font-bold text-purple-600">
-                                ₪{(item.product.specialPrice * item.quantity).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                {formatPrice(item.product.specialPrice * item.quantity)}
                               </p>
                             </div>
                           </div>
@@ -974,7 +889,7 @@ export default function StorePage() {
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 mb-4 border-2 border-purple-400/60 shadow-md">
                     <div className="flex items-center">
                       <span className="text-base font-semibold text-gray-800">
-                        Total: <span className="text-2xl font-bold text-purple-600">₪{getTotalPrice().toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</span>
+                        Total: <span className="text-2xl font-bold text-purple-600">{formatPrice(getTotalPrice())}</span>
                       </span>
                       <div className="flex-1 flex justify-center">
                         <div className="w-px h-6 bg-purple-300/40"></div>

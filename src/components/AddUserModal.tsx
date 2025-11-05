@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { validateUserCreationForm } from '../utils/validation';
+import type { ValidationErrors } from '../utils/validation';
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -19,7 +21,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
 
   // Reset form when modal is closed/opened
@@ -43,27 +45,9 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
   if (!isOpen) return null;
 
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email';
-    }
-    if (!formData.password.trim()) {
-      errors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
-    }
-    if (!formData.phoneNumber.trim()) errors.phoneNumber = 'Phone number is required';
-    if (!formData.dateOfBirth) errors.dateOfBirth = 'Date of birth is required';
-    if (!formData.streetAddress.trim()) errors.streetAddress = 'Street address is required';
-    if (!formData.city.trim()) errors.city = 'City is required';
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    const result = validateUserCreationForm(formData);
+    setFieldErrors(result.errors);
+    return result.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
