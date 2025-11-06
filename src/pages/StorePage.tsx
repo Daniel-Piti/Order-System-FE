@@ -40,8 +40,13 @@ export default function StorePage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedBrand, setSelectedBrand] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(true);
+  const [isBrandsExpanded, setIsBrandsExpanded] = useState(true);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [showAllBrands, setShowAllBrands] = useState(false);
   
   // Track pending quantities for products not yet in cart
   const [pendingQuantities, setPendingQuantities] = useState<Record<string, number>>({});
@@ -112,13 +117,13 @@ export default function StorePage() {
       if (orderId) {
         const allProducts = await publicAPI.products.getAllByOrderId(orderId);
         
-        // Filter by category client-side if selected
+        // Filter by categories and brands client-side if selected
         let filteredProducts = allProducts;
-        if (selectedCategory) {
-          filteredProducts = filteredProducts.filter(p => p.categoryId === Number(selectedCategory));
+        if (selectedCategories.length > 0) {
+          filteredProducts = filteredProducts.filter(p => p.categoryId && selectedCategories.includes(p.categoryId));
         }
-        if (selectedBrand) {
-          filteredProducts = filteredProducts.filter(p => p.brandId === Number(selectedBrand));
+        if (selectedBrands.length > 0) {
+          filteredProducts = filteredProducts.filter(p => p.brandId && selectedBrands.includes(p.brandId));
         }
         
         // Sort client-side
@@ -153,22 +158,72 @@ export default function StorePage() {
         await fetchProductImagesForAll(paginatedProducts);
       } else {
         // Regular store - use paginated endpoint
-        const pageResponse = await publicAPI.products.getAllByUserId(
-          userId,
-          currentPage,
-          pageSize,
-          sortBy,
-          sortDirection,
-          selectedCategory ? Number(selectedCategory) : undefined,
-          selectedBrand ? Number(selectedBrand) : undefined
-        );
+        // Note: Backend currently supports single category/brand filter
+        // For multi-select, we'll fetch all and filter client-side
+        const hasFilters = selectedCategories.length > 0 || selectedBrands.length > 0;
         
-        setProducts(pageResponse.content);
-        setTotalPages(pageResponse.totalPages);
-        setTotalElements(pageResponse.totalElements);
-        
-        // Fetch images for products
-        await fetchProductImagesForAll(pageResponse.content);
+        if (hasFilters) {
+          // Fetch all products and filter client-side
+          const allProductsResponse = await publicAPI.products.getAllByUserId(
+            userId,
+            0,
+            1000, // Large page size to get all products
+            sortBy,
+            sortDirection
+          );
+          
+          let filteredProducts = allProductsResponse.content;
+          
+          // Filter by categories
+          if (selectedCategories.length > 0) {
+            filteredProducts = filteredProducts.filter(p => p.categoryId && selectedCategories.includes(p.categoryId));
+          }
+          
+          // Filter by brands
+          if (selectedBrands.length > 0) {
+            filteredProducts = filteredProducts.filter(p => p.brandId && selectedBrands.includes(p.brandId));
+          }
+          
+          // Sort client-side (already sorted, but keep for consistency)
+          let sortedProducts = [...filteredProducts];
+          if (sortBy === 'name') {
+            sortedProducts.sort((a, b) => {
+              const comparison = a.name.localeCompare(b.name);
+              return sortDirection === 'ASC' ? comparison : -comparison;
+            });
+          } else if (sortBy === 'specialPrice') {
+            sortedProducts.sort((a, b) => {
+              const comparison = a.specialPrice - b.specialPrice;
+              return sortDirection === 'ASC' ? comparison : -comparison;
+            });
+          }
+          
+          // Paginate client-side
+          const startIndex = currentPage * pageSize;
+          const endIndex = startIndex + pageSize;
+          const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+          
+          setProducts(paginatedProducts);
+          setTotalPages(Math.ceil(sortedProducts.length / pageSize));
+          setTotalElements(sortedProducts.length);
+          
+          await fetchProductImagesForAll(paginatedProducts);
+        } else {
+          // No filters - use normal pagination
+          const pageResponse = await publicAPI.products.getAllByUserId(
+            userId,
+            currentPage,
+            pageSize,
+            sortBy,
+            sortDirection
+          );
+          
+          setProducts(pageResponse.content);
+          setTotalPages(pageResponse.totalPages);
+          setTotalElements(pageResponse.totalElements);
+          
+          await fetchProductImagesForAll(pageResponse.content);
+        }
       }
     } catch (err: any) {
       console.error('Store error:', err);
@@ -184,7 +239,7 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategory, selectedBrand]);
+  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!userId || productsList.length === 0) return;
@@ -285,14 +340,32 @@ export default function StorePage() {
     setCurrentPage(0); // Reset to first page when page size changes
   };
 
-  const handleCategoryFilterChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setCurrentPage(0); // Reset to first page when category changes
+  const handleCategoryToggle = (categoryId: number) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+    setCurrentPage(0); // Reset to first page when filter changes
   };
 
-  const handleBrandFilterChange = (brandId: string) => {
-    setSelectedBrand(brandId);
-    setCurrentPage(0); // Reset to first page when brand changes
+  const handleBrandToggle = (brandId: number) => {
+    setSelectedBrands(prev => {
+      if (prev.includes(brandId)) {
+        return prev.filter(id => id !== brandId);
+      } else {
+        return [...prev, brandId];
+      }
+    });
+    setCurrentPage(0); // Reset to first page when filter changes
+  };
+
+  const clearAllFilters = () => {
+    setSelectedCategories([]);
+    setSelectedBrands([]);
+    setCurrentPage(0);
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -436,8 +509,8 @@ export default function StorePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-24">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/40 border-b-2 border-white/40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-4">
               <div className="text-4xl">🛍️</div>
               <div>
@@ -451,7 +524,7 @@ export default function StorePage() {
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="relative glass-button px-6 py-3 rounded-2xl font-semibold text-gray-800 flex items-center space-x-2"
+              className="glass-button px-6 py-3 rounded-2xl font-semibold text-gray-800 flex items-center space-x-2"
             >
               <span className="text-2xl">🛒</span>
               <span>Cart</span>
@@ -464,40 +537,22 @@ export default function StorePage() {
           </div>
 
           {/* Filters and Controls Bar */}
-          <div className="mt-4 flex flex-wrap gap-2 sm:gap-3 items-center">
-            {/* Category */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Category:</span>
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryFilterChange(e.target.value)}
-                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer min-w-[100px] sm:min-w-[140px]"
-              >
-                <option value="">All</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.category}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Brand */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Brand:</span>
-              <select
-                value={selectedBrand}
-                onChange={(e) => handleBrandFilterChange(e.target.value)}
-                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer min-w-[100px] sm:min-w-[140px]"
-              >
-                <option value="">All</option>
-                {brands.map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div className="mt-4 flex flex-wrap gap-2 sm:gap-3 items-center justify-center relative w-full">
+            {/* Mobile Filter Button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center space-x-2 absolute left-0"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span>Filters</span>
+              {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+                <span className="bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {selectedCategories.length + selectedBrands.length}
+                </span>
+              )}
+            </button>
 
             {/* Sort */}
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -561,20 +616,132 @@ export default function StorePage() {
         </div>
       </header>
 
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <aside className="hidden lg:block w-64 flex-shrink-0 fixed left-0 top-[144px] bottom-[80px] z-30">
+          <div className="h-full bg-purple-50/40 backdrop-blur-xl border-2 border-gray-300/60 border-t-0 border-l-0 pl-4 sm:pl-6 lg:pl-8 pr-6 overflow-y-auto pt-8 pb-6">
+            {/* Clear Filters Button */}
+            {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+              <button
+                onClick={clearAllFilters}
+                className="w-full mb-4 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg transition-colors"
+              >
+                Clear All Filters
+              </button>
+            )}
+
+            {/* Categories Section */}
+            <div className="mb-6">
+              <button
+                onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+                className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+              >
+                <span>Categories</span>
+                <svg
+                  className={`w-5 h-5 transition-transform ${isCategoriesExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isCategoriesExpanded && (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {categories.slice(0, showAllCategories ? categories.length : 5).map((category) => (
+                    <label
+                      key={category.id}
+                      className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category.id)}
+                        onChange={() => handleCategoryToggle(category.id)}
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700 flex-1">{category.category}</span>
+                    </label>
+                  ))}
+                  
+                  {categories.length > 5 && (
+                    <button
+                      onClick={() => setShowAllCategories(!showAllCategories)}
+                      className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
+                    >
+                      {showAllCategories ? 'Show Less' : `Show All (${categories.length})`}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="my-6 border-t border-gray-300/40"></div>
+
+            {/* Brands Section */}
+            <div>
+              <button
+                onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
+                className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+              >
+                <span>Brands</span>
+                <svg
+                  className={`w-5 h-5 transition-transform ${isBrandsExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {isBrandsExpanded && (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {brands.slice(0, showAllBrands ? brands.length : 5).map((brand) => (
+                    <label
+                      key={brand.id}
+                      className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedBrands.includes(brand.id)}
+                        onChange={() => handleBrandToggle(brand.id)}
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700 flex-1">{brand.name}</span>
+                    </label>
+                  ))}
+                  
+                  {brands.length > 5 && (
+                    <button
+                      onClick={() => setShowAllBrands(!showAllBrands)}
+                      className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
+                    >
+                      {showAllBrands ? 'Show Less' : `Show All (${brands.length})`}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
+
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
+      <div className="w-full py-8 pb-32 lg:pl-64">
+        {/* Main Content Area */}
+        <main className="w-full pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8">
         {filteredProducts.length === 0 ? (
           <div className="glass-card p-12 rounded-3xl text-center">
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">No Products Found</h3>
             <p className="text-gray-600">
-              {selectedCategory || selectedBrand
+              {selectedCategories.length > 0 || selectedBrands.length > 0
                 ? 'Try adjusting your filters'
                 : 'Check back later for new products!'}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
             {filteredProducts.map((product) => {
               const cartItem = cart.find(item => item.product.id === product.id);
               const inCart = !!cartItem;
@@ -808,11 +975,146 @@ export default function StorePage() {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}
-          maxWidth="max-w-6xl"
+          maxWidth="max-w-full"
           sidebarOffset={false}
           showCondition={totalPages > 0}
         />
-      </main>
+        </main>
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      {isSidebarOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+
+          {/* Drawer */}
+          <div className="fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col lg:hidden">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-800">Filters</h2>
+                  <button
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              {/* Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Clear Filters Button */}
+                {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="w-full mb-4 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg transition-colors"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+
+                {/* Categories Section */}
+                <div className="mb-6">
+                  <button
+                    onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+                    className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                  >
+                    <span>Categories</span>
+                    <svg
+                      className={`w-5 h-5 transition-transform ${isCategoriesExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {isCategoriesExpanded && (
+                    <div className="space-y-2">
+                      {categories.slice(0, showAllCategories ? categories.length : 5).map((category) => (
+                        <label
+                          key={category.id}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedCategories.includes(category.id)}
+                            onChange={() => handleCategoryToggle(category.id)}
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700 flex-1">{category.category}</span>
+                        </label>
+                      ))}
+                      
+                      {categories.length > 5 && (
+                        <button
+                          onClick={() => setShowAllCategories(!showAllCategories)}
+                          className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
+                        >
+                          {showAllCategories ? 'Show Less' : `Show All (${categories.length})`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Brands Section */}
+                <div>
+                  <button
+                    onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
+                    className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                  >
+                    <span>Brands</span>
+                    <svg
+                      className={`w-5 h-5 transition-transform ${isBrandsExpanded ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {isBrandsExpanded && (
+                    <div className="space-y-2">
+                      {brands.slice(0, showAllBrands ? brands.length : 5).map((brand) => (
+                        <label
+                          key={brand.id}
+                          className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedBrands.includes(brand.id)}
+                            onChange={() => handleBrandToggle(brand.id)}
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700 flex-1">{brand.name}</span>
+                        </label>
+                      ))}
+                      
+                      {brands.length > 5 && (
+                        <button
+                          onClick={() => setShowAllBrands(!showAllBrands)}
+                          className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
+                        >
+                          {showAllBrands ? 'Show Less' : `Show All (${brands.length})`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Shopping Cart Sidebar */}
       <>

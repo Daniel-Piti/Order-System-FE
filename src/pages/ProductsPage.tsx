@@ -143,7 +143,9 @@ export default function ProductsPage() {
           const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
           if (response.ok) {
             const images: ProductImage[] = await response.json();
-            return { productId: product.id, imageUrls: images.map(img => img.url) };
+            // Sort images by filename
+            const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+            return { productId: product.id, imageUrls: sortedImages.map(img => img.url) };
           }
         } catch (err) {
           console.error(`Failed to fetch images for product ${product.id}:`, err);
@@ -465,8 +467,10 @@ export default function ProductsPage() {
       
       if (response.ok) {
         const images: ProductImage[] = await response.json();
-        setExistingImages(images);
-        setOriginalImages(images); // Store original for undo
+        // Sort images by filename
+        const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+        setExistingImages(sortedImages);
+        setOriginalImages(sortedImages); // Store original for undo
       }
     } catch (err) {
       console.error('Failed to fetch product images:', err);
@@ -1311,7 +1315,7 @@ export default function ProductsPage() {
                   {/* Image Previews */}
                   {selectedImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
-                      {selectedImages.map((image, index) => (
+                      {[...selectedImages].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map((image, index) => (
                         <div key={index} className="relative group">
                           <img
                             src={URL.createObjectURL(image)}
@@ -1572,7 +1576,7 @@ export default function ProductsPage() {
                     <div>
                       <p className="text-xs font-medium text-gray-600 mb-2">Existing Images:</p>
                       <div className="grid grid-cols-3 gap-2">
-                        {existingImages.map((image) => (
+                        {[...existingImages].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' })).map((image) => (
                           <div key={image.id} className="relative group">
                             <img
                               src={image.url}
@@ -1635,7 +1639,7 @@ export default function ProductsPage() {
                     <div>
                       <p className="text-xs font-medium text-green-600 mb-2">New Images to Add:</p>
                       <div className="grid grid-cols-3 gap-2">
-                        {newImagesToAdd.map((image, index) => (
+                        {[...newImagesToAdd].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map((image, index) => (
                           <div key={index} className="relative group">
                             <img
                               src={URL.createObjectURL(image)}
