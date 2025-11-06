@@ -47,12 +47,17 @@ export default function ProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingEdit, setIsDraggingEdit] = useState(false);
   
   // Product image states for edit modal
   interface ProductImage {
     id: number;
-    url: string;
-    fileName: string;
+    productId: string;
+    userId: string;
+    url: string; // Full public URL from R2 (constructed from s3_key)
+    fileName: string; // From product_images.file_name (NOT NULL)
+    mimeType: string; // From product_images.mime_type (NOT NULL)
   }
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [originalImages, setOriginalImages] = useState<ProductImage[]>([]);
@@ -232,20 +237,28 @@ export default function ProductsPage() {
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
+    setIsDragging(false);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const newFiles = Array.from(files);
+    processImageFiles(Array.from(files), selectedImages, setSelectedImages);
+    e.target.value = ''; // Reset input to allow selecting same file again
+  };
+
+  const processImageFiles = (
+    newFiles: File[],
+    currentImages: File[],
+    setImages: React.Dispatch<React.SetStateAction<File[]>>
+  ) => {
     const validFiles: File[] = [];
     const errors: string[] = [];
 
     // Check total count (existing + new)
-    if (selectedImages.length + newFiles.length > 5) {
-      setFormError(`Maximum 5 images allowed. You already have ${selectedImages.length} image(s) selected.`);
-      e.target.value = ''; // Reset input
+    if (currentImages.length + newFiles.length > 5) {
+      setFormError(`Maximum 5 images allowed. You already have ${currentImages.length} image(s) selected.`);
       return;
     }
 
@@ -271,11 +284,88 @@ export default function ProductsPage() {
     if (errors.length > 0) {
       setFormError(errors.join(' '));
     } else if (validFiles.length > 0) {
-      setSelectedImages((prev) => [...prev, ...validFiles]);
+      setImages((prev) => [...prev, ...validFiles]);
       setFormError('');
     }
+  };
 
-    e.target.value = ''; // Reset input to allow selecting same file again
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processImageFiles(Array.from(files), selectedImages, setSelectedImages);
+    }
+  };
+
+  const handleEditDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingEdit(true);
+  };
+
+  const handleEditDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingEdit(false);
+  };
+
+  const handleEditDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingEdit(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const newFiles = Array.from(files);
+      const validFiles: File[] = [];
+      const errors: string[] = [];
+
+      // Check total count (existing visible + new to add)
+      const currentImageCount = existingImages.length + newImagesToAdd.length;
+      if (currentImageCount + newFiles.length > 5) {
+        setFormError(`Maximum 5 images allowed. Current: ${currentImageCount}, trying to add: ${newFiles.length}`);
+        return;
+      }
+
+      // Validate each file
+      newFiles.forEach((file) => {
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+          return;
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          errors.push(`${file.name}: File size exceeds 5MB limit.`);
+          return;
+        }
+
+        validFiles.push(file);
+      });
+
+      if (errors.length > 0) {
+        setFormError(errors.join(' '));
+      } else if (validFiles.length > 0) {
+        setNewImagesToAdd((prev) => [...prev, ...validFiles]);
+        setFormError('');
+      }
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -403,6 +493,7 @@ export default function ProductsPage() {
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
+    setIsDraggingEdit(false);
   };
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -1193,10 +1284,15 @@ export default function ProductsPage() {
                     />
                     <label
                       htmlFor="images"
-                      className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
                         selectedImages.length >= 5
                           ? 'opacity-50 cursor-not-allowed border-gray-300'
-                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                          : isDragging
+                            ? 'border-indigo-600 bg-indigo-100/50'
+                            : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
                       }`}
                     >
                       <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1205,7 +1301,9 @@ export default function ProductsPage() {
                       <span className="text-sm font-medium">
                         {selectedImages.length >= 5
                           ? 'Maximum 5 images reached'
-                          : `Select Images (${selectedImages.length}/5)`}
+                          : isDragging
+                            ? 'Drop Images Here'
+                            : `Select Images or Drag & Drop (${selectedImages.length}/5)`}
                       </span>
                     </label>
                   </div>
@@ -1576,10 +1674,15 @@ export default function ProductsPage() {
                     />
                     <label
                       htmlFor="edit-images"
-                      className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                      onDragOver={handleEditDragOver}
+                      onDragLeave={handleEditDragLeave}
+                      onDrop={handleEditDrop}
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
                         (existingImages.length + newImagesToAdd.length) >= 5
                           ? 'opacity-50 cursor-not-allowed border-gray-300'
-                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                          : isDraggingEdit
+                            ? 'border-indigo-600 bg-indigo-100/50'
+                            : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
                       }`}
                     >
                       <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1588,7 +1691,9 @@ export default function ProductsPage() {
                       <span className="text-sm font-medium">
                         {(existingImages.length + newImagesToAdd.length) >= 5
                           ? 'Maximum 5 images reached'
-                          : `Add More Images (${existingImages.length + newImagesToAdd.length}/5)`}
+                          : isDraggingEdit
+                            ? 'Drop Images Here'
+                            : `Add More Images or Drag & Drop (${existingImages.length + newImagesToAdd.length}/5)`}
                       </span>
                     </label>
                   </div>

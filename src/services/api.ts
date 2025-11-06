@@ -177,10 +177,9 @@ export interface Brand {
   id: number;
   userId: string;
   name: string;
-  s3Key: string | null;
-  fileName: string | null;
-  fileSizeBytes: number | null;
-  mimeType: string | null;
+  imageUrl: string | null; // Full public URL from R2 (constructed from s3_key)
+  fileName: string | null; // From brands.file_name (nullable)
+  mimeType: string | null; // From brands.mime_type (nullable)
 }
 
 export interface Product {

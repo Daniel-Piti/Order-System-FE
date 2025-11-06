@@ -14,6 +14,9 @@ export default function BrandsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [brandToEdit, setBrandToEdit] = useState<Brand | null>(null);
   const [brandName, setBrandName] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -111,20 +114,83 @@ export default function BrandsPage() {
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
     setBrandName('');
+    setSelectedImage(null);
+    setPreviewImage(null);
     setFormError('');
+    setIsDragging(false);
   };
 
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setBrandToEdit(null);
     setBrandName('');
+    setSelectedImage(null);
+    setPreviewImage(null);
     setFormError('');
+    setIsDragging(false);
   };
 
   const handleEditBrand = (brand: Brand) => {
     setBrandToEdit(brand);
     setBrandName(brand.name);
+    setSelectedImage(null);
+    setPreviewImage(null);
     setIsEditModalOpen(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
+
+  const processImageFile = (file: File) => {
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setFormError('Invalid file type. Please select a JPEG, PNG, or WebP image.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setFormError('File size exceeds 5MB limit.');
+      return;
+    }
+
+    setSelectedImage(file);
+    setFormError('');
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processImageFile(files[0]); // Only take the first file
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,16 +205,22 @@ export default function BrandsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
-      const response = await fetch('http://localhost:8080/api/brands', {
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('name', brandName);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/brands`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
         },
-        body: JSON.stringify({
-          name: brandName,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -187,16 +259,22 @@ export default function BrandsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
-      const response = await fetch(`http://localhost:8080/api/brands/${brandToEdit.id}`, {
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('name', brandName);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/brands/${brandToEdit.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
         },
-        body: JSON.stringify({
-          name: brandName,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -368,48 +446,78 @@ export default function BrandsPage() {
             </div>
           </div>
 
-        <div className="glass-card rounded-3xl p-6 md:p-8">
-          <div className="space-y-2">
-              {paginatedBrands.map((brand) => (
-              <div key={brand.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Brands Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {paginatedBrands.map((brand) => {
+            return (
+              <div
+                key={brand.id}
+                className="glass-card rounded-2xl p-4 flex flex-col items-center text-center hover:shadow-lg transition-all relative"
+              >
+                {/* Brand Image or Icon */}
+                <div className="w-full h-32 mb-3 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                  {brand.imageUrl ? (
+                    <img
+                      src={brand.imageUrl}
+                      alt={brand.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to icon if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                          `;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
-                  </div>
-                    <div className="flex-1 min-w-0 flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-gray-800 truncate" title={brand.name}>
-                      {brand.name}
-                    </h3>
-                      <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                        {productCountByBrand.get(brand.id) || 0}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2 ml-4">
-                <button
-                  onClick={() => handleEditBrand(brand)}
-                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all"
-                  title="Edit brand"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                    </button>
-                    <button
-                      onClick={() => setBrandToDelete(brand)}
-                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                      title="Delete brand"
-                    >
-                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                </button>
-                  </div>
+                  )}
+                </div>
+
+                {/* Brand Name */}
+                <h3 className="text-sm font-bold text-gray-800 mb-1 truncate w-full px-2" title={brand.name}>
+                  {brand.name}
+                </h3>
+
+                {/* Product Count */}
+                <div className="mb-3">
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                    {productCountByBrand.get(brand.id) || 0} {productCountByBrand.get(brand.id) === 1 ? 'product' : 'products'}
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-2 mt-auto">
+                  <button
+                    onClick={() => handleEditBrand(brand)}
+                    className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
+                    title="Edit brand"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setBrandToDelete(brand)}
+                    className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                    title="Delete brand"
+                  >
+                    <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            ))}
-            </div>
+            );
+          })}
           </div>
         </div>
       )}
@@ -470,6 +578,72 @@ export default function BrandsPage() {
                   placeholder="e.g., Nike, Apple, Samsung"
                   autoFocus
                 />
+              </div>
+
+              <div>
+                <label htmlFor="brandImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand Image <span className="text-gray-500 text-xs">(optional)</span>
+                </label>
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      id="brandImage"
+                      name="brandImage"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="brandImage"
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                        isDragging
+                          ? 'border-indigo-600 bg-indigo-100/50'
+                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm font-medium">
+                        {isDragging ? 'Drop Image Here' : selectedImage ? 'Change Image' : 'Select Image or Drag & Drop'}
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Image Preview */}
+                  {previewImage && (
+                    <div className="flex flex-col items-center">
+                      <div className="relative group">
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setPreviewImage(null);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          title="Remove image"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB.
+                  </p>
+                </div>
               </div>
 
               <div className="flex space-x-3 pt-4">
@@ -567,6 +741,97 @@ export default function BrandsPage() {
                   placeholder="e.g., Nike, Apple, Samsung"
                   autoFocus
                 />
+              </div>
+
+              <div>
+                <label htmlFor="editBrandImage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand Image <span className="text-gray-500 text-xs">(optional)</span>
+                </label>
+                <div className="space-y-3">
+                  {/* Current Image */}
+                  {brandToEdit?.imageUrl && !previewImage && (
+                    <div className="flex flex-col items-center">
+                      <p className="text-xs text-gray-500 mb-2">Current image:</p>
+                      <div className="relative group">
+                        <img
+                          src={brandToEdit.imageUrl}
+                          alt={brandToEdit.name}
+                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
+                          onError={(e) => {
+                            // Hide image if it fails to load
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input
+                      id="editBrandImage"
+                      name="editBrandImage"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="editBrandImage"
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                        isDragging
+                          ? 'border-indigo-600 bg-indigo-100/50'
+                          : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
+                      }`}
+                    >
+                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-sm font-medium">
+                        {isDragging 
+                          ? 'Drop Image Here' 
+                          : previewImage 
+                            ? 'Change Image' 
+                            : brandToEdit?.imageUrl 
+                              ? 'Replace Image or Drag & Drop' 
+                              : 'Select Image or Drag & Drop'}
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* New Image Preview */}
+                  {previewImage && (
+                    <div className="flex flex-col items-center">
+                      <p className="text-xs text-gray-500 mb-2">New image preview:</p>
+                      <div className="relative group">
+                        <img
+                          src={previewImage}
+                          alt="Preview"
+                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setPreviewImage(null);
+                          }}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          title="Remove image"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500">
+                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB.
+                  </p>
+                </div>
               </div>
 
               <div className="flex space-x-3 pt-4">
