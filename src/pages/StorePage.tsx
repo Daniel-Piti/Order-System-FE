@@ -251,7 +251,9 @@ export default function StorePage() {
           const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
           if (response.ok) {
             const images: Array<{ id: number; url: string; fileName: string }> = await response.json();
-            return { productId: product.id, imageUrls: images.map(img => img.url) };
+            // Sort images by fileName (same as ProductsPage)
+            const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+            return { productId: product.id, imageUrls: sortedImages.map(img => img.url) };
           }
         } catch (err) {
           console.error(`Failed to fetch images for product ${product.id}:`, err);
@@ -629,11 +631,17 @@ export default function StorePage() {
               </button>
             )}
 
+            {/* Filter Title */}
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Filters</h2>
+
+            {/* Divider */}
+            <div className="mb-4 border-t border-gray-300/40"></div>
+
             {/* Categories Section */}
             <div className="mb-6">
               <button
                 onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
-                className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
               >
                 <span>Categories</span>
                 <svg
@@ -682,7 +690,7 @@ export default function StorePage() {
             <div>
               <button
                 onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
-                className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
               >
                 <span>Brands</span>
                 <svg
@@ -1019,11 +1027,17 @@ export default function StorePage() {
                   </button>
                 )}
 
+                {/* Filter Title */}
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Filters</h2>
+
+                {/* Divider */}
+                <div className="mb-4 border-t border-gray-300/40"></div>
+
                 {/* Categories Section */}
                 <div className="mb-6">
                   <button
                     onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
-                    className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                    className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
                   >
                     <span>Categories</span>
                     <svg
@@ -1069,7 +1083,7 @@ export default function StorePage() {
                 <div>
                   <button
                     onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
-                    className="w-full flex items-center justify-between mb-3 text-lg font-bold text-gray-800"
+                    className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
                   >
                     <span>Brands</span>
                     <svg

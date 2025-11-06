@@ -151,7 +151,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
   if (step === 'success') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center shadow-2xl border border-white/40">
+        <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-8 md:p-12 max-w-xl w-full text-center shadow-2xl border border-white/40">
           <div className="text-6xl mb-6">✅</div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Placed!</h1>
           <p className="text-lg text-gray-600">
@@ -164,21 +164,21 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40">
+      <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-center mb-6 relative">
           <h2 className="text-2xl font-bold text-gray-800">Checkout</h2>
           <button
             onClick={onClose}
-            className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
+            className="absolute right-0 text-gray-600 hover:text-gray-800 text-3xl leading-none"
           >
             ×
           </button>
         </div>
 
         {/* Progress Steps */}
-        <div className="flex justify-center mb-8 px-4">
-          <div className="flex w-[70%] items-start">
+        <div className="flex justify-center mb-7 px-4">
+          <div className="flex w-[65%] items-start">
             {[
               { key: 'customer-info', label: 'Info', step: 1 },
               { key: 'pickup-location', label: 'Location', step: 2 },
@@ -207,7 +207,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                 <div key={key} className="flex-1 flex flex-col items-center relative">
                   {/* Circle */}
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all shadow-lg border-2 backdrop-blur-sm relative z-10 ${
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all shadow-lg border-2 backdrop-blur-sm relative z-10 ${
                       isActive
                         ? 'bg-purple-600 text-white border-purple-400 shadow-purple-500/50'
                         : isCompleted
@@ -219,7 +219,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                   </div>
                   
                   {/* Label under circle */}
-                  <span className={`mt-2 text-sm font-semibold ${isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
+                  <span className={`mt-2 text-xs font-semibold ${isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-600'}`}>
                     {label}
                   </span>
                   
@@ -230,9 +230,9 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                       <div 
                         className={`absolute h-1 rounded-full ${lineColor}`}
                         style={{
-                          top: '1.5rem', // Center of circle
-                          left: 'calc(50% + 1.5rem + 0.5rem)', // Start after right edge of circle + padding
-                          width: 'calc(100% - 3rem - 1rem)', // Span to next circle minus circle width and padding on both sides
+                          top: '1.25rem', // Center of circle
+                          left: 'calc(50% + 1.25rem + 0.375rem)', // Start after right edge of circle + padding
+                          width: 'calc(100% - 2.5rem - 0.75rem)', // Span to next circle minus circle width and padding on both sides
                           transform: 'translateY(-50%)',
                         }}
                       />
@@ -291,34 +291,37 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Street Address *</label>
-              <input
-                type="text"
-                value={customerStreetAddress}
-                onChange={(e) => setCustomerStreetAddress(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Enter your street address"
-              />
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Street Address *</label>
+                <input
+                  type="text"
+                  value={customerStreetAddress}
+                  onChange={(e) => setCustomerStreetAddress(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
+                  placeholder="Enter street address"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">City *</label>
+                <input
+                  type="text"
+                  value={customerCity}
+                  onChange={(e) => setCustomerCity(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
+                  placeholder="Enter city"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">City *</label>
-              <input
-                type="text"
-                value={customerCity}
-                onChange={(e) => setCustomerCity(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Enter your city"
-              />
+            <div className="mt-16">
+              <button
+                onClick={handleNext}
+                className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 border-2 border-purple-400/50 backdrop-blur-sm shadow-lg shadow-purple-500/30"
+              >
+                Continue
+              </button>
             </div>
-
-            <button
-              onClick={handleNext}
-              className="w-full bg-purple-600 text-white font-bold py-4 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 border-2 border-purple-400/50 backdrop-blur-sm shadow-lg shadow-purple-500/30"
-            >
-              Continue
-            </button>
           </div>
         )}
 
