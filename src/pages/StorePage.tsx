@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { publicAPI } from '../services/api';
-import type { Product, Category, OrderPublic } from '../services/api';
+import type { Product, Category, Brand, OrderPublic } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
@@ -18,6 +18,7 @@ export default function StorePage() {
   const [order, setOrder] = useState<OrderPublic | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -40,6 +41,7 @@ export default function StorePage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('');
   
   // Track pending quantities for products not yet in cart
   const [pendingQuantities, setPendingQuantities] = useState<Record<string, number>>({});
@@ -87,6 +89,17 @@ export default function StorePage() {
     }
   }, [userId]);
 
+  const fetchBrands = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      const data = await publicAPI.brands.getAllByUserId(userId);
+      setBrands(data);
+    } catch (err) {
+      console.error('Failed to fetch brands:', err);
+    }
+  }, [userId]);
+
   const fetchProducts = useCallback(async () => {
     if (!userId) return;
     
@@ -102,7 +115,10 @@ export default function StorePage() {
         // Filter by category client-side if selected
         let filteredProducts = allProducts;
         if (selectedCategory) {
-          filteredProducts = allProducts.filter(p => p.categoryId === Number(selectedCategory));
+          filteredProducts = filteredProducts.filter(p => p.categoryId === Number(selectedCategory));
+        }
+        if (selectedBrand) {
+          filteredProducts = filteredProducts.filter(p => p.brandId === Number(selectedBrand));
         }
         
         // Sort client-side
@@ -143,7 +159,8 @@ export default function StorePage() {
           pageSize,
           sortBy,
           sortDirection,
-          selectedCategory ? Number(selectedCategory) : undefined
+          selectedCategory ? Number(selectedCategory) : undefined,
+          selectedBrand ? Number(selectedBrand) : undefined
         );
         
         setProducts(pageResponse.content);
@@ -167,7 +184,7 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategory]);
+  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategory, selectedBrand]);
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!userId || productsList.length === 0) return;
@@ -202,8 +219,9 @@ export default function StorePage() {
     if (userId) {
       fetchProducts();
       fetchCategories();
+      fetchBrands();
     }
-  }, [userId, fetchProducts, fetchCategories]);
+  }, [userId, fetchProducts, fetchCategories, fetchBrands]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -270,6 +288,11 @@ export default function StorePage() {
   const handleCategoryFilterChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
     setCurrentPage(0); // Reset to first page when category changes
+  };
+
+  const handleBrandFilterChange = (brandId: string) => {
+    setSelectedBrand(brandId);
+    setCurrentPage(0); // Reset to first page when brand changes
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -459,6 +482,23 @@ export default function StorePage() {
               </select>
             </div>
 
+            {/* Brand */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Brand:</span>
+              <select
+                value={selectedBrand}
+                onChange={(e) => handleBrandFilterChange(e.target.value)}
+                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer min-w-[100px] sm:min-w-[140px]"
+              >
+                <option value="">All</option>
+                {brands.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Sort */}
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Sort:</span>
@@ -528,7 +568,7 @@ export default function StorePage() {
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-2">No Products Found</h3>
             <p className="text-gray-600">
-              {selectedCategory
+              {selectedCategory || selectedBrand
                 ? 'Try adjusting your filters'
                 : 'Check back later for new products!'}
             </p>

@@ -402,11 +402,15 @@ export const publicAPI = {
       size: number = 20,
       sortBy: string = 'name',
       sortDirection: string = 'ASC',
-      categoryId?: number
+      categoryId?: number,
+      brandId?: number
     ): Promise<PageResponse<Product>> => {
       const params: any = { page, size, sortBy, sortDirection };
       if (categoryId) {
         params.categoryId = categoryId;
+      }
+      if (brandId) {
+        params.brandId = brandId;
       }
       const response = await axios.get<PageResponse<Product>>(`${API_BASE_URL}/public/products/user/${userId}`, { params });
       return response.data;

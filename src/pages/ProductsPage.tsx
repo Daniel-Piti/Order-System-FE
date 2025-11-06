@@ -29,6 +29,7 @@ export default function ProductsPage() {
 
   // Filter state
   const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [brandFilter, setBrandFilter] = useState<string>('');
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -81,7 +82,7 @@ export default function ProductsPage() {
       fetchCategories();
       fetchBrands();
     }
-  }, [userId, currentPage, sortBy, sortDirection, pageSize, categoryFilter]);
+  }, [userId, currentPage, sortBy, sortDirection, pageSize, categoryFilter, brandFilter]);
 
   const fetchUserId = async () => {
     try {
@@ -107,7 +108,8 @@ export default function ProductsPage() {
         pageSize, 
         sortBy, 
         sortDirection, 
-        categoryFilter ? Number(categoryFilter) : undefined
+        categoryFilter ? Number(categoryFilter) : undefined,
+        brandFilter ? Number(brandFilter) : undefined
       );
       setProducts(pageResponse.content);
       setTotalPages(pageResponse.totalPages);
@@ -194,6 +196,11 @@ export default function ProductsPage() {
   const handleCategoryFilterChange = (categoryId: string) => {
     setCategoryFilter(categoryId);
     setCurrentPage(0); // Reset to first page when category changes
+  };
+
+  const handleBrandFilterChange = (brandId: string) => {
+    setBrandFilter(brandId);
+    setCurrentPage(0); // Reset to first page when brand changes
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -699,7 +706,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Sort Controls & Pagination Info */}
-      {(products.length > 0 || categoryFilter) && (
+      {(products.length > 0 || categoryFilter || brandFilter) && (
         <div className="glass-card rounded-3xl p-6">
           <div className="flex flex-col gap-4">
             {/* Row 1: All controls on one line */}
@@ -718,6 +725,23 @@ export default function ProductsPage() {
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Brand Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Brand:</span>
+                  <select
+                    value={brandFilter}
+                    onChange={(e) => handleBrandFilterChange(e.target.value)}
+                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                  >
+                    <option value="">All</option>
+                    {brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}
                       </option>
                     ))}
                   </select>
@@ -803,21 +827,26 @@ export default function ProductsPage() {
       {products.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
           <div className="flex flex-col items-center space-y-4">
-            {/* Show different message based on whether it's a category filter or no products at all */}
-            {categoryFilter ? (
-              // Category filter with 0 results
+            {/* Show different message based on whether it's a filter or no products at all */}
+            {(categoryFilter || brandFilter) ? (
+              // Filter with 0 results
               <>
                 <div className="p-6 rounded-full bg-gray-100/50">
                   <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">No Products in This Category</h2>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  No Products Match Filters
+                </h2>
                 <p className="text-gray-600 max-w-md">
-                  There are no products in the selected category yet.
+                  There are no products matching the selected filters.
                 </p>
                 <button
-                  onClick={() => handleCategoryFilterChange('')}
+                  onClick={() => {
+                    handleCategoryFilterChange('');
+                    handleBrandFilterChange('');
+                  }}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
                   Show All Products
