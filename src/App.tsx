@@ -11,6 +11,7 @@ import CustomerOverridesPage from './pages/CustomerOverridesPage';
 import ProductsPage from './pages/ProductsPage';
 import OverridesPage from './pages/OverridesPage';
 import CategoriesPage from './pages/CategoriesPage';
+import BrandsPage from './pages/BrandsPage';
 import LocationsPage from './pages/LocationsPage';
 import StorePage from './pages/StorePage';
 
@@ -51,6 +52,7 @@ function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="overrides" element={<OverridesPage />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="brands" element={<BrandsPage />} />
           <Route path="locations" element={<LocationsPage />} />
         </Route>
 

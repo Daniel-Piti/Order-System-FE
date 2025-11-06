@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { categoryAPI, userAPI, publicAPI } from '../services/api';
-import type { Product, Category } from '../services/api';
+import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -32,6 +33,7 @@ export default function ProductsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    brandId: '',
     categoryId: '',
     originalPrice: '',
     specialPrice: '',
@@ -60,6 +62,7 @@ export default function ProductsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [editFormData, setEditFormData] = useState({
     name: '',
+    brandId: '',
     categoryId: '',
     originalPrice: '',
     specialPrice: '',
@@ -76,6 +79,7 @@ export default function ProductsPage() {
     if (userId) {
       fetchProducts(currentPage);
       fetchCategories();
+      fetchBrands();
     }
   }, [userId, currentPage, sortBy, sortDirection, pageSize, categoryFilter]);
 
@@ -160,6 +164,16 @@ export default function ProductsPage() {
     }
   };
 
+  const fetchBrands = async () => {
+    if (!userId) return;
+    try {
+      const data = await publicAPI.brands.getAllByUserId(userId);
+      setBrands(data);
+    } catch (err) {
+      console.error('Failed to fetch brands:', err);
+    }
+  };
+
   const handleSortChange = (newSortBy: string) => {
     // If clicking the same sort field, toggle direction
     if (newSortBy === sortBy) {
@@ -201,6 +215,7 @@ export default function ProductsPage() {
     setIsAddModalOpen(false);
     setFormData({
       name: '',
+      brandId: '',
       categoryId: '',
       originalPrice: '',
       specialPrice: '',
@@ -329,6 +344,7 @@ export default function ProductsPage() {
     setProductToEdit(product);
     setEditFormData({
       name: product.name,
+      brandId: product.brandId?.toString() || '',
       categoryId: product.categoryId?.toString() || '',
       originalPrice: product.originalPrice.toString(),
       specialPrice: product.specialPrice.toString(),
@@ -367,6 +383,7 @@ export default function ProductsPage() {
     setProductToEdit(null);
     setEditFormData({
       name: '',
+      brandId: '',
       categoryId: '',
       originalPrice: '',
       specialPrice: '',
@@ -449,6 +466,7 @@ export default function ProductsPage() {
         },
         body: JSON.stringify({
           name: editFormData.name,
+          brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
           categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
           originalPrice: Number(editFormData.originalPrice),
           specialPrice: finalSpecialPrice,
@@ -577,6 +595,9 @@ export default function ProductsPage() {
       // Create FormData
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
+      if (formData.brandId) {
+        formDataToSend.append('brandId', formData.brandId);
+      }
       if (formData.categoryId) {
         formDataToSend.append('categoryId', formData.categoryId);
       }
@@ -1038,6 +1059,26 @@ export default function ProductsPage() {
                 </select>
               </div>
 
+              <div>
+                <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand
+                </label>
+                <select
+                  id="brandId"
+                  name="brandId"
+                  value={formData.brandId}
+                  onChange={handleInputChange}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">None</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="originalPrice" className="block text-sm font-medium text-gray-700 mb-2">
@@ -1290,6 +1331,26 @@ export default function ProductsPage() {
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="edit-brandId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Brand
+                </label>
+                <select
+                  id="edit-brandId"
+                  name="brandId"
+                  value={editFormData.brandId}
+                  onChange={handleEditInputChange}
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">None</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>
+                      {brand.name}
                     </option>
                   ))}
                 </select>

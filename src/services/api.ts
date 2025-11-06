@@ -173,10 +173,22 @@ export interface Category {
   category: string;
 }
 
+export interface Brand {
+  id: number;
+  userId: string;
+  name: string;
+  s3Key: string | null;
+  fileName: string | null;
+  fileSizeBytes: number | null;
+  mimeType: string | null;
+}
+
 export interface Product {
   id: string;
   userId: string;
   name: string;
+  brandId: number | null;
+  brandName: string | null;
   categoryId: number | null;
   originalPrice: number;
   specialPrice: number;
@@ -229,8 +241,35 @@ export const categoryAPI = {
   },
 };
 
+export const brandAPI = {
+  getAllBrands: async (): Promise<Brand[]> => {
+    const response = await api.get<Brand[]>('/brands');
+    return response.data;
+  },
+
+  createBrand: async (name: string): Promise<number> => {
+    const response = await api.post<number>('/brands', {
+      name: name,
+    });
+    return response.data;
+  },
+
+  updateBrand: async (brandId: number, name: string): Promise<number> => {
+    const response = await api.put<number>(`/brands/${brandId}`, {
+      name: name,
+    });
+    return response.data;
+  },
+
+  deleteBrand: async (brandId: number): Promise<string> => {
+    const response = await api.delete<string>(`/brands/${brandId}`);
+    return response.data;
+  },
+};
+
 export interface ProductRequest {
   name: string;
+  brandId: number | null;
   categoryId: number | null;
   originalPrice: number;
   specialPrice: number;
@@ -398,6 +437,14 @@ export const publicAPI = {
     // Get single category by userId and categoryId
     getByUserIdAndCategoryId: async (userId: string, categoryId: number): Promise<Category> => {
       const response = await axios.get<Category>(`${API_BASE_URL}/public/categories/user/${userId}/category/${categoryId}`);
+      return response.data;
+    },
+  },
+
+  brands: {
+    // Get all brands for a user (seller)
+    getAllByUserId: async (userId: string): Promise<Brand[]> => {
+      const response = await axios.get<Brand[]>(`${API_BASE_URL}/public/brands/user/${userId}`);
       return response.data;
     },
   },

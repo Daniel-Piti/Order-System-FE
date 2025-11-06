@@ -44,3 +44,11 @@ export interface ProductWithCategory {
   categoryId: number | null;
 }
 
+/**
+ * Simplified Product interface for brand counting (used in BrandsPage)
+ */
+export interface ProductWithBrand {
+  id: string;
+  brandId: number | null;
+}
+
