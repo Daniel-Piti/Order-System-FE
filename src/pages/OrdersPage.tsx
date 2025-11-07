@@ -14,6 +14,7 @@ export default function OrdersPage() {
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -105,6 +106,25 @@ export default function OrdersPage() {
       setTimeout(() => setCopiedOrderId(null), 2000); // Clear after 2 seconds
     } catch (err) {
       console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleMarkOrderDone = async (orderId: string) => {
+    setUpdatingOrderId(orderId);
+    setError('');
+    try {
+      await orderAPI.markOrderDone(orderId);
+      await fetchOrders(currentPage);
+      setViewingOrder((prev) => {
+        if (prev && prev.id === orderId) {
+          return { ...prev, status: 'DONE' };
+        }
+        return prev;
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.userMessage || 'Failed to mark order as done');
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -304,7 +324,7 @@ export default function OrdersPage() {
             <div
               key={order.id}
               onClick={() => handleViewOrder(order)}
-              className="glass-card rounded-xl p-3 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-300 hover:border-indigo-400 flex flex-col"
+              className="glass-card rounded-xl p-3 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-300 hover:border-indigo-400 flex flex-col relative"
             >
               {/* Order Header - Status & ID */}
               <div className="flex items-center justify-between mb-3">
@@ -342,38 +362,68 @@ export default function OrdersPage() {
               {/* Spacer to push button to bottom */}
               <div className="flex-grow"></div>
 
-              {/* Actions */}
+              {/* Floating Actions */}
               {order.status === 'EMPTY' && (
-                <div className="flex items-center justify-center">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyLink(order.id);
-                    }}
-                    className={`w-full glass-button px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
-                      copiedOrderId === order.id
-                        ? 'text-green-600 hover:shadow-md'
-                        : 'text-indigo-600 hover:shadow-md'
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyLink(order.id);
+                  }}
+                  className={`absolute bottom-3 right-3 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm ${
+                    copiedOrderId === order.id
+                      ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
+                      : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
+                  }`}
+                  title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
+                >
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                      copiedOrderId === order.id ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                     }`}
-                    title="Copy order link"
                   >
-                    {copiedOrderId === order.id ? (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <span>Copy Link</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                      copiedOrderId === order.id ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                </button>
+              )}
+              {order.status === 'PLACED' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleMarkOrderDone(order.id);
+                  }}
+                  disabled={updatingOrderId === order.id}
+                  className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm ${
+                    updatingOrderId === order.id
+                      ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                      : 'bg-green-100 text-green-700 border-green-700 hover:shadow-lg'
+                  }`}
+                  title="Mark as done"
+                >
+                  {updatingOrderId === order.id ? (
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
+                    </svg>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-xs font-semibold text-green-700">Mark as Done</span>
+                    </>
+                  )}
+                </button>
               )}
             </div>
           ))}
@@ -586,8 +636,14 @@ export default function OrdersPage() {
 
       {/* View Order Modal */}
       {viewingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white/85">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={closeViewModal}
+        >
+          <div
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white/85"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-gray-800">Order Details</h2>
@@ -764,8 +820,30 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Close Button */}
-            <div className="flex justify-end">
+            {/* Actions */}
+            <div className="flex justify-center gap-3 items-center">
+              {viewingOrder.status === 'PLACED' && (
+                <button
+                  onClick={() => handleMarkOrderDone(viewingOrder.id)}
+                  disabled={updatingOrderId === viewingOrder.id}
+                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
+                    updatingOrderId === viewingOrder.id
+                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                      : 'text-green-600 border-green-700 bg-green-50 hover:shadow-lg'
+                  }`}
+                >
+                  {updatingOrderId === viewingOrder.id ? (
+                    'Marking...'
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Mark as Done</span>
+                    </>
+                  )}
+                </button>
+              )}
               <button
                 onClick={closeViewModal}
                 className="glass-button px-6 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"

@@ -389,6 +389,10 @@ export const orderAPI = {
     const response = await api.post<string>('/orders', data);
     return response.data;
   },
+
+  markOrderDone: async (orderId: string): Promise<void> => {
+    await api.put(`/orders/${orderId}/status/done`);
+  },
 };
 
 // Public API (no authentication required) - for customers
