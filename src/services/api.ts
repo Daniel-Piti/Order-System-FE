@@ -393,6 +393,10 @@ export const orderAPI = {
   markOrderDone: async (orderId: string): Promise<void> => {
     await api.put(`/orders/${orderId}/status/done`);
   },
+
+  markOrderCancelled: async (orderId: string): Promise<void> => {
+    await api.put(`/orders/${orderId}/status/cancelled`);
+  },
 };
 
 // Public API (no authentication required) - for customers

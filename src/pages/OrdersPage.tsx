@@ -15,6 +15,9 @@ export default function OrdersPage() {
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -125,6 +128,27 @@ export default function OrdersPage() {
       setError(err.response?.data?.userMessage || 'Failed to mark order as done');
     } finally {
       setUpdatingOrderId(null);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingOrderId(orderId);
+    setError('');
+    try {
+      await orderAPI.markOrderCancelled(orderId);
+      await fetchOrders(currentPage);
+      setViewingOrder((prev) => {
+        if (prev && prev.id === orderId) {
+          return { ...prev, status: 'CANCELLED' };
+        }
+        return prev;
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.userMessage || 'Failed to cancel order');
+    } finally {
+      setCancellingOrderId(null);
+      setOrderIdPendingCancel(null);
+      setShowCancelConfirm(false);
     }
   };
 
@@ -821,7 +845,23 @@ export default function OrdersPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-center gap-3 items-center">
+            <div className="flex flex-wrap justify-center gap-3 items-center">
+              {(viewingOrder.status === 'PLACED' || viewingOrder.status === 'EMPTY') && (
+                <button
+                  onClick={() => {
+                    setOrderIdPendingCancel(viewingOrder.id);
+                    setShowCancelConfirm(true);
+                  }}
+                  disabled={cancellingOrderId === viewingOrder.id}
+                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
+                    cancellingOrderId === viewingOrder.id
+                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                      : 'text-red-600 border-red-600 bg-red-50 hover:shadow-lg'
+                  }`}
+                >
+                  {cancellingOrderId === viewingOrder.id ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              )}
               {viewingOrder.status === 'PLACED' && (
                 <button
                   onClick={() => handleMarkOrderDone(viewingOrder.id)}
@@ -849,6 +889,58 @@ export default function OrdersPage() {
                 className="glass-button px-6 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelConfirm && orderIdPendingCancel && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
+        >
+          <div
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-red-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Cancel order?</h2>
+              </div>
+              <button
+                onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed font-medium">
+              Cancelling will remove this order from the active queue. You can always create a new order later if you change your mind.
+            </p>
+
+            <div className="border-t border-gray-200/70 -mx-6 md:-mx-8 mb-4"></div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
+                className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:shadow-md transition-all"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={() => handleCancelOrder(orderIdPendingCancel)}
+                disabled={!!cancellingOrderId}
+                className={`glass-button px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
+                  cancellingOrderId
+                    ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                    : 'text-red-600 border-red-600 bg-red-50 hover:shadow-lg'
+                }`}
+              >
+                {cancellingOrderId ? 'Cancelling...' : 'Cancel Order'}
               </button>
             </div>
           </div>
