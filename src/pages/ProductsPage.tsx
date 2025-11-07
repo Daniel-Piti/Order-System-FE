@@ -970,19 +970,19 @@ export default function ProductsPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
           {products.map((product) => {
             const category = categories.find(cat => cat.id === product.categoryId);
             return (
-              <div key={product.id} className="glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <div key={product.id} className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col">
                 {/* Product Image */}
-                <div className="relative h-32 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group">
+                <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
                   {productImages[product.id] && productImages[product.id].length > 0 ? (
                     <>
                       <img
                         src={productImages[product.id][productImageIndices[product.id] || 0]}
                         alt={product.name}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                           const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
@@ -1002,7 +1002,7 @@ export default function ProductsPage() {
                               const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
                               setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                             }}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                             title="Previous image"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1017,7 +1017,7 @@ export default function ProductsPage() {
                               const newIndex = (currentIndex + 1) % productImages[product.id].length;
                               setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                             }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                             title="Next image"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1029,10 +1029,8 @@ export default function ProductsPage() {
                     </>
                   ) : null}
                   {(!productImages[product.id] || productImages[product.id].length === 0) && (
-                    <div className="image-placeholder w-full h-full flex items-center justify-center">
-                      <svg className="w-12 h-12 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                    <div className="image-placeholder w-full h-full flex items-center justify-center text-4xl opacity-40">
+                      📦
                     </div>
                   )}
                   {/* Show image count badge if multiple images */}
@@ -1045,19 +1043,20 @@ export default function ProductsPage() {
                   )}
                   
                   {/* Category Badge */}
-                  {category && (
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-0.5 text-xs font-semibold bg-white/90 backdrop-blur-sm text-indigo-700 rounded-full shadow-md">
-                        {category.category}
-                      </span>
+                  {product.categoryId && (
+                    <div className="absolute top-2 left-2 backdrop-blur-xl bg-white/90 px-2 py-0.5 rounded-full text-xs font-bold text-gray-700 shadow-lg border border-white/50">
+                      {category?.category || 'Category'}
                     </div>
                   )}
                   
                   {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 flex space-x-1">
+                  <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => handleEditProduct(product)}
-                      className="p-1.5 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditProduct(product);
+                      }}
+                      className="p-1.5 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-md backdrop-blur-sm"
                       title="Edit product"
                     >
                       <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1065,8 +1064,11 @@ export default function ProductsPage() {
                       </svg>
                     </button>
                     <button
-                      onClick={() => setProductToDelete(product)}
-                      className="p-1.5 rounded-lg bg-white/90 hover:bg-red-50 transition-colors shadow-md"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProductToDelete(product);
+                      }}
+                      className="p-1.5 rounded-lg bg-white/90 hover:bg-red-50 transition-colors shadow-md backdrop-blur-sm"
                       title="Delete product"
                     >
                       <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1077,22 +1079,33 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Product Info */}
-                <div className="p-3 space-y-2">
-                  <h3 className="text-sm font-bold text-gray-800 truncate" title={product.name}>
+                <div className="p-3 flex flex-col flex-1">
+                  {/* Title */}
+                  <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">
                     {product.name}
                   </h3>
 
-                  <div className="flex items-baseline">
-                    <div className="flex items-baseline space-x-1.5">
-                      <span className="text-base font-bold text-indigo-600">
-                        {formatPrice(product.specialPrice)}
-                      </span>
-                      {product.originalPrice !== product.specialPrice && (
-                        <span className="text-xs text-gray-500 line-through">
+                  {/* Description */}
+                  <p className="text-xs text-gray-600 mb-1 whitespace-pre-line line-clamp-2">
+                    {product.description || ''}
+                  </p>
+
+                  {/* Price */}
+                  <div className="pb-1">
+                    {product.originalPrice !== product.specialPrice ? (
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xl font-bold text-purple-600">
+                          {formatPrice(product.specialPrice)}
+                        </span>
+                        <span className="text-xs text-gray-400 line-through">
                           {formatPrice(product.originalPrice)}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <span className="text-xl font-bold text-purple-600">
+                        {formatPrice(product.specialPrice)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { publicAPI } from '../services/api';
 import type { Product, Category, Brand, OrderPublic } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
 import PaginationBar from '../components/PaginationBar';
+import ProductDetailModal from '../components/ProductDetailModal';
 import { formatPrice } from '../utils/formatPrice';
 
 interface CartItem {
@@ -40,6 +41,7 @@ export default function StorePage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -53,6 +55,68 @@ export default function StorePage() {
   
   // Track which products just got added (for success animation)
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
+  const [hasLoadedCart, setHasLoadedCart] = useState(false);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    if (!userId && !orderId) return; // Wait for userId or orderId to be set
+    
+    const key = orderId ? `cart_${orderId}` : `cart_${userId}`;
+    const savedCartData = localStorage.getItem(key);
+    if (savedCartData) {
+      try {
+        const parsed = JSON.parse(savedCartData);
+        
+        // Check if data has expiration info (new format)
+        if (parsed.expiresAt) {
+          const expiresAt = new Date(parsed.expiresAt);
+          const now = new Date();
+          
+          if (now > expiresAt) {
+            // Cart has expired, remove it
+            localStorage.removeItem(key);
+            setHasLoadedCart(true);
+            return;
+          }
+          
+          // Cart is still valid, load it
+          if (parsed.cart && parsed.cart.length > 0) {
+            setCart(parsed.cart);
+          }
+        } else {
+          // Old format (no expiration) - treat as expired and remove
+          localStorage.removeItem(key);
+        }
+      } catch (err) {
+        console.error('Failed to parse saved cart:', err);
+        localStorage.removeItem(key); // Remove corrupted data
+      }
+    }
+    setHasLoadedCart(true);
+  }, [orderId, userId]);
+
+  // Save cart to localStorage whenever it changes (but only after initial load)
+  useEffect(() => {
+    if (!hasLoadedCart) return; // Don't save until we've tried to load
+    if (!userId && !orderId) return; // Don't save if userId/orderId not set yet
+    
+    const key = orderId ? `cart_${orderId}` : `cart_${userId}`;
+    if (cart.length > 0) {
+      // Save with expiration date (7 days from now)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+      
+      const cartData = {
+        cart: cart,
+        expiresAt: expiresAt.toISOString()
+      };
+      
+      localStorage.setItem(key, JSON.stringify(cartData));
+    } else {
+      // If cart is empty, remove from localStorage
+      localStorage.removeItem(key);
+    }
+  }, [cart, orderId, userId, hasLoadedCart]);
 
   // Fetch userId from order if orderId is provided, otherwise use userIdParam
   useEffect(() => {
@@ -758,7 +822,8 @@ export default function StorePage() {
               return (
                 <div
                   key={product.id}
-                  className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col"
+                  onClick={() => setSelectedProduct(product)}
+                  className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col cursor-pointer"
                 >
                   {/* Product Image */}
                   <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
@@ -827,13 +892,6 @@ export default function StorePage() {
                       </div>
                     )}
                     
-                    {/* Category Badge */}
-                    {product.categoryId && (
-                      <div className="absolute top-2 left-2 backdrop-blur-xl bg-white/90 px-2 py-0.5 rounded-full text-xs font-bold text-gray-700 shadow-lg border border-white/50">
-                        {categories.find(c => c.id === product.categoryId)?.category || 'Category'}
-                      </div>
-                    )}
-
                     {/* In Cart Badge */}
                     {inCart && (
                       <div className="absolute top-2 right-2 backdrop-blur-xl bg-green-600/90 px-2 py-0.5 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
@@ -851,12 +909,12 @@ export default function StorePage() {
                     </h3>
 
                     {/* Description */}
-                    <p className="text-xs text-gray-600 mb-2 line-clamp-2 min-h-[2rem]">
+                    <p className="text-xs text-gray-600 mb-1 whitespace-pre-line line-clamp-2">
                       {product.description || ''}
                     </p>
 
                                 {/* Price */}
-                                <div className="mb-2">
+                                <div className="pb-1">
                                   {product.originalPrice !== product.specialPrice ? (
                                     <div className="flex items-baseline gap-1.5">
                                       <span className="text-xl font-bold text-purple-600">
@@ -874,7 +932,7 @@ export default function StorePage() {
                                 </div>
 
                     {/* Quantity and Add to Cart */}
-                    <div className="flex items-center gap-1.5 mt-auto">
+                    <div className="flex items-center gap-1.5 mt-auto" onClick={(e) => e.stopPropagation()}>
                       {/* Quantity Selector */}
                       <div className="flex items-center glass-button rounded-lg overflow-hidden border border-gray-300">
                         <button
@@ -1196,15 +1254,17 @@ export default function StorePage() {
                           {/* Product Info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900 text-base leading-tight">
+                              <h4 className="font-semibold text-gray-900 text-base leading-tight flex-1 pr-2">
                                 {item.product.name}
                               </h4>
                               <button
                                 onClick={() => removeFromCart(item.product.id)}
-                                className="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center flex-shrink-0 transition-colors ml-2"
+                                className="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center flex-shrink-0 transition-all shadow-sm hover:shadow-md"
                                 title="Remove"
                               >
-                                <span className="text-white text-xs font-bold leading-none">×</span>
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                               </button>
                             </div>
                             <p className="text-sm text-gray-500 mb-2">
@@ -1276,6 +1336,23 @@ export default function StorePage() {
           </div>
       </>
 
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          productImages={productImages[selectedProduct.id] || []}
+          categories={categories}
+          brands={brands}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={addToCart}
+          currentQuantity={cart.find(item => item.product.id === selectedProduct.id)?.quantity || 0}
+          getPendingQuantity={getPendingQuantity}
+          updateQuantity={updateQuantity}
+          inCart={!!cart.find(item => item.product.id === selectedProduct.id)}
+        />
+      )}
+
       {/* Checkout Flow */}
       {isCheckoutOpen && orderId && (
         <CheckoutFlow
@@ -1285,6 +1362,12 @@ export default function StorePage() {
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={() => {
             setCart([]);
+            // Clear cart from localStorage
+            if (orderId) {
+              localStorage.removeItem(`cart_${orderId}`);
+            } else if (userId) {
+              localStorage.removeItem(`cart_${userId}`);
+            }
             // Keep checkout open to show success screen - no redirect
           }}
         />
