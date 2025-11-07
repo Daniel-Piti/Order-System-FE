@@ -972,7 +972,6 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
           {products.map((product) => {
-            const category = categories.find(cat => cat.id === product.categoryId);
             return (
               <div key={product.id} className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col">
                 {/* Product Image */}
@@ -1039,13 +1038,6 @@ export default function ProductsPage() {
                       <span className="px-2 py-1 text-xs font-semibold bg-black/60 text-white rounded-full backdrop-blur-sm">
                         {(productImageIndices[product.id] || 0) + 1} / {productImages[product.id].length}
                       </span>
-                    </div>
-                  )}
-                  
-                  {/* Category Badge */}
-                  {product.categoryId && (
-                    <div className="absolute top-2 left-2 backdrop-blur-xl bg-white/90 px-2 py-0.5 rounded-full text-xs font-bold text-gray-700 shadow-lg border border-white/50">
-                      {category?.category || 'Category'}
                     </div>
                   )}
                   
@@ -1353,6 +1345,9 @@ export default function ProductsPage() {
                     </div>
                   )}
 
+                  <p className="text-xs text-gray-500">
+                    Images will be ordered by their file names
+                  </p>
                   <p className="text-xs text-gray-500">
                     Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
                   </p>
@@ -1715,6 +1710,9 @@ export default function ProductsPage() {
                     </label>
                   </div>
 
+                  <p className="text-xs text-gray-500">
+                    Images will be ordered by their file names
+                  </p>
                   <p className="text-xs text-gray-500">
                     Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
                   </p>
