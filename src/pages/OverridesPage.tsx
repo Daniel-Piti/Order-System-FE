@@ -507,7 +507,7 @@ export default function OverridesPage() {
             <table className="w-full">
               <thead className="bg-white/30 border-b border-gray-200/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">Customer</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Product</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Original Price</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Override Price</th>
@@ -518,7 +518,9 @@ export default function OverridesPage() {
                 {overrides.map((override) => (
                   <tr key={override.id} className="hover:bg-white/20 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-800 font-medium">
-                      {getCustomerName(override.customerId)}
+                      <span className="inline-block max-w-[200px] truncate" title={getCustomerName(override.customerId)}>
+                        {getCustomerName(override.customerId)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
                       {getProductName(override.productId)}

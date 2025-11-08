@@ -6,6 +6,8 @@ import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 
 const MAX_PRICE = 1_000_000;
+const MAX_PRODUCT_NAME_LENGTH = 200;
+const MAX_PRODUCT_DESCRIPTION_LENGTH = 1000;
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -216,7 +218,11 @@ export default function ProductsPage() {
     const { name } = e.target;
     let { value } = e.target;
 
-    if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+    if (name === 'name') {
+      value = value.slice(0, MAX_PRODUCT_NAME_LENGTH);
+    } else if (name === 'description') {
+      value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
+    } else if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -453,12 +459,12 @@ export default function ProductsPage() {
   const handleEditProduct = async (product: Product) => {
     setProductToEdit(product);
     setEditFormData({
-      name: product.name,
+      name: product.name.slice(0, MAX_PRODUCT_NAME_LENGTH),
       brandId: product.brandId?.toString() || '',
       categoryId: product.categoryId?.toString() || '',
       originalPrice: product.originalPrice.toString(),
       specialPrice: product.specialPrice.toString(),
-      description: product.description,
+      description: (product.description || '').slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH),
     });
     setExistingImages([]);
     setOriginalImages([]);
@@ -515,7 +521,11 @@ export default function ProductsPage() {
     const { name } = e.target;
     let { value } = e.target;
 
-    if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+    if (name === 'name') {
+      value = value.slice(0, MAX_PRODUCT_NAME_LENGTH);
+    } else if (name === 'description') {
+      value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
+    } else if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -1192,6 +1202,7 @@ export default function ProductsPage() {
                   type="text"
                   value={formData.name}
                   onChange={handleInputChange}
+                  maxLength={MAX_PRODUCT_NAME_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -1305,6 +1316,7 @@ export default function ProductsPage() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
+                  maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   placeholder="Product description (optional)"
                   rows={3}
@@ -1481,6 +1493,7 @@ export default function ProductsPage() {
                   type="text"
                   value={editFormData.name}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_PRODUCT_NAME_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -1594,6 +1607,7 @@ export default function ProductsPage() {
                   name="description"
                   value={editFormData.description}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   placeholder="Product description (optional)"
                   rows={3}

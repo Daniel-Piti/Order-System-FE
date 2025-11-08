@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { validateLocationForm } from '../utils/validation';
+import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
 interface EditLocationModalProps {
@@ -31,10 +31,10 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        name: location.name,
-        streetAddress: location.streetAddress,
-        city: location.city,
-        phoneNumber: location.phoneNumber,
+        name: location.name.slice(0, LOCATION_FIELD_LIMITS.name),
+        streetAddress: location.streetAddress.slice(0, LOCATION_FIELD_LIMITS.streetAddress),
+        city: location.city.slice(0, LOCATION_FIELD_LIMITS.city),
+        phoneNumber: location.phoneNumber.replace(/\D/g, '').slice(0, LOCATION_FIELD_LIMITS.phoneNumber),
       });
       setShowErrors(false);
       setFieldErrors({});
@@ -89,9 +89,13 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const sanitizedValue =
+      name === 'phoneNumber'
+        ? value.replace(/\D/g, '').slice(0, LOCATION_FIELD_LIMITS.phoneNumber)
+        : value.slice(0, LOCATION_FIELD_LIMITS[name as keyof typeof LOCATION_FIELD_LIMITS] ?? value.length);
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     });
     // Clear error for this field when user starts typing
     if (showErrors && fieldErrors[name]) {
@@ -157,6 +161,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               type="text"
               value={formData.name}
               onChange={handleChange}
+              maxLength={LOCATION_FIELD_LIMITS.name}
               className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -177,6 +182,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
+              maxLength={LOCATION_FIELD_LIMITS.streetAddress}
               className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -197,6 +203,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               type="text"
               value={formData.city}
               onChange={handleChange}
+              maxLength={LOCATION_FIELD_LIMITS.city}
               className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -217,10 +224,12 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
+              maxLength={LOCATION_FIELD_LIMITS.phoneNumber}
+              inputMode="numeric"
+              pattern="[0-9]*"
               className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="+1234567890"
             />
             {showErrors && fieldErrors.phoneNumber && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>

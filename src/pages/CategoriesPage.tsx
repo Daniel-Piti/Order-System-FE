@@ -16,6 +16,7 @@ export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState('');
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const MAX_CATEGORY_NAME_LENGTH = 50;
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(1);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -123,7 +124,7 @@ export default function CategoriesPage() {
 
   const handleEditCategory = (category: Category) => {
     setCategoryToEdit(category);
-    setCategoryName(category.category);
+    setCategoryName(category.category.slice(0, MAX_CATEGORY_NAME_LENGTH));
     setIsEditModalOpen(true);
   };
 
@@ -465,7 +466,8 @@ export default function CategoriesPage() {
                   name="categoryName"
                   type="text"
                   value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
+                  onChange={(e) => setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH))}
+                  maxLength={MAX_CATEGORY_NAME_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., Beverages, Snacks, Electronics"
                   autoFocus
@@ -562,7 +564,8 @@ export default function CategoriesPage() {
                   name="editCategoryName"
                   type="text"
                   value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
+                  onChange={(e) => setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH))}
+                  maxLength={MAX_CATEGORY_NAME_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., Beverages, Snacks, Electronics"
                   autoFocus

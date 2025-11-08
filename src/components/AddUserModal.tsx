@@ -9,6 +9,8 @@ interface AddUserModalProps {
 }
 
 export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+  const MAX_EMAIL_LENGTH = 100;
+  const MAX_PHONE_LENGTH = 10;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -99,9 +101,15 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const sanitizedValue =
+      name === 'phoneNumber'
+        ? value.replace(/\D/g, '').slice(0, MAX_PHONE_LENGTH)
+        : name === 'email'
+        ? value.slice(0, MAX_EMAIL_LENGTH)
+        : value;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     });
     // Clear error for this field when user starts typing
     if (showErrors && fieldErrors[name]) {
@@ -196,6 +204,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
               type="email"
               value={formData.email}
               onChange={handleChange}
+            maxLength={MAX_EMAIL_LENGTH}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -241,6 +250,9 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+            maxLength={MAX_PHONE_LENGTH}
+            inputMode="numeric"
+            pattern="[0-9]*"
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                 }`}

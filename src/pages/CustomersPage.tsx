@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { customerAPI, publicAPI } from '../services/api';
 import type { Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
+import {
+  validateEmail,
+  validateRequiredWithMaxLength,
+  validatePhoneNumberDigitsOnly,
+} from '../utils/validation';
 
 interface CustomerOverrideData {
   overrides: never[];
@@ -11,6 +16,12 @@ interface CustomerOverrideData {
   totalElements: number;
   isLoading: boolean;
 }
+
+const MAX_CUSTOMER_NAME_LENGTH = 50;
+const MAX_CUSTOMER_PHONE_LENGTH = 10;
+const MAX_CUSTOMER_STREET_LENGTH = 120;
+const MAX_CUSTOMER_CITY_LENGTH = 60;
+const MAX_CUSTOMER_EMAIL_LENGTH = 100;
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -207,7 +218,13 @@ export default function CustomersPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const sanitizedValue =
+      name === 'phoneNumber'
+        ? value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH)
+        : name === 'email'
+        ? value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH)
+        : value;
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     if (showErrors && fieldErrors[name]) {
       setFieldErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -215,7 +232,13 @@ export default function CustomersPage() {
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({ ...prev, [name]: value }));
+    const sanitizedValue =
+      name === 'phoneNumber'
+        ? value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH)
+        : name === 'email'
+        ? value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH)
+        : value;
+    setEditFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     if (showErrors && fieldErrors[name]) {
       setFieldErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -227,24 +250,37 @@ export default function CustomersPage() {
     setShowErrors(true);
 
     const errors: Record<string, string> = {};
-    if (!formData.name.trim()) {
-      errors.name = 'Customer name is required';
+    const nameError = validateRequiredWithMaxLength(formData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
+    if (nameError) {
+      errors.name = nameError;
     }
-    if (!formData.phoneNumber.trim()) {
-      errors.phoneNumber = 'Phone number is required';
-    } else if (!/^\d+$/.test(formData.phoneNumber)) {
-      errors.phoneNumber = 'Phone number must contain only digits';
+
+    const phoneError = validatePhoneNumberDigitsOnly(
+      formData.phoneNumber,
+      MAX_CUSTOMER_PHONE_LENGTH,
+      'Phone number'
+    );
+    if (phoneError) {
+      errors.phoneNumber = phoneError;
     }
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      errors.email = emailError;
     }
-    if (!formData.streetAddress.trim()) {
-      errors.streetAddress = 'Street address is required';
+
+    const streetError = validateRequiredWithMaxLength(
+      formData.streetAddress,
+      'Street address',
+      MAX_CUSTOMER_STREET_LENGTH
+    );
+    if (streetError) {
+      errors.streetAddress = streetError;
     }
-    if (!formData.city.trim()) {
-      errors.city = 'City is required';
+
+    const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    if (cityError) {
+      errors.city = cityError;
     }
 
     setFieldErrors(errors);
@@ -270,24 +306,37 @@ export default function CustomersPage() {
     setShowErrors(true);
 
     const errors: Record<string, string> = {};
-    if (!editFormData.name.trim()) {
-      errors.name = 'Customer name is required';
+    const nameError = validateRequiredWithMaxLength(editFormData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
+    if (nameError) {
+      errors.name = nameError;
     }
-    if (!editFormData.phoneNumber.trim()) {
-      errors.phoneNumber = 'Phone number is required';
-    } else if (!/^\d+$/.test(editFormData.phoneNumber)) {
-      errors.phoneNumber = 'Phone number must contain only digits';
+
+    const phoneError = validatePhoneNumberDigitsOnly(
+      editFormData.phoneNumber,
+      MAX_CUSTOMER_PHONE_LENGTH,
+      'Phone number'
+    );
+    if (phoneError) {
+      errors.phoneNumber = phoneError;
     }
-    if (!editFormData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
-      errors.email = 'Please enter a valid email address';
+
+    const emailError = validateEmail(editFormData.email);
+    if (emailError) {
+      errors.email = emailError;
     }
-    if (!editFormData.streetAddress.trim()) {
-      errors.streetAddress = 'Street address is required';
+
+    const streetError = validateRequiredWithMaxLength(
+      editFormData.streetAddress,
+      'Street address',
+      MAX_CUSTOMER_STREET_LENGTH
+    );
+    if (streetError) {
+      errors.streetAddress = streetError;
     }
-    if (!editFormData.city.trim()) {
-      errors.city = 'City is required';
+
+    const cityError = validateRequiredWithMaxLength(editFormData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    if (cityError) {
+      errors.city = cityError;
     }
 
     setFieldErrors(errors);
@@ -604,6 +653,7 @@ export default function CustomersPage() {
                   type="text"
                   value={formData.name}
                   onChange={handleInputChange}
+                  maxLength={MAX_CUSTOMER_NAME_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -625,6 +675,9 @@ export default function CustomersPage() {
                   type="tel"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
+                  maxLength={MAX_CUSTOMER_PHONE_LENGTH}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -645,6 +698,7 @@ export default function CustomersPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  maxLength={MAX_CUSTOMER_EMAIL_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -665,6 +719,7 @@ export default function CustomersPage() {
                   type="text"
                   value={formData.streetAddress}
                   onChange={handleInputChange}
+                  maxLength={MAX_CUSTOMER_STREET_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -685,6 +740,7 @@ export default function CustomersPage() {
                   type="text"
                   value={formData.city}
                   onChange={handleInputChange}
+                  maxLength={MAX_CUSTOMER_CITY_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -786,6 +842,7 @@ export default function CustomersPage() {
                   type="text"
                   value={editFormData.name}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_CUSTOMER_NAME_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -807,6 +864,9 @@ export default function CustomersPage() {
                   type="tel"
                   value={editFormData.phoneNumber}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_CUSTOMER_PHONE_LENGTH}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -827,6 +887,7 @@ export default function CustomersPage() {
                   type="email"
                   value={editFormData.email}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_CUSTOMER_EMAIL_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -847,6 +908,7 @@ export default function CustomersPage() {
                   type="text"
                   value={editFormData.streetAddress}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_CUSTOMER_STREET_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
@@ -867,6 +929,7 @@ export default function CustomersPage() {
                   type="text"
                   value={editFormData.city}
                   onChange={handleEditInputChange}
+                  maxLength={MAX_CUSTOMER_CITY_LENGTH}
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                   }`}

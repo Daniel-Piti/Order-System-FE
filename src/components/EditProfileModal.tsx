@@ -94,9 +94,13 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const sanitizedValue =
+      name === 'phoneNumber'
+        ? value.replace(/\D/g, '')
+        : value;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     });
     // Clear error for this field when user starts typing
     if (showErrors && fieldErrors[name]) {
@@ -165,6 +169,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
+                maxLength={50}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -185,6 +190,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
+                maxLength={50}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -206,10 +212,12 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
+              maxLength={10}
+              inputMode="numeric"
+              pattern="[0-9]*"
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="+1234567890"
             />
             {showErrors && fieldErrors.phoneNumber && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.phoneNumber}</p>
@@ -245,6 +253,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
+              maxLength={120}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -265,6 +274,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="text"
               value={formData.city}
               onChange={handleChange}
+              maxLength={60}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}

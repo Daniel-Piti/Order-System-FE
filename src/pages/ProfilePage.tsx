@@ -167,7 +167,7 @@ export default function ProfilePage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">
               First Name
             </label>
-            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.firstName}
             </div>
           </div>
@@ -177,7 +177,7 @@ export default function ProfilePage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Last Name
             </label>
-            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.lastName}
             </div>
           </div>
@@ -223,11 +223,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Street Address */}
-          <div>
+          <div className="max-w-full">
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Street Address
             </label>
-            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.streetAddress}
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function ProfilePage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">
               City
             </label>
-            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.city}
             </div>
           </div>

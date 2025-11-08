@@ -18,14 +18,64 @@ export function validateRequired(value: string, fieldName: string): string | nul
 }
 
 /**
+ * Validates maximum length for a field (after trimming)
+ */
+export function validateMaxLength(value: string, maxLength: number, fieldName: string): string | null {
+  if (value.trim().length > maxLength) {
+    return `${fieldName} must be ${maxLength} characters or fewer`;
+  }
+  return null;
+}
+
+/**
+ * Convenience helper for required fields with maximum length
+ */
+export function validateRequiredWithMaxLength(
+  value: string,
+  fieldName: string,
+  maxLength: number
+): string | null {
+  const requiredError = validateRequired(value, fieldName);
+  if (requiredError) {
+    return requiredError;
+  }
+  return validateMaxLength(value, maxLength, fieldName);
+}
+
+/**
+ * Validates phone numbers to ensure they contain digits only and respect length constraints
+ */
+export function validatePhoneNumberDigitsOnly(
+  value: string,
+  maxLength: number,
+  fieldName: string = 'Phone number'
+): string | null {
+  const trimmed = value.trim();
+  const requiredError = validateRequired(trimmed, fieldName);
+  if (requiredError) {
+    return requiredError;
+  }
+
+  if (!/^\d+$/.test(trimmed)) {
+    return `${fieldName} must contain digits only`;
+  }
+
+  return validateMaxLength(trimmed, maxLength, fieldName);
+}
+
+/**
  * Validates email format
  */
-export function validateEmail(email: string): string | null {
-  if (!email.trim()) {
+export function validateEmail(email: string, maxLength: number = 100): string | null {
+  const trimmed = email.trim();
+  if (!trimmed) {
     return 'Email is required';
   }
+  if (trimmed.length > maxLength) {
+    return `Email must be ${maxLength} characters or fewer`;
+  }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
+  if (!emailRegex.test(trimmed)) {
     return 'Please enter a valid email';
   }
   return null;
@@ -90,15 +140,25 @@ export function validateFields(
 /**
  * Common validation schemas for forms
  */
+const MAX_NAME_LENGTH = 50;
+const MAX_PHONE_LENGTH = 10;
+const MAX_STREET_ADDRESS_LENGTH = 120;
+const MAX_CITY_LENGTH = 60;
+const MAX_EMAIL_LENGTH = 100;
+const MAX_LOCATION_NAME_LENGTH = 60;
+const MAX_LOCATION_STREET_LENGTH = 120;
+const MAX_LOCATION_CITY_LENGTH = 60;
+const MAX_LOCATION_PHONE_LENGTH = 10;
+
 export const userFormValidations = {
-  firstName: (value: string) => validateRequired(value, 'First name'),
-  lastName: (value: string) => validateRequired(value, 'Last name'),
-  email: (value: string) => validateEmail(value),
+  firstName: (value: string) => validateRequiredWithMaxLength(value, 'First name', MAX_NAME_LENGTH),
+  lastName: (value: string) => validateRequiredWithMaxLength(value, 'Last name', MAX_NAME_LENGTH),
+  email: (value: string) => validateEmail(value, MAX_EMAIL_LENGTH),
   password: (value: string) => validatePassword(value),
-  phoneNumber: (value: string) => validateRequired(value, 'Phone number'),
+  phoneNumber: (value: string) => validatePhoneNumberDigitsOnly(value, MAX_PHONE_LENGTH),
   dateOfBirth: (value: string) => validateDate(value, 'Date of birth'),
-  streetAddress: (value: string) => validateRequired(value, 'Street address'),
-  city: (value: string) => validateRequired(value, 'City'),
+  streetAddress: (value: string) => validateRequiredWithMaxLength(value, 'Street address', MAX_STREET_ADDRESS_LENGTH),
+  city: (value: string) => validateRequiredWithMaxLength(value, 'City', MAX_CITY_LENGTH),
 };
 
 /**
@@ -177,10 +237,34 @@ export function validateLocationForm(formData: {
   phoneNumber: string;
 }): ValidationResult {
   return validateFields([
-    { field: 'name', error: validateRequired(formData.name, 'Location name') },
-    { field: 'streetAddress', error: validateRequired(formData.streetAddress, 'Street address') },
-    { field: 'city', error: validateRequired(formData.city, 'City') },
-    { field: 'phoneNumber', error: validateRequired(formData.phoneNumber, 'Phone number') },
+    {
+      field: 'name',
+      error: validateRequiredWithMaxLength(formData.name, 'Location name', MAX_LOCATION_NAME_LENGTH),
+    },
+    {
+      field: 'streetAddress',
+      error: validateRequiredWithMaxLength(
+        formData.streetAddress,
+        'Street address',
+        MAX_LOCATION_STREET_LENGTH
+      ),
+    },
+    { field: 'city', error: validateRequiredWithMaxLength(formData.city, 'City', MAX_LOCATION_CITY_LENGTH) },
+    {
+      field: 'phoneNumber',
+      error: validatePhoneNumberDigitsOnly(
+        formData.phoneNumber,
+        MAX_LOCATION_PHONE_LENGTH,
+        'Phone number'
+      ),
+    },
   ]);
 }
+
+export const LOCATION_FIELD_LIMITS = {
+  name: MAX_LOCATION_NAME_LENGTH,
+  streetAddress: MAX_LOCATION_STREET_LENGTH,
+  city: MAX_LOCATION_CITY_LENGTH,
+  phoneNumber: MAX_LOCATION_PHONE_LENGTH,
+} as const;
 

@@ -6,6 +6,7 @@ import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
 
 export default function BrandsPage() {
+  const MAX_BRAND_NAME_LENGTH = 50;
   const [brands, setBrands] = useState<Brand[]>([]);
   const [products, setProducts] = useState<ProductWithBrand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,9 +112,13 @@ export default function BrandsPage() {
     }
   };
 
+  const updateBrandName = (value: string) => {
+    setBrandName(value.slice(0, MAX_BRAND_NAME_LENGTH));
+  };
+
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
-    setBrandName('');
+    updateBrandName('');
     setSelectedImage(null);
     setPreviewImage(null);
     setFormError('');
@@ -123,7 +128,7 @@ export default function BrandsPage() {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setBrandToEdit(null);
-    setBrandName('');
+    updateBrandName('');
     setSelectedImage(null);
     setPreviewImage(null);
     setFormError('');
@@ -132,7 +137,7 @@ export default function BrandsPage() {
 
   const handleEditBrand = (brand: Brand) => {
     setBrandToEdit(brand);
-    setBrandName(brand.name);
+    updateBrandName(brand.name);
     setSelectedImage(null);
     setPreviewImage(null);
     setIsEditModalOpen(true);
@@ -573,7 +578,8 @@ export default function BrandsPage() {
                   name="brandName"
                   type="text"
                   value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
+                  onChange={(e) => updateBrandName(e.target.value)}
+                  maxLength={MAX_BRAND_NAME_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., Nike, Apple, Samsung"
                   autoFocus
@@ -736,7 +742,8 @@ export default function BrandsPage() {
                   name="editBrandName"
                   type="text"
                   value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
+                  onChange={(e) => updateBrandName(e.target.value)}
+                  maxLength={MAX_BRAND_NAME_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., Nike, Apple, Samsung"
                   autoFocus

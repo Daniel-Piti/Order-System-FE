@@ -371,7 +371,7 @@ export default function OrdersPage() {
               </div>
 
               {/* Customer Info - Fixed height */}
-              <div className="mb-3 min-h-[3.5rem] flex flex-col gap-1">
+              <div className="mb-3 min-h-[3.5rem] flex flex-col gap-1 overflow-hidden">
                 {showOrderCustomerDetails ? (
                   <div className="w-full">
                     <p className="text-sm font-semibold text-gray-800 truncate">{order.customerName}</p>
@@ -398,13 +398,13 @@ export default function OrdersPage() {
                     e.stopPropagation();
                     navigate('/dashboard/customers');
                   }}
-                  className="mt-auto mb-2 text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 self-start"
+                  className="mt-auto mb-2 text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 self-start max-w-full overflow-hidden"
                   title="View linked customer"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  <span className="truncate">{linkedCustomer?.name ?? 'View customer'}</span>
+                  <span className="truncate max-w-[120px]">{linkedCustomer?.name ?? 'View customer'}</span>
                 </button>
               ) : (
                 <p className="mt-auto mb-2 text-sm text-gray-500 italic self-start">No customer linked</p>
