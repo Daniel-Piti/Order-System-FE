@@ -12,6 +12,12 @@ interface CheckoutFlowProps {
 
 type Step = 'customer-info' | 'pickup-location' | 'review' | 'success';
 
+const MAX_CHECKOUT_NAME_LENGTH = 50;
+const MAX_CHECKOUT_PHONE_LENGTH = 10;
+const MAX_CHECKOUT_EMAIL_LENGTH = 50;
+const MAX_CHECKOUT_STREET_LENGTH = 50;
+const MAX_CHECKOUT_CITY_LENGTH = 50;
+
 export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess }: CheckoutFlowProps) {
   const [step, setStep] = useState<Step>('customer-info');
   const [locations, setLocations] = useState<Location[]>([]);
@@ -32,6 +38,27 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
 
   // Order details
   const [notes, setNotes] = useState('');
+
+  const handleCustomerNameChange = (value: string) => {
+    setCustomerName(value.slice(0, MAX_CHECKOUT_NAME_LENGTH));
+  };
+
+  const handleCustomerPhoneChange = (value: string) => {
+    const sanitized = value.replace(/\D/g, '').slice(0, MAX_CHECKOUT_PHONE_LENGTH);
+    setCustomerPhone(sanitized);
+  };
+
+  const handleCustomerEmailChange = (value: string) => {
+    setCustomerEmail(value.slice(0, MAX_CHECKOUT_EMAIL_LENGTH));
+  };
+
+  const handleCustomerStreetAddressChange = (value: string) => {
+    setCustomerStreetAddress(value.slice(0, MAX_CHECKOUT_STREET_LENGTH));
+  };
+
+  const handleCustomerCityChange = (value: string) => {
+    setCustomerCity(value.slice(0, MAX_CHECKOUT_CITY_LENGTH));
+  };
 
   // Fetch locations
   useEffect(() => {
@@ -124,12 +151,17 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
         pricePerUnit: item.product.specialPrice,
       }));
 
+      const trimmedName = customerName.trim();
+      const trimmedStreet = customerStreetAddress.trim();
+      const trimmedCity = customerCity.trim();
+      const trimmedEmail = customerEmail.trim();
+
       await publicAPI.orders.placeOrder(orderId, {
-        customerName,
+        customerName: trimmedName,
         customerPhone,
-        customerEmail: customerEmail || undefined,
-        customerStreetAddress,
-        customerCity,
+        customerEmail: trimmedEmail || undefined,
+        customerStreetAddress: trimmedStreet,
+        customerCity: trimmedCity,
         pickupLocationId: selectedLocationId,
         products,
         notes: notes || undefined,
@@ -263,43 +295,51 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => handleCustomerNameChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
                 placeholder="Enter your name"
+                maxLength={MAX_CHECKOUT_NAME_LENGTH}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Enter your phone number"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => handleCustomerPhoneChange(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
+                  placeholder="Enter your phone number"
+                  maxLength={MAX_CHECKOUT_PHONE_LENGTH}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Email (Optional)</label>
+                <input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => handleCustomerEmailChange(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
+                  placeholder="Enter your email"
+                  maxLength={MAX_CHECKOUT_EMAIL_LENGTH}
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email (Optional)</label>
-              <input
-                type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Street Address *</label>
                 <input
                   type="text"
                   value={customerStreetAddress}
-                  onChange={(e) => setCustomerStreetAddress(e.target.value)}
+                  onChange={(e) => handleCustomerStreetAddressChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
                   placeholder="Enter street address"
+                  maxLength={MAX_CHECKOUT_STREET_LENGTH}
                 />
               </div>
               <div>
@@ -307,9 +347,10 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                 <input
                   type="text"
                   value={customerCity}
-                  onChange={(e) => setCustomerCity(e.target.value)}
+                  onChange={(e) => handleCustomerCityChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
                   placeholder="Enter city"
+                  maxLength={MAX_CHECKOUT_CITY_LENGTH}
                 />
               </div>
             </div>
@@ -353,9 +394,9 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                     }`}
                   >
                     <div className="font-semibold text-gray-800 mb-1">{location.name}</div>
-                    <div className="text-sm text-gray-600">{location.streetAddress}</div>
-                    <div className="text-sm text-gray-600">{location.city}</div>
-                    <div className="text-sm text-gray-600">Phone: {location.phoneNumber}</div>
+                    <div className="text-sm text-gray-600 break-words">Street: {location.streetAddress}</div>
+                    <div className="text-sm text-gray-600 break-words">City: {location.city}</div>
+                    <div className="text-sm text-gray-600 break-words">Phone: {location.phoneNumber}</div>
                   </button>
                 ))}
               </div>
@@ -389,7 +430,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
             {/* Customer Info Summary */}
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
-              <div className="text-sm text-gray-600 space-y-1">
+              <div className="text-sm text-gray-600 space-y-1 break-words">
                 <div>Name: {customerName}</div>
                 <div>Phone: {customerPhone}</div>
                 {customerEmail && <div>Email: {customerEmail}</div>}
@@ -399,28 +440,26 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
 
             {/* Pickup Location Summary */}
             {selectedLocationId && (
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 break-words">
                 <h4 className="font-semibold text-gray-800 mb-2">Pickup Location</h4>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 space-y-1 break-words">
                   {locations.find(l => l.id === selectedLocationId)?.name}
-                  <br />
-                  {locations.find(l => l.id === selectedLocationId)?.streetAddress}
-                  <br />
-                  {locations.find(l => l.id === selectedLocationId)?.city}
+                  <div>{locations.find(l => l.id === selectedLocationId)?.streetAddress}</div>
+                  <div>{locations.find(l => l.id === selectedLocationId)?.city}</div>
                 </div>
               </div>
             )}
 
             {/* Products Summary */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-2">Order Items</h4>
               <div className="space-y-2">
                 {cart.map((item) => (
-                  <div key={item.product.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600">
+                  <div key={item.product.id} className="flex justify-between text-sm gap-3 items-start">
+                    <span className="text-gray-600 flex-1 min-w-0 break-words break-all pr-2">
                       {item.product.name} × {item.quantity}
                     </span>
-                    <span className="font-semibold text-gray-800">
+                    <span className="font-semibold text-gray-800 text-right break-words break-all">
                       {formatPrice(item.product.specialPrice * item.quantity)}
                     </span>
                   </div>
@@ -439,8 +478,9 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
               <label className="block text-sm font-semibold text-gray-700 mb-1">Notes (Optional)</label>
               <textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value.slice(0, 1000))}
                 rows={3}
+                maxLength={1000}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none resize-none"
                 placeholder="Any special instructions or notes..."
               />

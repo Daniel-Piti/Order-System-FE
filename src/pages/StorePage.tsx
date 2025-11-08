@@ -1199,7 +1199,7 @@ export default function StorePage() {
         )}
 
         {/* Cart Sidebar */}
-        <div className={`fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
+        <div className={`fixed right-0 top-0 h-full w-full sm:w-[480px] md:w-[520px] backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
           isCartOpen ? 'translate-x-0' : 'translate-x-full'
         }`}>
             <div className="flex flex-col h-full">
@@ -1224,15 +1224,30 @@ export default function StorePage() {
                     <p className="text-gray-600">Your cart is empty</p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 flex flex-col items-center">
                     {cart.map((item) => (
                       <div
                         key={item.product.id}
-                        className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border-2 border-gray-300/60 hover:shadow-md transition-all"
+                        className="bg-white/90 backdrop-blur-md rounded-3xl p-4 border-2 border-gray-200 hover:border-purple-300 hover:shadow-2xl transition-all w-full sm:w-[440px]"
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-start justify-between gap-4 mb-2 px-3">
+                          <h4 className="font-semibold text-gray-900 text-base leading-snug flex-1 text-center truncate" title={item.product.name}>
+                            {item.product.name}
+                          </h4>
+                          <button
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="w-8 h-8 rounded-full bg-red-500/90 hover:bg-red-600 text-white flex items-center justify-center flex-shrink-0 transition-all shadow"
+                            title="Remove item"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-[110px,48px,1fr] gap-3 items-stretch">
                           {/* Product Image */}
-                          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-200 flex items-center justify-center min-h-[90px]">
                             {productImages[item.product.id] && productImages[item.product.id].length > 0 ? (
                               <img
                                 src={productImages[item.product.id][0]}
@@ -1242,53 +1257,41 @@ export default function StorePage() {
                                   (e.target as HTMLImageElement).style.display = 'none';
                                   const placeholder = (e.target as HTMLImageElement).parentElement;
                                   if (placeholder) {
-                                    placeholder.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📦</div>';
+                                    placeholder.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-3xl">📦</div>';
                                   }
                                 }}
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">📦</div>
+                              <span className="text-3xl text-gray-400">📦</span>
                             )}
                           </div>
-                          
-                          {/* Product Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900 text-base leading-tight flex-1 pr-2">
-                                {item.product.name}
-                              </h4>
-                              <button
-                                onClick={() => removeFromCart(item.product.id)}
-                                className="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center flex-shrink-0 transition-all shadow-sm hover:shadow-md"
-                                title="Remove"
-                              >
-                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                            <p className="text-sm text-gray-500 mb-2">
-                              {formatPrice(item.product.specialPrice)} each
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                                  className="w-7 h-7 rounded-md border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
-                                >
-                                  −
-                                </button>
-                                <span className="font-semibold text-gray-900 w-8 text-center">{item.quantity}</span>
-                                <button
-                                  onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                                  className="w-7 h-7 rounded-md border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
-                                >
-                                  +
-                                </button>
-                              </div>
-                              <p className="text-lg font-bold text-purple-600">
+
+                          {/* Quantity Controls */}
+                          <div className="flex flex-col items-center justify-center gap-1.5 bg-gray-100/70 border border-gray-200 rounded-2xl px-2 py-2.5 min-h-[90px]">
+                            <button
+                              onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                              className="w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
+                            >
+                              +
+                            </button>
+                            <span className="font-semibold text-gray-900 text-sm w-10 text-center">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                              className="w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 hover:border-purple-400 flex items-center justify-center font-semibold text-gray-600 hover:text-purple-600 transition-all text-sm"
+                            >
+                              −
+                            </button>
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="flex flex-col gap-2 min-w-0">
+                            <div className="bg-gray-100/80 border border-gray-200 rounded-2xl px-3 py-2 text-center flex flex-col items-center justify-center min-h-[90px] h-full">
+                              <span className="text-sm text-gray-600 whitespace-nowrap">
+                                {formatPrice(item.product.specialPrice)} × {item.quantity}
+                              </span>
+                              <span className="text-lg font-bold text-purple-600 whitespace-nowrap">
                                 {formatPrice(item.product.specialPrice * item.quantity)}
-                              </p>
+                              </span>
                             </div>
                           </div>
                         </div>

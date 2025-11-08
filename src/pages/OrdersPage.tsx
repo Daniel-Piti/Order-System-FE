@@ -349,7 +349,7 @@ export default function OrdersPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 justify-items-center">
           {orders && orders.map((order) => {
             const linkedCustomer = order.customerId
               ? customers.find((customer) => customer.id === order.customerId)
@@ -360,7 +360,7 @@ export default function OrdersPage() {
             <div
               key={order.id}
               onClick={() => handleViewOrder(order)}
-              className="glass-card rounded-xl p-3 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-300 hover:border-indigo-400 flex flex-col relative"
+              className="glass-card rounded-xl p-3 hover:shadow-lg transition-all cursor-pointer group border-2 border-gray-300 hover:border-indigo-400 flex flex-col relative w-full sm:max-w-[260px]"
             >
               {/* Order Header - Status & ID */}
               <div className="flex items-center justify-between mb-3">
@@ -371,7 +371,7 @@ export default function OrdersPage() {
               </div>
 
               {/* Customer Info - Fixed height */}
-              <div className="mb-3 min-h-[3.5rem] flex flex-col gap-1 overflow-hidden">
+              <div className="mb-1.5 min-h-[3rem] flex flex-col gap-1 overflow-hidden">
                 {showOrderCustomerDetails ? (
                   <div className="w-full">
                     <p className="text-sm font-semibold text-gray-800 truncate">{order.customerName}</p>
@@ -380,43 +380,44 @@ export default function OrdersPage() {
                     )}
                   </div>
                 ) : (
-                  !linkedCustomer && <p className="text-sm text-gray-400 italic">No customer</p>
+                  !linkedCustomer && <p className="text-sm text-gray-400 italic">-</p>
                 )}
 
               </div>
 
-              {/* Total Price - Prominent */}
-              <div className="mb-2">
-                <p className="text-xs text-gray-500 mb-0.5">Total</p>
-                <p className="text-xl font-bold text-indigo-600">{formatPrice(order.totalPrice)}</p>
-              </div>
-
               {linkedCustomer ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate('/dashboard/customers');
-                  }}
-                  className="mt-auto mb-2 text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 self-start max-w-full overflow-hidden"
-                  title="View linked customer"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                  <span className="truncate max-w-[120px]">{linkedCustomer?.name ?? 'View customer'}</span>
-                </button>
+                <div className="mt-1 pb-0 w-full">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/dashboard/customers');
+                    }}
+                    className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 self-start max-w-full overflow-hidden"
+                    title="View linked customer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <span className="truncate max-w-[120px]">{linkedCustomer?.name ?? 'View customer'}</span>
+                  </button>
+                </div>
               ) : (
-                <p className="mt-auto mb-2 text-sm text-gray-500 italic self-start">No customer linked</p>
+                <p className="mt-1 pt-1 pb-1 text-sm text-gray-500 italic self-start">No customer linked</p>
               )}
 
-              {/* Created/Placed Date - Subtle */}
-              <div className="mb-2">
-                <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
+              {/* Total Price - Prominent */}
+              <div className="mt-1.5 pb-2">
+                <div className="flex items-baseline gap-2 text-xs text-gray-500">
+                  <span>Total:</span>
+                  <span className="text-xl font-bold text-indigo-600">{formatPrice(order.totalPrice)}</span>
+                </div>
               </div>
 
-              {/* Spacer to push button to bottom */}
-              <div className="flex-grow"></div>
+              {/* Created/Placed Date - Subtle */}
+              <div className="mt-auto mb-2">
+                <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
+              </div>
 
               {/* Floating Actions */}
               {order.status === 'EMPTY' && (
@@ -744,32 +745,32 @@ export default function OrdersPage() {
               <div className="glass-card rounded-xl p-4 space-y-2">
                 {viewingOrder.customerName ? (
                   <>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <span className="text-sm text-gray-600">Name</span>
-                      <span className="text-sm font-medium text-gray-800">{viewingOrder.customerName}</span>
+                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerName}</span>
                     </div>
                     {viewingOrder.customerPhone && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">Phone</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.customerPhone}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerPhone}</span>
                       </div>
                     )}
                     {viewingOrder.customerEmail && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">Email</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.customerEmail}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerEmail}</span>
                       </div>
                     )}
                     {viewingOrder.customerStreetAddress && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">Address</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.customerStreetAddress}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerStreetAddress}</span>
                       </div>
                     )}
                     {viewingOrder.customerCity && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">City</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.customerCity}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerCity}</span>
                       </div>
                     )}
                   </>
@@ -785,20 +786,20 @@ export default function OrdersPage() {
               <div className="glass-card rounded-xl p-4 space-y-2">
                 {viewingOrder.userStreetAddress ? (
                   <>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <span className="text-sm text-gray-600">Address</span>
-                      <span className="text-sm font-medium text-gray-800">{viewingOrder.userStreetAddress}</span>
+                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userStreetAddress}</span>
                     </div>
                     {viewingOrder.userCity && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">City</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.userCity}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userCity}</span>
                       </div>
                     )}
                     {viewingOrder.userPhoneNumber && (
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">Phone</span>
-                        <span className="text-sm font-medium text-gray-800">{viewingOrder.userPhoneNumber}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userPhoneNumber}</span>
                       </div>
                     )}
                   </>
@@ -817,16 +818,16 @@ export default function OrdersPage() {
                 ) : (
                   <div className="divide-y divide-gray-200/50">
                     {viewingOrder.products.map((product, index) => (
-                      <div key={index} className="p-3 flex items-center justify-between hover:bg-white/20 transition-colors">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-800">{product.productName}</p>
-                          <p className="text-xs text-gray-600">Quantity: {product.quantity}</p>
+                      <div key={index} className="p-3 flex items-start justify-between gap-3 hover:bg-white/20 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 break-words break-all">{product.productName}</p>
+                          <p className="text-xs text-gray-600 break-words break-all">Quantity: {product.quantity}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-800">
+                        <div className="text-right break-words break-all">
+                          <p className="text-sm font-semibold text-gray-800 break-words break-all">
                             {formatPrice(product.pricePerUnit * product.quantity)}
                           </p>
-                          <p className="text-xs text-gray-600">{formatPrice(product.pricePerUnit)} each</p>
+                          <p className="text-xs text-gray-600 break-words break-all">{formatPrice(product.pricePerUnit)} each</p>
                         </div>
                       </div>
                     ))}

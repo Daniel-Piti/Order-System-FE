@@ -519,7 +519,7 @@ export default function OverridesPage() {
                   <tr key={override.id} className="hover:bg-white/20 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-800 font-medium">
                       <span className="inline-block max-w-[200px] truncate" title={getCustomerName(override.customerId)}>
-                        {getCustomerName(override.customerId)}
+                      {getCustomerName(override.customerId)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
