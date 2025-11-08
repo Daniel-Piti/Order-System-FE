@@ -18,7 +18,9 @@ export default function CategoriesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const MAX_CATEGORY_NAME_LENGTH = 50;
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -36,20 +38,29 @@ export default function CategoriesPage() {
   }, [userId]);
 
   // Calculate pagination (0-based)
-  const { paginatedCategories, totalPages } = useMemo(() => {
+  const { paginatedCategories, totalPages, filteredCount } = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    const filteredCategories = query
+      ? categories.filter((category) => category.category.toLowerCase().includes(query))
+      : categories;
+
+    const sortedCategories = [...filteredCategories].sort((a, b) => {
+      const comparison = a.category.localeCompare(b.category);
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
     const startIndex = currentPage * pageSize;
     const endIndex = startIndex + pageSize;
-    const paginated = categories.slice(startIndex, endIndex);
-    const total = Math.ceil(categories.length / pageSize);
+    const paginated = sortedCategories.slice(startIndex, endIndex);
+    const total = Math.ceil(sortedCategories.length / pageSize);
     
-    // Ensure currentPage is valid (in case pageSize changed)
     if (total > 0 && currentPage >= total) {
-      // This will trigger a re-render, but we'll handle it in useEffect
-      return { paginatedCategories: [], totalPages: total };
+      return { paginatedCategories: [], totalPages: total, filteredCount: sortedCategories.length };
     }
     
-    return { paginatedCategories: paginated, totalPages: total };
-  }, [categories, currentPage, pageSize]);
+    return { paginatedCategories: paginated, totalPages: total, filteredCount: sortedCategories.length };
+  }, [categories, currentPage, pageSize, searchQuery, sortDirection]);
 
   // Reset currentPage if it's out of bounds after pageSize change
   useEffect(() => {
@@ -57,6 +68,10 @@ export default function CategoriesPage() {
       setCurrentPage(0);
     }
   }, [totalPages, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchQuery, sortDirection, pageSize]);
 
   // Count products per category
   const productCountByCategory = useMemo(() => {
@@ -347,69 +362,150 @@ export default function CategoriesPage() {
         <div className="space-y-4">
           {/* Controls Bar */}
           <div className="glass-card rounded-3xl p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              {/* Page Size Selector */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Show:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setCurrentPage(0); // Reset to first page when page size changes (0-based)
-                  }}
-                  className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Show:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(0);
+                    }}
+                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Sort:</span>
+                  <button
+                    type="button"
+                    onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                    className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2"
+                    aria-pressed={sortDirection === 'desc'}
+                    aria-label={`Sort categories ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
+                  >
+                    {sortDirection === 'asc' ? (
+                      <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-indigo-600 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    )}
+                    <span>{sortDirection === 'asc' ? 'Name A → Z' : 'Name Z → A'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative w-full sm:w-80 sm:max-w-xs sm:ml-auto">
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <option value={1}>1</option>
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </select>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-5.197-5.197m0 0A6 6 0 1010.606 4.5a6 6 0 005.197 11.303z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search categories..."
+                  className="glass-input w-full pl-10 pr-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-2 border-gray-400/80 hover:border-gray-500 focus:border-gray-400 bg-white/50 focus:bg-white/60 shadow-lg hover:shadow-xl"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
-        <div className="glass-card rounded-3xl p-6 md:p-8">
-          <div className="space-y-2">
-              {paginatedCategories.map((category) => (
-              <div key={category.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
-                <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
-                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
+          <div className="glass-card rounded-3xl p-6 md:p-8">
+            <div className="space-y-2">
+              {filteredCount === 0 ? (
+                <div className="glass-card rounded-3xl p-12 text-center">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="p-5 rounded-full bg-indigo-100/50">
+                      <svg className="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-800">No categories found</h2>
+                    <p className="text-gray-600 max-w-sm">
+                      Try adjusting your search or clear the filters to see all categories.
+                    </p>
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="glass-button px-6 py-2 rounded-xl font-semibold text-indigo-600 hover:shadow-md transition-all"
+                      >
+                        Clear search
+                      </button>
+                    )}
                   </div>
-                    <div className="flex-1 min-w-0 flex items-center space-x-2">
-                    <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
-                      {category.category}
-                    </h3>
-                      <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                        {productCountByCategory.get(category.id) || 0}
-                      </span>
+                </div>
+              ) : (
+                paginatedCategories.map((category) => (
+                  <div key={category.id} className="glass-card rounded-xl p-4 hover:shadow-md transition-all flex items-center justify-between">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="p-2 rounded-lg bg-indigo-100/50 flex-shrink-0">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0 flex items-center space-x-2">
+                        <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
+                          {category.category}
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                          {productCountByCategory.get(category.id) || 0}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 ml-4">
+                      <button
+                        onClick={() => handleEditCategory(category)}
+                        className="glass-button p-2 rounded-xl hover:shadow-md transition-all"
+                        title="Edit category"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setCategoryToDelete(category)}
+                        className="glass-button p-2 rounded-xl hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                        title="Delete category"
+                      >
+                        <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                  <div className="flex space-x-2 ml-4">
-                <button
-                  onClick={() => handleEditCategory(category)}
-                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all"
-                  title="Edit category"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                    </button>
-                    <button
-                      onClick={() => setCategoryToDelete(category)}
-                      className="glass-button p-2 rounded-xl hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                      title="Delete category"
-                    >
-                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                </button>
-                  </div>
-              </div>
-            ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -421,7 +517,7 @@ export default function CategoriesPage() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
         maxWidth="max-w-4xl"
-        showCondition={categories.length > 0 && totalPages > 0}
+        showCondition={filteredCount > 0 && totalPages > 0}
       />
 
       {/* Add Category Modal */}
