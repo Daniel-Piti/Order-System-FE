@@ -5,6 +5,8 @@ import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 
+const MAX_PRICE = 1_000_000;
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -211,7 +213,16 @@ export default function ProductsPage() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let { value } = e.target;
+
+    if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+      const numericValue = Number(value);
+      if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+        value = MAX_PRICE.toString();
+      }
+    }
+
     setFormData({
       ...formData,
       [name]: value,
@@ -501,7 +512,16 @@ export default function ProductsPage() {
   };
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    let { value } = e.target;
+
+    if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+      const numericValue = Number(value);
+      if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+        value = MAX_PRICE.toString();
+      }
+    }
+
     setEditFormData({
       ...editFormData,
       [name]: value,
@@ -530,9 +550,13 @@ export default function ProductsPage() {
       errors.originalPrice = 'Original price is required';
     } else if (isNaN(Number(editFormData.originalPrice)) || Number(editFormData.originalPrice) <= 0) {
       errors.originalPrice = 'Original price must be a positive number';
+    } else if (Number(editFormData.originalPrice) > MAX_PRICE) {
+      errors.originalPrice = 'Original price cannot exceed 1,000,000';
     }
     if (editFormData.specialPrice && (isNaN(Number(editFormData.specialPrice)) || Number(editFormData.specialPrice) <= 0)) {
       errors.specialPrice = 'Special price must be a positive number';
+    } else if (editFormData.specialPrice && Number(editFormData.specialPrice) > MAX_PRICE) {
+      errors.specialPrice = 'Special price cannot exceed 1,000,000';
     }
     // Validate that special price is not greater than original price
     if (editFormData.specialPrice && editFormData.originalPrice && Number(editFormData.specialPrice) > Number(editFormData.originalPrice)) {
@@ -557,7 +581,10 @@ export default function ProductsPage() {
       const token = localStorage.getItem('authToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
-      const finalSpecialPrice = editFormData.specialPrice ? Number(editFormData.specialPrice) : Number(editFormData.originalPrice);
+      const originalPriceValue = Math.min(Number(editFormData.originalPrice), MAX_PRICE);
+      const finalSpecialPrice = editFormData.specialPrice
+        ? Math.min(Number(editFormData.specialPrice), MAX_PRICE)
+        : originalPriceValue;
       
       // Update product data
       const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
@@ -570,7 +597,7 @@ export default function ProductsPage() {
           name: editFormData.name,
           brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
           categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
-          originalPrice: Number(editFormData.originalPrice),
+          originalPrice: originalPriceValue,
           specialPrice: finalSpecialPrice,
           description: editFormData.description,
         }),
@@ -665,10 +692,14 @@ export default function ProductsPage() {
       errors.originalPrice = 'Original price is required';
     } else if (isNaN(Number(formData.originalPrice)) || Number(formData.originalPrice) <= 0) {
       errors.originalPrice = 'Original price must be a positive number';
+    } else if (Number(formData.originalPrice) > MAX_PRICE) {
+      errors.originalPrice = 'Original price cannot exceed 1,000,000';
     }
     // Special price is optional - if not provided, use originalPrice
     if (formData.specialPrice && (isNaN(Number(formData.specialPrice)) || Number(formData.specialPrice) <= 0)) {
       errors.specialPrice = 'Special price must be a positive number';
+    } else if (formData.specialPrice && Number(formData.specialPrice) > MAX_PRICE) {
+      errors.specialPrice = 'Special price cannot exceed 1,000,000';
     }
     // Validate that special price is not greater than original price
     if (formData.specialPrice && formData.originalPrice && Number(formData.specialPrice) > Number(formData.originalPrice)) {
@@ -692,7 +723,10 @@ export default function ProductsPage() {
       const token = localStorage.getItem('authToken');
       
       // Use originalPrice as specialPrice if specialPrice is not provided
-      const finalSpecialPrice = formData.specialPrice ? Number(formData.specialPrice) : Number(formData.originalPrice);
+      const originalPriceValue = Math.min(Number(formData.originalPrice), MAX_PRICE);
+      const finalSpecialPrice = formData.specialPrice
+        ? Math.min(Number(formData.specialPrice), MAX_PRICE)
+        : originalPriceValue;
       
       // Create FormData
       const formDataToSend = new FormData();
@@ -703,7 +737,7 @@ export default function ProductsPage() {
       if (formData.categoryId) {
         formDataToSend.append('categoryId', formData.categoryId);
       }
-      formDataToSend.append('originalPrice', formData.originalPrice);
+      formDataToSend.append('originalPrice', originalPriceValue.toString());
       formDataToSend.append('specialPrice', finalSpecialPrice.toString());
       formDataToSend.append('description', formData.description || ''); // Always send, even if empty
       
@@ -1221,6 +1255,7 @@ export default function ProductsPage() {
                       type="number"
                       step="0.01"
                       min="0"
+                      max={MAX_PRICE}
                       value={formData.originalPrice}
                       onChange={handleInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
@@ -1246,6 +1281,7 @@ export default function ProductsPage() {
                       type="number"
                       step="0.01"
                       min="0"
+                      max={MAX_PRICE}
                       value={formData.specialPrice}
                       onChange={handleInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
@@ -1508,6 +1544,7 @@ export default function ProductsPage() {
                       type="number"
                       step="0.01"
                       min="0"
+                      max={MAX_PRICE}
                       value={editFormData.originalPrice}
                       onChange={handleEditInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
@@ -1533,6 +1570,7 @@ export default function ProductsPage() {
                       type="number"
                       step="0.01"
                       min="0"
+                      max={MAX_PRICE}
                       value={editFormData.specialPrice}
                       onChange={handleEditInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${

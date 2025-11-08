@@ -5,6 +5,8 @@ import type { PageResponse, Customer } from '../services/api';
 import type { ProductOverride, ProductListItem } from '../utils/types';
 import { formatPrice } from '../utils/formatPrice';
 
+const MAX_PRICE = 1_000_000;
+
 export default function CustomerOverridesPage() {
   const { customerId } = useParams<{ customerId: string }>();
   const navigate = useNavigate();
@@ -258,6 +260,11 @@ export default function CustomerOverridesPage() {
       return;
     }
 
+    if (price > MAX_PRICE) {
+      setOverrideFormError('Override price cannot exceed 1,000,000');
+      return;
+    }
+
     if (!overrideToEdit) return;
 
     try {
@@ -270,7 +277,7 @@ export default function CustomerOverridesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          overridePrice: price
+          overridePrice: Math.min(price, MAX_PRICE)
         }),
       });
 
@@ -343,6 +350,11 @@ export default function CustomerOverridesPage() {
       return;
     }
 
+    if (price > MAX_PRICE) {
+      setAddOverrideError('Override price cannot exceed 1,000,000');
+      return;
+    }
+
     if (!customerId) return;
 
     try {
@@ -357,7 +369,7 @@ export default function CustomerOverridesPage() {
         body: JSON.stringify({
           productId: selectedProductId,
           customerId: customerId,
-          overridePrice: price
+          overridePrice: Math.min(price, MAX_PRICE)
         }),
       });
 
@@ -895,8 +907,21 @@ export default function CustomerOverridesPage() {
                     type="number"
                     step="0.01"
                     min="0.01"
+                    max={MAX_PRICE}
                     value={editOverridePrice}
-                    onChange={(e) => setEditOverridePrice(e.target.value)}
+                    onChange={(e) => {
+                      const { value } = e.target;
+                      if (value === '') {
+                        setEditOverridePrice(value);
+                        return;
+                      }
+                      const numericValue = Number(value);
+                      if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                        setEditOverridePrice(MAX_PRICE.toString());
+                      } else {
+                        setEditOverridePrice(value);
+                      }
+                    }}
                     className="glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="e.g., 29.99"
                     autoFocus
@@ -1106,8 +1131,21 @@ export default function CustomerOverridesPage() {
                   type="number"
                   step="0.01"
                   min="0.01"
+                  max={MAX_PRICE}
                   value={newOverridePrice}
-                  onChange={(e) => setNewOverridePrice(e.target.value)}
+                  onChange={(e) => {
+                    const { value } = e.target;
+                    if (value === '') {
+                      setNewOverridePrice(value);
+                      return;
+                    }
+                    const numericValue = Number(value);
+                    if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                      setNewOverridePrice(MAX_PRICE.toString());
+                    } else {
+                      setNewOverridePrice(value);
+                    }
+                  }}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., 29.99"
                 />

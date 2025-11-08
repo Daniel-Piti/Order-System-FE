@@ -6,6 +6,8 @@ import PaginationBar from '../components/PaginationBar';
 import type { ProductOverrideWithUserId, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
 import { formatPrice } from '../utils/formatPrice';
 
+const MAX_PRICE = 1_000_000;
+
 export default function OverridesPage() {
   const [overrides, setOverrides] = useState<ProductOverrideWithUserId[]>([]);
   const [products, setProducts] = useState<ProductListItem[]>([]);
@@ -200,6 +202,8 @@ export default function OverridesPage() {
       errors.overridePrice = 'Override price is required';
     } else if (isNaN(Number(formData.overridePrice)) || Number(formData.overridePrice) < 0) {
       errors.overridePrice = 'Override price must be a valid positive number';
+    } else if (Number(formData.overridePrice) > MAX_PRICE) {
+      errors.overridePrice = 'Override price cannot exceed 1,000,000';
     }
 
     setFieldErrors(errors);
@@ -219,7 +223,7 @@ export default function OverridesPage() {
         body: JSON.stringify({
           productId: formData.productId,
           customerId: formData.customerId,
-          overridePrice: Number(formData.overridePrice),
+          overridePrice: Math.min(Number(formData.overridePrice), MAX_PRICE),
         }),
       });
 
@@ -269,6 +273,8 @@ export default function OverridesPage() {
       errors.overridePrice = 'Override price is required';
     } else if (isNaN(Number(editFormData.overridePrice)) || Number(editFormData.overridePrice) < 0) {
       errors.overridePrice = 'Override price must be a valid positive number';
+    } else if (Number(editFormData.overridePrice) > MAX_PRICE) {
+      errors.overridePrice = 'Override price cannot exceed 1,000,000';
     }
 
     setFieldErrors(errors);
@@ -286,7 +292,7 @@ export default function OverridesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          overridePrice: Number(editFormData.overridePrice),
+          overridePrice: Math.min(Number(editFormData.overridePrice), MAX_PRICE),
         }),
       });
 
@@ -660,9 +666,16 @@ export default function OverridesPage() {
                     type="number"
                     step="0.01"
                     min="0"
+                    max={MAX_PRICE}
                     value={formData.overridePrice}
                     onChange={(e) => {
-                      setFormData({ ...formData, overridePrice: e.target.value });
+                      const { value } = e.target;
+                      let nextValue = value;
+                      const numericValue = Number(value);
+                      if (value !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                        nextValue = MAX_PRICE.toString();
+                      }
+                      setFormData({ ...formData, overridePrice: nextValue });
                       if (showErrors && fieldErrors.overridePrice) {
                         setFieldErrors({ ...fieldErrors, overridePrice: '' });
                       }
@@ -746,9 +759,16 @@ export default function OverridesPage() {
                     type="number"
                     step="0.01"
                     min="0"
+                    max={MAX_PRICE}
                     value={editFormData.overridePrice}
                     onChange={(e) => {
-                      setEditFormData({ overridePrice: e.target.value });
+                      const { value } = e.target;
+                      let nextValue = value;
+                      const numericValue = Number(value);
+                      if (value !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                        nextValue = MAX_PRICE.toString();
+                      }
+                      setEditFormData({ overridePrice: nextValue });
                       if (showErrors && fieldErrors.overridePrice) {
                         setFieldErrors({ ...fieldErrors, overridePrice: '' });
                       }

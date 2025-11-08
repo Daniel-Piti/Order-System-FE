@@ -120,7 +120,7 @@ export default function OrdersPage() {
       await fetchOrders(currentPage);
       setViewingOrder((prev) => {
         if (prev && prev.id === orderId) {
-          return { ...prev, status: 'DONE' };
+          return { ...prev, status: 'DONE', doneAt: prev.doneAt ?? new Date().toISOString() };
         }
         return prev;
       });
@@ -378,9 +378,9 @@ export default function OrdersPage() {
                 <p className="text-xl font-bold text-indigo-600">{formatPrice(order.totalPrice)}</p>
               </div>
 
-              {/* Created Date - Subtle */}
+              {/* Created/Placed Date - Subtle */}
               <div className="mb-2">
-                <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
+                <p className="text-xs text-gray-400">{formatDate(order.placedAt ?? order.createdAt)}</p>
               </div>
 
               {/* Spacer to push button to bottom */}
@@ -700,7 +700,7 @@ export default function OrdersPage() {
                   {viewingOrder.status}
                 </span>
                 <span className="text-sm text-gray-600">
-                  Created {formatDate(viewingOrder.createdAt)}
+                  {viewingOrder.placedAt ? 'Placed' : 'Created'} {formatDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
                 </span>
               </div>
             </div>
@@ -816,10 +816,10 @@ export default function OrdersPage() {
                     {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
                   </span>
                 </div>
-                {viewingOrder.deliveryDate && (
+                {viewingOrder.doneAt && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Delivery Date</span>
-                    <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.deliveryDate)}</span>
+                    <span className="text-sm text-gray-600">Done</span>
+                    <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.doneAt)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">

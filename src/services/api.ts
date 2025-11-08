@@ -346,9 +346,10 @@ export interface Order {
   products: ProductDataForOrder[];
   productsVersion: number;
   totalPrice: number;
-  deliveryDate: string | null;
   linkExpiresAt: string;
   notes: string;
+  placedAt: string | null;
+  doneAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -491,7 +492,6 @@ export interface PlaceOrderRequest {
   customerCity: string;
   pickupLocationId: number;
   products: ProductDataForOrder[];
-  deliveryDate?: string | null;
   notes?: string;
 }
 
