@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { orderAPI, customerAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
@@ -31,6 +32,7 @@ export default function OrdersPage() {
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders(currentPage);
@@ -69,6 +71,10 @@ export default function OrdersPage() {
       console.error('Error fetching customers:', err);
     }
   };
+
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
 
   const handleCreateOrder = async () => {
     setIsCreating(true);
@@ -269,7 +275,7 @@ export default function OrdersPage() {
                 }}
                 className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
               >
-                <option value="createdAt">Created Date</option>
+                <option value="createdAt">Creation Date</option>
                 <option value="status">Status</option>
                 <option value="totalPrice">Total Price</option>
               </select>
@@ -344,7 +350,13 @@ export default function OrdersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {orders && orders.map((order) => (
+          {orders && orders.map((order) => {
+            const linkedCustomer = order.customerId
+              ? customers.find((customer) => customer.id === order.customerId)
+              : null;
+            const showOrderCustomerDetails = order.status !== 'EMPTY' && !!order.customerName;
+
+            return (
             <div
               key={order.id}
               onClick={() => handleViewOrder(order)}
@@ -359,8 +371,8 @@ export default function OrdersPage() {
               </div>
 
               {/* Customer Info - Fixed height */}
-              <div className="mb-3 h-9 flex items-start">
-                {order.customerName ? (
+              <div className="mb-3 min-h-[3.5rem] flex flex-col gap-1">
+                {showOrderCustomerDetails ? (
                   <div className="w-full">
                     <p className="text-sm font-semibold text-gray-800 truncate">{order.customerName}</p>
                     {order.customerPhone && (
@@ -368,8 +380,9 @@ export default function OrdersPage() {
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-400 italic">No customer</p>
+                  !linkedCustomer && <p className="text-sm text-gray-400 italic">No customer</p>
                 )}
+
               </div>
 
               {/* Total Price - Prominent */}
@@ -378,9 +391,28 @@ export default function OrdersPage() {
                 <p className="text-xl font-bold text-indigo-600">{formatPrice(order.totalPrice)}</p>
               </div>
 
+              {linkedCustomer ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/dashboard/customers');
+                  }}
+                  className="mt-auto mb-2 text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 self-start"
+                  title="View linked customer"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  <span className="truncate">{linkedCustomer?.name ?? 'View customer'}</span>
+                </button>
+              ) : (
+                <p className="mt-auto mb-2 text-sm text-gray-500 italic self-start">No customer linked</p>
+              )}
+
               {/* Created/Placed Date - Subtle */}
               <div className="mb-2">
-                <p className="text-xs text-gray-400">{formatDate(order.placedAt ?? order.createdAt)}</p>
+                <p className="text-xs text-gray-400">{formatDate(order.createdAt)}</p>
               </div>
 
               {/* Spacer to push button to bottom */}
@@ -450,7 +482,8 @@ export default function OrdersPage() {
                 </button>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
