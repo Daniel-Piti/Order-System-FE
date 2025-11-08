@@ -401,6 +401,22 @@ export default function OverridesPage() {
       {(overrides.length > 0 || productFilter || customerFilter) && (
         <div className="glass-card rounded-3xl p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Page Size */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Show:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+
             {/* Product Filter */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-gray-700">Product:</span>
@@ -432,23 +448,6 @@ export default function OverridesPage() {
                     {customer.name}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            {/* Page Size */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Show:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
-              >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
               </select>
             </div>
           </div>
@@ -523,7 +522,12 @@ export default function OverridesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
-                      {getProductName(override.productId)}
+                      <span
+                        className="inline-block max-w-[220px] truncate align-middle"
+                        title={getProductName(override.productId)}
+                      >
+                        {getProductName(override.productId)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
                       {formatPrice(override.originalPrice)}

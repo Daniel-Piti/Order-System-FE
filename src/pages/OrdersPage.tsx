@@ -282,13 +282,13 @@ export default function OrdersPage() {
             </div>
 
             {/* Sort Direction Toggle */}
-            <div className="w-[140px]">
+            <div className="w-[100px]">
               <label className="block text-xs font-medium text-gray-600 mb-1">&nbsp;</label>
               <button
                 onClick={toggleSortDirection}
-                className="glass-button w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-center space-x-2"
+                className="glass-button w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-between"
               >
-                <span>{sortDirection === 'ASC' ? 'Ascending' : 'Descending'}</span>
+                <span>Order</span>
                 {sortDirection === 'ASC' ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
