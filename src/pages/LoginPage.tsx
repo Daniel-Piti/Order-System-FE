@@ -38,7 +38,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.loginUser({ email: trimmedEmail, password: trimmedPassword });
+      const response = await authAPI.loginManager({ email: trimmedEmail, password: trimmedPassword });
       localStorage.setItem('authToken', response.token);
       navigate('/dashboard');
     } catch (err: any) {

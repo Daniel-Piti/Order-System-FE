@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { validatePasswordChangeForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
+import { managerAPI } from '../services/api';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -40,29 +41,20 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess }: Chan
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken');
-      const params = new URLSearchParams({
-        old_password: formData.oldPassword,
-        new_password: formData.newPassword,
-        new_password_confirmation: formData.newPasswordConfirmation,
-      });
-
-      const response = await fetch(`http://localhost:8080/api/users/me/update-password?${params}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to update password');
-      }
-
+      await managerAPI.updateCurrentManagerPassword(
+        formData.oldPassword,
+        formData.newPassword,
+        formData.newPasswordConfirmation
+      );
       onSuccess();
       handleClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(
+        err.response?.data?.userMessage ||
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to update password'
+      );
     } finally {
       setIsLoading(false);
     }

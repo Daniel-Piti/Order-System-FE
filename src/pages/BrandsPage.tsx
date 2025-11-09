@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { brandAPI, userAPI, publicAPI } from '../services/api';
+import { brandAPI, managerAPI, publicAPI } from '../services/api';
 import type { Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
@@ -26,19 +26,19 @@ export default function BrandsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [managerId, setManagerId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserId();
+    fetchManagerId();
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (managerId) {
       fetchBrands();
       fetchProducts();
     }
-  }, [userId]);
+  }, [managerId]);
 
   // Calculate pagination (0-based)
   const { paginatedBrands, totalPages, filteredCount } = useMemo(() => {
@@ -97,30 +97,30 @@ export default function BrandsPage() {
       setCurrentPage(0); // Reset to first page when data changes (0-based)
     } catch (err: any) {
       setError(err.message || 'Failed to load brands');
-      if (err.message.includes('401') || err.message.includes('User ID not found')) {
-        navigate('/login');
+      if (err.message.includes('401') || err.message.includes('Manager ID not found')) {
+        navigate('/login/manager');
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchUserId = async () => {
+  const fetchManagerId = async () => {
     try {
-      const user = await userAPI.getCurrentUser();
-      setUserId(user.id);
+      const manager = await managerAPI.getCurrentManager();
+      setManagerId(manager.id);
     } catch (err: any) {
       if (err.message?.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     }
   };
 
   const fetchProducts = async () => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByUserId(userId, 0, 1000);
+      const data = await publicAPI.products.getAllByUserId(managerId, 0, 1000);
       setProducts(data.content.map((p: any) => ({ id: p.id, brandId: p.brandId })));
     } catch (err) {
       console.error('Failed to fetch products:', err);

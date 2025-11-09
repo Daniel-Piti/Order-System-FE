@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { validateUserProfileForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
+import { managerAPI } from '../services/api';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface EditProfileModalProps {
   currentProfile: {
     firstName: string;
     lastName: string;
+    businessName: string;
     phoneNumber: string;
     dateOfBirth: string;
     streetAddress: string;
@@ -17,9 +19,14 @@ interface EditProfileModalProps {
 }
 
 export default function EditProfileModal({ isOpen, onClose, onSuccess, currentProfile }: EditProfileModalProps) {
+  const MAX_NAME_LENGTH = 50;
+  const MAX_BUSINESS_NAME_LENGTH = 70;
+  const MAX_STREET_ADDRESS_LENGTH = 120;
+  const MAX_CITY_LENGTH = 60;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    businessName: '',
     phoneNumber: '',
     dateOfBirth: '',
     streetAddress: '',
@@ -36,6 +43,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
       setFormData({
         firstName: currentProfile.firstName,
         lastName: currentProfile.lastName,
+        businessName: currentProfile.businessName,
         phoneNumber: currentProfile.phoneNumber,
         dateOfBirth: currentProfile.dateOfBirth,
         streetAddress: currentProfile.streetAddress,
@@ -68,25 +76,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/users/me', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to update profile');
-      }
-
+      await managerAPI.updateCurrentManager(formData);
       onSuccess();
       handleClose();
     } catch (err: any) {
-      setError(err.message);
+      setError(
+        err.response?.data?.userMessage ||
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to update profile'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -95,8 +94,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const sanitizedValue =
-      name === 'phoneNumber'
+      name === 'firstName' || name === 'lastName'
+        ? value.slice(0, MAX_NAME_LENGTH)
+        : name === 'phoneNumber'
         ? value.replace(/\D/g, '')
+        : name === 'businessName'
+        ? value.slice(0, MAX_BUSINESS_NAME_LENGTH)
+        : name === 'streetAddress'
+        ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
+        : name === 'city'
+        ? value.slice(0, MAX_CITY_LENGTH)
         : value;
     setFormData({
       ...formData,
@@ -115,6 +122,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     setFormData({
       firstName: '',
       lastName: '',
+      businessName: '',
       phoneNumber: '',
       dateOfBirth: '',
       streetAddress: '',
@@ -169,7 +177,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
-                maxLength={50}
+                maxLength={MAX_NAME_LENGTH}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -190,7 +198,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
-                maxLength={50}
+                maxLength={MAX_NAME_LENGTH}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -200,6 +208,27 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
               )}
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="businessName" className="block text-xs font-medium text-gray-700 mb-1">
+              Business Name *
+            </label>
+            <input
+              id="businessName"
+              name="businessName"
+              type="text"
+              value={formData.businessName}
+              onChange={handleChange}
+              maxLength={MAX_BUSINESS_NAME_LENGTH}
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                showErrors && fieldErrors.businessName ? 'border-red-400 focus:ring-red-400' : ''
+              }`}
+              placeholder="Acme Corp"
+            />
+            {showErrors && fieldErrors.businessName && (
+              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.businessName}</p>
+            )}
           </div>
 
           <div>
@@ -253,7 +282,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
-              maxLength={120}
+              maxLength={MAX_STREET_ADDRESS_LENGTH}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -274,7 +303,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="text"
               value={formData.city}
               onChange={handleChange}
-              maxLength={60}
+              maxLength={MAX_CITY_LENGTH}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}

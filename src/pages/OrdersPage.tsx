@@ -24,7 +24,6 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
 
   // Sorting state
   const [sortBy, setSortBy] = useState('createdAt');
@@ -51,12 +50,10 @@ export default function OrdersPage() {
       );
       setOrders(pageResponse?.content || []);
       setTotalPages(pageResponse?.totalPages || 0);
-      setTotalElements(pageResponse?.totalElements || 0);
     } catch (err: any) {
       setError('Failed to load orders');
       setOrders([]); // Reset to empty array on error
       setTotalPages(0);
-      setTotalElements(0);
       console.error('Error fetching orders:', err);
     } finally {
       setIsLoading(false);

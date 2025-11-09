@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { publicAPI, Location, ProductDataForOrder } from '../services/api';
+import { publicAPI } from '../services/api';
+import type { Location, ProductDataForOrder } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
 interface CheckoutFlowProps {

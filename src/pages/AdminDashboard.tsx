@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userAPI } from '../services/api';
-import type { User } from '../services/api';
-import AddUserModal from '../components/AddUserModal';
+import { managerAPI } from '../services/api';
+import type { Manager } from '../services/api';
+import AddManagerModal from '../components/AddManagerModal';
 
 export default function AdminDashboard() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
+  const [managerToDelete, setManagerToDelete] = useState<Manager | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
-  const [userToResetPassword, setUserToResetPassword] = useState<User | null>(null);
+  const [managerToResetPassword, setManagerToResetPassword] = useState<Manager | null>(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
@@ -20,17 +20,17 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUsers();
+    fetchManagers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchManagers = async () => {
     try {
       setIsLoading(true);
-      const data = await userAPI.getAllUsers();
-      setUsers(data);
+      const data = await managerAPI.getAllManagers();
+      setManagers(data);
       setError('');
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to load users');
+      setError(err.response?.data?.userMessage || 'Failed to load managers');
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/admin');
@@ -40,17 +40,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!userToDelete || deleteConfirmText !== 'I Understand') return;
+  const handleDeleteManager = async () => {
+    if (!managerToDelete || deleteConfirmText !== 'I Understand') return;
 
     try {
       setIsDeleting(true);
-      await userAPI.deleteUser(userToDelete.id, userToDelete.email);
-      setUserToDelete(null);
+      await managerAPI.deleteManager(managerToDelete.id, managerToDelete.email);
+      setManagerToDelete(null);
       setDeleteConfirmText('');
-      fetchUsers(); // Refresh the list
+      fetchManagers(); // Refresh the list
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to delete user');
+      setError(err.response?.data?.userMessage || 'Failed to delete manager');
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/admin');
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   };
 
   const handleCloseDeleteModal = () => {
-    setUserToDelete(null);
+    setManagerToDelete(null);
     setDeleteConfirmText('');
   };
 
@@ -71,12 +71,12 @@ export default function AdminDashboard() {
   };
 
   const handleResetPassword = async () => {
-    if (!userToResetPassword || !newPassword.trim() || resetConfirmText !== 'Update Password') return;
+    if (!managerToResetPassword || !newPassword.trim() || resetConfirmText !== 'Update Password') return;
 
     try {
       setIsResettingPassword(true);
-      await userAPI.resetPassword(userToResetPassword.email, newPassword);
-      setUserToResetPassword(null);
+      await managerAPI.resetPassword(managerToResetPassword.email, newPassword);
+      setManagerToResetPassword(null);
       setNewPassword('');
       setShowResetConfirmation(false);
       setResetConfirmText('');
@@ -93,7 +93,8 @@ export default function AdminDashboard() {
   };
 
   const handleCloseResetPasswordModal = () => {
-    setUserToResetPassword(null);
+    setManagerToResetPassword(null);
+    setManagerToResetPassword(null);
     setNewPassword('');
     setShowResetConfirmation(false);
     setResetConfirmText('');
@@ -136,7 +137,7 @@ export default function AdminDashboard() {
         <div className="glass-card rounded-2xl p-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your users</p>
+            <p className="text-gray-600 mt-1">Manage your managers</p>
           </div>
           <button
             onClick={handleLogout}
@@ -160,18 +161,18 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Managers Table */}
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="glass-card rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">All Users</h2>
+              <h2 className="text-2xl font-bold text-gray-800">All Managers</h2>
               <p className="text-gray-600 text-sm mt-1">
-                Total: {users.length} user{users.length !== 1 ? 's' : ''}
+                Total: {managers.length} manager{managers.length !== 1 ? 's' : ''}
               </p>
             </div>
             <button 
-              onClick={() => setIsAddUserModalOpen(true)}
+              onClick={() => setIsAddManagerModalOpen(true)}
               className="glass-button px-4 py-2 rounded-xl font-medium text-gray-800 flex items-center space-x-2"
             >
               <svg
@@ -187,7 +188,7 @@ export default function AdminDashboard() {
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-              <span>Add User</span>
+              <span>Add Manager</span>
             </button>
           </div>
 
@@ -220,7 +221,7 @@ export default function AdminDashboard() {
                 ></path>
               </svg>
             </div>
-          ) : users.length === 0 ? (
+          ) : managers.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <svg
                 className="w-16 h-16 mx-auto mb-4 text-gray-400"
@@ -235,7 +236,7 @@ export default function AdminDashboard() {
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
               </svg>
-              <p>No users found</p>
+              <p>No managers found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -253,32 +254,32 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {managers.map((manager) => (
                     <tr
-                      key={user.id}
+                      key={manager.id}
                       className="border-b border-white/10 hover:bg-white/10 transition-colors"
                     >
-                      <td className="py-3 px-4 text-gray-600 text-sm font-mono">{user.id}</td>
+                      <td className="py-3 px-4 text-gray-600 text-sm font-mono">{manager.id}</td>
                       <td className="py-3 px-4">
                         <div className="font-medium text-gray-800">
-                          {user.firstName} {user.lastName}
+                          {manager.firstName} {manager.lastName}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-700">{user.email}</td>
-                      <td className="py-3 px-4 text-gray-700">{formatPhoneNumber(user.phoneNumber)}</td>
+                      <td className="py-3 px-4 text-gray-700">{manager.email}</td>
+                      <td className="py-3 px-4 text-gray-700">{formatPhoneNumber(manager.phoneNumber)}</td>
                       <td className="py-3 px-4 text-gray-700">
-                        {formatDate(user.dateOfBirth)}
+                        {formatDate(manager.dateOfBirth)}
                       </td>
                       <td className="py-3 px-4 text-gray-700 max-w-xs truncate">
-                        {user.streetAddress}, {user.city}
+                        {manager.streetAddress}, {manager.city}
                       </td>
                       <td className="py-3 px-4 text-gray-700">
-                        {formatDate(user.createdAt)}
+                        {formatDate(manager.createdAt)}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex space-x-2">
                           <button
-                            onClick={() => setUserToResetPassword(user)}
+                            onClick={() => setManagerToResetPassword(manager)}
                             className="p-2 rounded-lg hover:bg-white/20 transition-colors"
                             title="Reset password"
                           >
@@ -297,9 +298,9 @@ export default function AdminDashboard() {
                             </svg>
                           </button>
                           <button
-                            onClick={() => setUserToDelete(user)}
+                            onClick={() => setManagerToDelete(manager)}
                             className="p-2 rounded-lg hover:bg-white/20 transition-colors"
-                            title="Delete user"
+                            title="Delete manager"
                           >
                             <svg
                               className="w-4 h-4 text-red-600"
@@ -326,17 +327,17 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Add User Modal */}
-      <AddUserModal
-        isOpen={isAddUserModalOpen}
-        onClose={() => setIsAddUserModalOpen(false)}
+      {/* Add Manager Modal */}
+      <AddManagerModal
+        isOpen={isAddManagerModalOpen}
+        onClose={() => setIsAddManagerModalOpen(false)}
         onSuccess={() => {
-          fetchUsers(); // Refresh the user list
+          fetchManagers(); // Refresh the manager list
         }}
       />
 
       {/* Delete Confirmation Modal */}
-      {userToDelete && (
+      {managerToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85">
             <div className="flex items-center justify-center mb-4">
@@ -358,12 +359,12 @@ export default function AdminDashboard() {
             </div>
 
             <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
-              Delete User
+              Delete Manager
             </h2>
             <p className="text-gray-600 text-center mb-4">
               Are you sure you want to delete{' '}
               <span className="font-semibold">
-                {userToDelete.firstName} {userToDelete.lastName}
+                {managerToDelete.firstName} {managerToDelete.lastName}
               </span>
               ? This action cannot be undone.
             </p>
@@ -393,7 +394,7 @@ export default function AdminDashboard() {
               </button>
               <button
                 type="button"
-                onClick={handleDeleteUser}
+                onClick={handleDeleteManager}
                 disabled={isDeleting || deleteConfirmText !== 'I Understand'}
                 className="glass-button flex-1 py-2 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
@@ -431,7 +432,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Reset Password Confirmation Modal */}
-      {userToResetPassword && (
+      {managerToResetPassword && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85">
             <div className="flex items-center justify-center mb-4">
@@ -455,12 +456,12 @@ export default function AdminDashboard() {
             {!showResetConfirmation ? (
               <>
                 <h2 className="text-xl font-bold text-gray-800 text-center mb-2">
-                  Reset User Password
+                  Reset Manager Password
                 </h2>
                 <p className="text-gray-600 text-center mb-4">
                   Set a new password for{' '}
                   <span className="font-semibold">
-                    {userToResetPassword.firstName} {userToResetPassword.lastName}
+                    {managerToResetPassword.firstName} {managerToResetPassword.lastName}
                   </span>
                   :
                 </p>
@@ -507,7 +508,7 @@ export default function AdminDashboard() {
                 <p className="text-gray-600 text-center mb-4">
                   You are about to reset the password for{' '}
                   <span className="font-semibold">
-                    {userToResetPassword.firstName} {userToResetPassword.lastName}
+                    {managerToResetPassword.firstName} {managerToResetPassword.lastName}
                   </span>
                   .
                 </p>

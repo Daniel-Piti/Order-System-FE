@@ -153,6 +153,7 @@ const MAX_LOCATION_PHONE_LENGTH = 10;
 export const userFormValidations = {
   firstName: (value: string) => validateRequiredWithMaxLength(value, 'First name', MAX_NAME_LENGTH),
   lastName: (value: string) => validateRequiredWithMaxLength(value, 'Last name', MAX_NAME_LENGTH),
+  businessName: (value: string) => validateRequiredWithMaxLength(value, 'Business name', MAX_NAME_LENGTH),
   email: (value: string) => validateEmail(value, MAX_EMAIL_LENGTH),
   password: (value: string) => validatePassword(value),
   phoneNumber: (value: string) => validatePhoneNumberDigitsOnly(value, MAX_PHONE_LENGTH),
@@ -167,6 +168,7 @@ export const userFormValidations = {
 export function validateUserProfileForm(formData: {
   firstName: string;
   lastName: string;
+  businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
   streetAddress: string;
@@ -175,6 +177,7 @@ export function validateUserProfileForm(formData: {
   return validateFields([
     { field: 'firstName', error: userFormValidations.firstName(formData.firstName) },
     { field: 'lastName', error: userFormValidations.lastName(formData.lastName) },
+    { field: 'businessName', error: userFormValidations.businessName(formData.businessName) },
     { field: 'phoneNumber', error: userFormValidations.phoneNumber(formData.phoneNumber) },
     { field: 'dateOfBirth', error: userFormValidations.dateOfBirth(formData.dateOfBirth) },
     { field: 'streetAddress', error: userFormValidations.streetAddress(formData.streetAddress) },
@@ -188,6 +191,7 @@ export function validateUserProfileForm(formData: {
 export function validateUserCreationForm(formData: {
   firstName: string;
   lastName: string;
+  businessName: string;
   email: string;
   password: string;
   phoneNumber: string;
@@ -198,6 +202,7 @@ export function validateUserCreationForm(formData: {
   return validateFields([
     { field: 'firstName', error: userFormValidations.firstName(formData.firstName) },
     { field: 'lastName', error: userFormValidations.lastName(formData.lastName) },
+    { field: 'businessName', error: userFormValidations.businessName(formData.businessName) },
     { field: 'email', error: userFormValidations.email(formData.email) },
     { field: 'password', error: userFormValidations.password(formData.password) },
     { field: 'phoneNumber', error: userFormValidations.phoneNumber(formData.phoneNumber) },

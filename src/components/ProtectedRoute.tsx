@@ -22,7 +22,7 @@ function isTokenValid(token: string): boolean {
   }
 }
 
-export default function ProtectedRoute({ children, redirectTo = '/' }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, redirectTo = '/login/manager' }: ProtectedRouteProps) {
   const token = localStorage.getItem('authToken');
 
   if (!token || !isTokenValid(token)) {

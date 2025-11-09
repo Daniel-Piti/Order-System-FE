@@ -2,18 +2,23 @@ import { useState } from 'react';
 import { validateUserCreationForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
-interface AddUserModalProps {
+interface AddManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModalProps) {
+export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManagerModalProps) {
+  const MAX_NAME_LENGTH = 50;
   const MAX_EMAIL_LENGTH = 100;
   const MAX_PHONE_LENGTH = 10;
+  const MAX_BUSINESS_NAME_LENGTH = 70;
+  const MAX_STREET_ADDRESS_LENGTH = 120;
+  const MAX_CITY_LENGTH = 60;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    businessName: '',
     email: '',
     password: 'Aa123456!', // Default password
     phoneNumber: '',
@@ -31,6 +36,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
     setFormData({
       firstName: '',
       lastName: '',
+      businessName: '',
       email: '',
       password: 'Aa123456!',
       phoneNumber: '',
@@ -65,7 +71,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/users', {
+      const response = await fetch('http://localhost:8080/api/managers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,13 +82,14 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to create user');
+        throw new Error(errorData.userMessage || 'Failed to create manager');
       }
 
       // Success!
       setFormData({
         firstName: '',
         lastName: '',
+        businessName: '',
         email: '',
         password: 'Aa123456!',
         phoneNumber: '',
@@ -102,10 +109,18 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const sanitizedValue =
-      name === 'phoneNumber'
+      name === 'firstName' || name === 'lastName'
+        ? value.slice(0, MAX_NAME_LENGTH)
+        : name === 'phoneNumber'
         ? value.replace(/\D/g, '').slice(0, MAX_PHONE_LENGTH)
         : name === 'email'
         ? value.slice(0, MAX_EMAIL_LENGTH)
+        : name === 'businessName'
+        ? value.slice(0, MAX_BUSINESS_NAME_LENGTH)
+        : name === 'streetAddress'
+        ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
+        : name === 'city'
+        ? value.slice(0, MAX_CITY_LENGTH)
         : value;
     setFormData({
       ...formData,
@@ -124,7 +139,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">Add New User</h2>
+          <h2 className="text-lg font-bold text-gray-800">Add New Manager</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -163,6 +178,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
+              maxLength={MAX_NAME_LENGTH}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -183,6 +199,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
+              maxLength={MAX_NAME_LENGTH}
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
@@ -192,6 +209,27 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
               )}
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="businessName" className="block text-xs font-medium text-gray-700 mb-1">
+              Business Name *
+            </label>
+            <input
+              id="businessName"
+              name="businessName"
+              type="text"
+              value={formData.businessName}
+              onChange={handleChange}
+              maxLength={MAX_BUSINESS_NAME_LENGTH}
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                showErrors && fieldErrors.businessName ? 'border-red-400 focus:ring-red-400' : ''
+              }`}
+              placeholder="Acme Corp"
+            />
+            {showErrors && fieldErrors.businessName && (
+              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.businessName}</p>
+            )}
           </div>
 
           <div>
@@ -293,6 +331,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
+              maxLength={MAX_STREET_ADDRESS_LENGTH}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -313,6 +352,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
               type="text"
               value={formData.city}
               onChange={handleChange}
+              maxLength={MAX_CITY_LENGTH}
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}
@@ -363,7 +403,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
                   <span>Creating...</span>
                 </>
               ) : (
-                <span>Create User</span>
+                <span>Create Manager</span>
               )}
             </button>
           </div>

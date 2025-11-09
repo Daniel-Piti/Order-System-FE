@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { customerAPI, publicAPI } from '../services/api';
+import { customerAPI } from '../services/api';
 import type { Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import {
@@ -71,7 +71,7 @@ export default function CustomersPage() {
     } catch (err: any) {
       setError(err.message || 'Failed to load customers');
       if (err.message.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     } finally {
       setIsLoading(false);

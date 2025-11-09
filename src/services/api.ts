@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export interface LoginRequest {
+export interface ManagerLoginRequest {
   email: string;
   password: string;
 }
@@ -33,11 +33,12 @@ export interface LoginResponse {
   token: string;
 }
 
-export interface User {
+export interface Manager {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
   streetAddress: string;
@@ -47,7 +48,7 @@ export interface User {
 }
 
 export const authAPI = {
-  loginUser: async (data: LoginRequest): Promise<LoginResponse> => {
+  loginManager: async (data: ManagerLoginRequest): Promise<LoginResponse> => {
     const response = await api.post<LoginResponse>('/auth/login', data);
     return response.data;
   },
@@ -58,10 +59,11 @@ export const authAPI = {
   },
 };
 
-export interface NewUserRequest {
+export interface NewManagerRequest {
   firstName: string;
   lastName: string;
   email: string;
+  businessName: string;
   password: string;
   phoneNumber: string;
   dateOfBirth: string;
@@ -69,56 +71,57 @@ export interface NewUserRequest {
   city: string;
 }
 
-export interface UpdateUserDetailsRequest {
+export interface UpdateManagerDetailsRequest {
   firstName: string;
   lastName: string;
+  businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
   streetAddress: string;
   city: string;
 }
 
-export const userAPI = {
-  getAllUsers: async (): Promise<User[]> => {
-    const response = await api.get<User[]>('/users');
+export const managerAPI = {
+  getAllManagers: async (): Promise<Manager[]> => {
+    const response = await api.get<Manager[]>('/managers');
     return response.data;
   },
 
-  createUser: async (data: NewUserRequest): Promise<string> => {
-    const response = await api.post<string>('/users', data);
+  createManager: async (data: NewManagerRequest): Promise<string> => {
+    const response = await api.post<string>('/managers', data);
     return response.data;
   },
 
-  deleteUser: async (id: string, email: string): Promise<string> => {
-    const response = await api.delete<string>('/users', {
+  deleteManager: async (id: string, email: string): Promise<string> => {
+    const response = await api.delete<string>('/managers', {
       params: { id, email },
     });
     return response.data;
   },
 
   resetPassword: async (email: string, newPassword: string): Promise<string> => {
-    const response = await api.put<string>('/users/reset-password', null, {
+    const response = await api.put<string>('/managers/reset-password', null, {
       params: { email, newPassword },
     });
     return response.data;
   },
 
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<User>('/users/me');
+  getCurrentManager: async (): Promise<Manager> => {
+    const response = await api.get<Manager>('/managers/me');
     return response.data;
   },
 
-  updateCurrentUser: async (data: UpdateUserDetailsRequest): Promise<string> => {
-    const response = await api.put<string>('/users/me', data);
+  updateCurrentManager: async (data: UpdateManagerDetailsRequest): Promise<string> => {
+    const response = await api.put<string>('/managers/me', data);
     return response.data;
   },
 
-  updateCurrentUserPassword: async (
+  updateCurrentManagerPassword: async (
     oldPassword: string,
     newPassword: string,
     newPasswordConfirmation: string
   ): Promise<string> => {
-    const response = await api.put<string>('/users/me/update-password', null, {
+    const response = await api.put<string>('/managers/me/update-password', null, {
       params: {
         old_password: oldPassword,
         new_password: newPassword,

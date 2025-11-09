@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { userAPI, publicAPI } from '../services/api';
+import { managerAPI, publicAPI } from '../services/api';
 import type { PageResponse } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductOverrideWithUserId, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
@@ -19,7 +19,6 @@ export default function OverridesPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
 
   // Filters
   const [productFilter, setProductFilter] = useState<string>('');
@@ -45,21 +44,21 @@ export default function OverridesPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [managerId, setManagerId] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserId();
+    fetchManagerId();
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (managerId) {
       fetchOverrides();
       fetchProducts();
       fetchCustomers();
     }
-  }, [userId, currentPage, pageSize, productFilter, customerFilter]);
+  }, [managerId, currentPage, pageSize, productFilter, customerFilter]);
 
   const fetchOverrides = async () => {
     try {
@@ -94,34 +93,33 @@ export default function OverridesPage() {
       const data: PageResponse<ProductOverrideWithUserId> = await response.json();
       
       setOverrides(data.content);
-      setTotalElements(data.totalElements);
       setTotalPages(data.totalPages);
     } catch (err: any) {
       setError(err.message || 'Failed to load overrides');
       if (err.message.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fetchUserId = async () => {
+  const fetchManagerId = async () => {
     try {
-      const user = await userAPI.getCurrentUser();
-      setUserId(user.id);
+      const manager = await managerAPI.getCurrentManager();
+      setManagerId(manager.id);
     } catch (err: any) {
       if (err.message?.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     }
   };
 
   const fetchProducts = async () => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByUserId(userId, 0, 1000);
+      const data = await publicAPI.products.getAllByUserId(managerId, 0, 1000);
       setProducts(data.content.map(p => ({ id: p.id, name: p.name, specialPrice: p.specialPrice })));
     } catch (err) {
       console.error('Failed to fetch products:', err);

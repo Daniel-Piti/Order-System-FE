@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categoryAPI, userAPI, publicAPI } from '../services/api';
+import { categoryAPI, managerAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
@@ -78,41 +78,41 @@ export default function ProductsPage() {
     specialPrice: '',
     description: '',
   });
-  const [userId, setUserId] = useState<string | null>(null);
+  const [managerId, setManagerId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchUserId();
+    fetchManagerId();
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (managerId) {
       fetchProducts(currentPage);
       fetchCategories();
       fetchBrands();
     }
-  }, [userId, currentPage, sortBy, sortDirection, pageSize, categoryFilter, brandFilter]);
+  }, [managerId, currentPage, sortBy, sortDirection, pageSize, categoryFilter, brandFilter]);
 
-  const fetchUserId = async () => {
+  const fetchManagerId = async () => {
     try {
-      const user = await userAPI.getCurrentUser();
-      setUserId(user.id);
+      const manager = await managerAPI.getCurrentManager();
+      setManagerId(manager.id);
     } catch (err: any) {
       if (err.message?.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     }
   };
 
   const fetchProducts = async (page: number = 0) => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
       setIsLoading(true);
       setError('');
 
       const pageResponse = await publicAPI.products.getAllByUserId(
-        userId,
+        managerId,
         page, 
         pageSize, 
         sortBy, 
@@ -130,7 +130,7 @@ export default function ProductsPage() {
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
       if (err.message.includes('401')) {
-        navigate('/login');
+        navigate('/login/manager');
       }
     } finally {
       setIsLoading(false);
@@ -138,13 +138,13 @@ export default function ProductsPage() {
   };
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
-    if (!userId || productsList.length === 0) return;
+    if (!managerId || productsList.length === 0) return;
     
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
+          const response = await fetch(`${API_BASE_URL}/public/products/user/${managerId}/product/${product.id}/images`);
           if (response.ok) {
             const images: ProductImage[] = await response.json();
             // Sort images by filename
@@ -178,9 +178,9 @@ export default function ProductsPage() {
   };
 
   const fetchBrands = async () => {
-    if (!userId) return;
+    if (!managerId) return;
     try {
-      const data = await publicAPI.brands.getAllByUserId(userId);
+      const data = await publicAPI.brands.getAllByUserId(managerId);
       setBrands(data);
     } catch (err) {
       console.error('Failed to fetch brands:', err);

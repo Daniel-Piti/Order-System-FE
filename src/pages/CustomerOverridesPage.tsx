@@ -125,7 +125,7 @@ export default function CustomerOverridesPage() {
   }, [customer?.userId, fetchProducts]);
 
   const productMap = useMemo(() => {
-    const map = new Map<string, Product>();
+    const map = new Map<string, ProductListItem>();
     products.forEach(product => map.set(product.id, product));
     return map;
   }, [products]);

@@ -19,7 +19,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<Navigate to="/login/manager" replace />} />
+        <Route path="/login/manager" element={<LoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
         
         {/* Public Store Routes - more specific route first */}
@@ -56,7 +57,7 @@ function App() {
           <Route path="locations" element={<LocationsPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/login/manager" replace />} />
       </Routes>
     </Router>
   );
