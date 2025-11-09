@@ -7,7 +7,7 @@ interface EditLocationModalProps {
   onClose: () => void;
   onSuccess: () => void;
   location: {
-    id: string;
+    id: number;
     name: string;
     streetAddress: string;
     city: string;

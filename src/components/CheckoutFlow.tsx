@@ -66,7 +66,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
     const fetchLocations = async () => {
       setIsLoadingLocations(true);
       try {
-        const data = await publicAPI.locations.getAllByUserId(userId);
+        const data = await publicAPI.locations.getAllByManagerId(userId);
         setLocations(data);
         if (data.length === 1) {
           setSelectedLocationId(data[0].id);

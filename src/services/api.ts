@@ -134,7 +134,7 @@ export const managerAPI = {
 
 export interface Location {
   id: number;
-  userId: string;
+  managerId: string;
   name: string;
   streetAddress: string;
   city: string;
@@ -479,9 +479,9 @@ export const publicAPI = {
   },
 
   locations: {
-    // Get all locations for a user (seller)
-    getAllByUserId: async (userId: string): Promise<Location[]> => {
-      const response = await axios.get<Location[]>(`${API_BASE_URL}/public/locations/user/${userId}`);
+    // Get all locations for a manager (seller)
+    getAllByManagerId: async (managerId: string): Promise<Location[]> => {
+      const response = await axios.get<Location[]>(`${API_BASE_URL}/public/locations/manager/${managerId}`);
       return response.data;
     },
   },

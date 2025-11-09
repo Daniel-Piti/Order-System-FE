@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddLocationModal from '../components/AddLocationModal';
 import EditLocationModal from '../components/EditLocationModal';
+import { managerAPI, publicAPI } from '../services/api';
 
 interface Location {
-  id: string;
-  userId: string;
+  id: number;
+  managerId: string;
   name: string;
   streetAddress: string;
   city: string;
@@ -31,27 +32,24 @@ export default function LocationsPage() {
   const fetchLocations = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/locations', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      setError('');
 
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          localStorage.removeItem('authToken');
-          navigate('/');
-        }
-        throw new Error('Failed to fetch locations');
+      const manager = await managerAPI.getCurrentManager();
+      const data = await publicAPI.locations.getAllByManagerId(manager.id);
+      setLocations(data);
+    } catch (err: any) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login/manager');
+        return;
       }
 
-      const data = await response.json();
-      setLocations(data);
-      setError('');
-    } catch (err: any) {
-      setError(err.message || 'Failed to load locations');
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to load locations';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

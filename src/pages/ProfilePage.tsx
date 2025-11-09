@@ -178,10 +178,10 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* User ID */}
+          {/* Manager ID */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              User ID
+              Manager ID
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 font-mono text-sm">
               {profile.id}
