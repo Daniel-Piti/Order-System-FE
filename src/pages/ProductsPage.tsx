@@ -183,7 +183,7 @@ export default function ProductsPage() {
   const fetchBrands = async () => {
     if (!managerId) return;
     try {
-      const data = await publicAPI.brands.getAllByUserId(managerId);
+      const data = await publicAPI.brands.getAllByManagerId(managerId);
       setBrands(data);
     } catch (err) {
       console.error('Failed to fetch brands:', err);

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { brandAPI, managerAPI, publicAPI } from '../services/api';
+import { managerAPI, publicAPI } from '../services/api';
 import type { Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
@@ -21,7 +21,7 @@ export default function BrandsPage() {
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
@@ -88,18 +88,27 @@ export default function BrandsPage() {
   }, [products]);
 
   const fetchBrands = async () => {
+    if (!managerId) return;
     try {
       setIsLoading(true);
       setError('');
-      
-      const data = await brandAPI.getAllBrands();
+
+      const data = await publicAPI.brands.getAllByManagerId(managerId);
       setBrands(data);
       setCurrentPage(0); // Reset to first page when data changes (0-based)
     } catch (err: any) {
-      setError(err.message || 'Failed to load brands');
-      if (err.message.includes('401') || err.message.includes('Manager ID not found')) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
         navigate('/login/manager');
+        return;
       }
+
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to load brands';
+      setError(message);
     } finally {
       setIsLoading(false);
     }

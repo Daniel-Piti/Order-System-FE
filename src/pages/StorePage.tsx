@@ -162,7 +162,7 @@ export default function StorePage() {
     if (!userId) return;
     
     try {
-      const data = await publicAPI.brands.getAllByUserId(userId);
+      const data = await publicAPI.brands.getAllByManagerId(userId);
       setBrands(data);
     } catch (err) {
       console.error('Failed to fetch brands:', err);

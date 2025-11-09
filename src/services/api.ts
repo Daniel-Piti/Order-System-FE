@@ -178,7 +178,7 @@ export interface Category {
 
 export interface Brand {
   id: number;
-  userId: string;
+  managerId: string;
   name: string;
   imageUrl: string | null; // Full public URL from R2 (constructed from s3_key)
   fileName: string | null; // From brands.file_name (nullable)
@@ -239,11 +239,6 @@ export const categoryAPI = {
 };
 
 export const brandAPI = {
-  getAllBrands: async (): Promise<Brand[]> => {
-    const response = await api.get<Brand[]>('/brands');
-    return response.data;
-  },
-
   createBrand: async (name: string): Promise<number> => {
     const response = await api.post<number>('/brands', {
       name: name,
@@ -452,9 +447,9 @@ export const publicAPI = {
   },
 
   brands: {
-    // Get all brands for a user (seller)
-    getAllByUserId: async (userId: string): Promise<Brand[]> => {
-      const response = await axios.get<Brand[]>(`${API_BASE_URL}/public/brands/user/${userId}`);
+    // Get all brands for a manager (seller)
+    getAllByManagerId: async (managerId: string): Promise<Brand[]> => {
+      const response = await axios.get<Brand[]>(`${API_BASE_URL}/public/brands/manager/${managerId}`);
       return response.data;
     },
   },
