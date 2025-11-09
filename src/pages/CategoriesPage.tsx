@@ -85,18 +85,28 @@ export default function CategoriesPage() {
   }, [products]);
 
   const fetchCategories = async () => {
+    const id = managerId;
+    if (!id) return;
     try {
       setIsLoading(true);
       setError('');
-      
-      const data = await categoryAPI.getAllCategories();
+
+      const data = await publicAPI.categories.getAllByManagerId(id);
       setCategories(data);
       setCurrentPage(0); // Reset to first page when data changes (0-based)
     } catch (err: any) {
-      setError(err.message || 'Failed to load categories');
-      if (err.message.includes('401') || err.message.includes('Manager ID not found')) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
         navigate('/login/manager');
+        return;
       }
+
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to load categories';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -154,36 +164,22 @@ export default function CategoriesPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      
-      const response = await fetch('http://localhost:8080/api/categories', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          category: categoryName,
-        }),
-      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to create category';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to create category';
-        } catch (parseError) {
-          // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to create category';
-        }
-        throw new Error(errorMessage);
-      }
+      await categoryAPI.createCategory(categoryName.trim());
 
       await fetchCategories();
       handleCloseModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create category');
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to create category';
+      setFormError(message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login/manager');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -202,36 +198,21 @@ export default function CategoriesPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      
-      const response = await fetch(`http://localhost:8080/api/categories/${categoryToEdit.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          category: categoryName,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to update category';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to update category';
-        } catch (parseError) {
-          // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to update category';
-        }
-        throw new Error(errorMessage);
-      }
+      await categoryAPI.updateCategory(categoryToEdit.id, categoryName.trim());
 
       await fetchCategories();
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to update category');
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to update category';
+      setFormError(message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login/manager');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -242,32 +223,21 @@ export default function CategoriesPage() {
 
     try {
       setIsDeleting(true);
-      const token = localStorage.getItem('authToken');
-      
-      const response = await fetch(`http://localhost:8080/api/categories/${categoryToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to delete category';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to delete category';
-        } catch (parseError) {
-          // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to delete category';
-        }
-        throw new Error(errorMessage);
-      }
+      await categoryAPI.deleteCategory(categoryToDelete.id);
 
       await fetchCategories();
       setCategoryToDelete(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete category');
+      const message =
+        err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to delete category';
+      setError(message);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('authToken');
+        navigate('/login/manager');
+      }
     } finally {
       setIsDeleting(false);
     }

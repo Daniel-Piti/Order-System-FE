@@ -172,7 +172,7 @@ export const locationAPI = {
 
 export interface Category {
   id: number;
-  userId: string;
+  managerId: string;
   category: string;
 }
 
@@ -218,11 +218,6 @@ export interface Customer {
 }
 
 export const categoryAPI = {
-  getAllCategories: async (): Promise<Category[]> => {
-    const response = await api.get<Category[]>('/categories');
-    return response.data;
-  },
-
   createCategory: async (categoryName: string): Promise<number> => {
     const response = await api.post<number>('/categories', {
       category: categoryName,
@@ -443,15 +438,15 @@ export const publicAPI = {
   },
 
   categories: {
-    // Get all categories for a user (seller)
-    getAllByUserId: async (userId: string): Promise<Category[]> => {
-      const response = await axios.get<Category[]>(`${API_BASE_URL}/public/categories/user/${userId}`);
+    // Get all categories for a manager (seller)
+    getAllByManagerId: async (managerId: string): Promise<Category[]> => {
+      const response = await axios.get<Category[]>(`${API_BASE_URL}/public/categories/manager/${managerId}`);
       return response.data;
     },
 
-    // Get single category by userId and categoryId
-    getByUserIdAndCategoryId: async (userId: string, categoryId: number): Promise<Category> => {
-      const response = await axios.get<Category>(`${API_BASE_URL}/public/categories/user/${userId}/category/${categoryId}`);
+    // Get single category by managerId and categoryId
+    getByManagerIdAndCategoryId: async (managerId: string, categoryId: number): Promise<Category> => {
+      const response = await axios.get<Category>(`${API_BASE_URL}/public/categories/manager/${managerId}/category/${categoryId}`);
       return response.data;
     },
   },

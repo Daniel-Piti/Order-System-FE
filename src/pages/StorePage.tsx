@@ -151,7 +151,7 @@ export default function StorePage() {
     if (!userId) return;
     
     try {
-      const data = await publicAPI.categories.getAllByUserId(userId);
+      const data = await publicAPI.categories.getAllByManagerId(userId);
       setCategories(data);
     } catch (err) {
       console.error('Failed to fetch categories:', err);

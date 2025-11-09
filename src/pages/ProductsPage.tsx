@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categoryAPI, managerAPI, publicAPI } from '../services/api';
+import { managerAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
@@ -105,14 +105,15 @@ export default function ProductsPage() {
   };
 
   const fetchProducts = async (page: number = 0) => {
-    if (!managerId) return;
+    const id = managerId;
+    if (!id) return;
     
     try {
       setIsLoading(true);
       setError('');
 
       const pageResponse = await publicAPI.products.getAllByUserId(
-        managerId,
+        id,
         page, 
         pageSize, 
         sortBy, 
@@ -169,8 +170,10 @@ export default function ProductsPage() {
   };
 
   const fetchCategories = async () => {
+    const currentManagerId = managerId;
+    if (!currentManagerId) return;
     try {
-      const data = await categoryAPI.getAllCategories();
+      const data = await publicAPI.categories.getAllByManagerId(currentManagerId);
       setCategories(data);
     } catch (err) {
       console.error('Failed to fetch categories:', err);
