@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   redirectTo?: string;
+  allowedRoles?: string[];
 }
 
 function isTokenValid(token: string): boolean {
@@ -22,12 +23,22 @@ function isTokenValid(token: string): boolean {
   }
 }
 
-export default function ProtectedRoute({ children, redirectTo = '/login/manager' }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  redirectTo = '/login/manager',
+  allowedRoles,
+}: ProtectedRouteProps) {
   const token = localStorage.getItem('authToken');
+  const userRole = localStorage.getItem('userRole');
 
   if (!token || !isTokenValid(token)) {
     // Not authenticated or token is expired, clear storage and redirect to login
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  if (allowedRoles && (!userRole || !allowedRoles.includes(userRole))) {
     return <Navigate to={redirectTo} replace />;
   }
 

@@ -23,6 +23,11 @@ export interface ManagerLoginRequest {
   password: string;
 }
 
+export interface AgentLoginRequest {
+  email: string;
+  password: string;
+}
+
 export interface AdminLoginRequest {
   adminUserName: string;
   password: string;
@@ -49,7 +54,12 @@ export interface Manager {
 
 export const authAPI = {
   loginManager: async (data: ManagerLoginRequest): Promise<LoginResponse> => {
-    const response = await api.post<LoginResponse>('/auth/login', data);
+    const response = await api.post<LoginResponse>('/auth/login/manager', data);
+    return response.data;
+  },
+
+  loginAgent: async (data: AgentLoginRequest): Promise<LoginResponse> => {
+    const response = await api.post<LoginResponse>('/auth/login/agent', data);
     return response.data;
   },
 
@@ -77,6 +87,29 @@ export interface UpdateManagerDetailsRequest {
   businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
+  streetAddress: string;
+  city: string;
+}
+
+export interface Agent {
+  id: number;
+  managerId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewAgentRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
   streetAddress: string;
   city: string;
 }
@@ -128,6 +161,34 @@ export const managerAPI = {
         new_password_confirmation: newPasswordConfirmation,
       },
     });
+    return response.data;
+  },
+};
+
+export const agentAPI = {
+  getCurrentAgent: async (): Promise<Agent> => {
+    const response = await api.get<Agent>('/agents/me');
+    return response.data;
+  },
+
+  getAgentsForManager: async (): Promise<Agent[]> => {
+    const response = await api.get<Agent[]>('/agents');
+    return response.data;
+  },
+
+  createAgent: async (data: NewAgentRequest): Promise<number> => {
+    const response = await api.post<number>('/agents', data);
+    return response.data;
+  },
+
+  updateCurrentAgent: async (data: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    streetAddress: string;
+    city: string;
+  }): Promise<Agent> => {
+    const response = await api.put<Agent>('/agents/me', data);
     return response.data;
   },
 };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
 
-export default function LoginPage() {
+export default function AgentLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -13,23 +13,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    // Trim inputs
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
-    // Validate inputs
     if (!trimmedEmail) {
       setError('Please enter your email address');
       return;
     }
-    
-    // Validate email format
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
       setError('Please enter a valid email address');
       return;
     }
-    
+
     if (!trimmedPassword) {
       setError('Please enter your password');
       return;
@@ -38,12 +35,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authAPI.loginManager({ email: trimmedEmail, password: trimmedPassword });
+      const response = await authAPI.loginAgent({ email: trimmedEmail, password: trimmedPassword });
       localStorage.setItem('authToken', response.token);
-      localStorage.setItem('userRole', 'manager');
-      navigate('/dashboard');
+      localStorage.setItem('userRole', 'agent');
+      navigate('/agent/dashboard/profile');
     } catch (err: any) {
-      // Always show the same message for security (prevent user enumeration)
       setError('Invalid email or password');
     } finally {
       setIsLoading(false);
@@ -54,9 +50,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-sky-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Login Card */}
@@ -64,7 +60,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-button mb-4">
             <svg
-              className="w-8 h-8 text-purple-600"
+              className="w-8 h-8 text-sky-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -73,12 +69,12 @@ export default function LoginPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                d="M9 12h6m-3-3v6m7-6a8 8 0 11-16 0 8 8 0 0116 0z"
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Agent Portal</h1>
+          <p className="text-gray-600">Sign in to view your assignments</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
@@ -89,49 +85,39 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="agent-email" className="block text-sm font-medium text-gray-700 mb-2">
               Email
             </label>
             <input
-              id="email"
+              id="agent-email"
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="you@example.com"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              placeholder="agent@example.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="agent-password" className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
             <input
-              id="password"
+              id="agent-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="••••••••"
             />
-          </div>
-
-          <div className="flex items-center text-sm">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-              />
-              <span className="ml-2 text-gray-600">Remember me</span>
-            </label>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
             className="glass-button w-full py-3 px-4 rounded-xl font-semibold text-gray-800 
-                     hover:shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed
+                     hover:shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed
                      flex items-center justify-center space-x-2"
           >
             {isLoading ? (
@@ -166,15 +152,15 @@ export default function LoginPage() {
 
         <div className="mt-6 space-y-2 text-center text-sm text-gray-600">
           <div>
-            Need an account?{' '}
-            <a href="#" className="text-purple-600 hover:text-purple-700 font-medium">
-              Contact Admin
+            Need access?{' '}
+            <a href="#" className="text-sky-600 hover:text-sky-700 font-medium">
+              Contact your manager
             </a>
           </div>
           <div>
-            Are you an agent?{' '}
-            <Link to="/login/agent" className="text-purple-600 hover:text-purple-700 font-medium">
-              Login here
+            Back to manager login?{' '}
+            <Link to="/login/manager" className="text-sky-600 hover:text-sky-700 font-medium">
+              Sign in here
             </Link>
           </div>
         </div>

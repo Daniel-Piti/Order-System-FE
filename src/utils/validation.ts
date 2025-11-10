@@ -150,6 +150,16 @@ const MAX_LOCATION_STREET_LENGTH = 120;
 const MAX_LOCATION_CITY_LENGTH = 60;
 const MAX_LOCATION_PHONE_LENGTH = 10;
 
+export const AGENT_FIELD_LIMITS = {
+  firstName: MAX_NAME_LENGTH,
+  lastName: MAX_NAME_LENGTH,
+  email: MAX_EMAIL_LENGTH,
+  password: 100,
+  phoneNumber: MAX_PHONE_LENGTH,
+  streetAddress: MAX_STREET_ADDRESS_LENGTH,
+  city: MAX_CITY_LENGTH,
+} as const;
+
 export const userFormValidations = {
   firstName: (value: string) => validateRequiredWithMaxLength(value, 'First name', MAX_NAME_LENGTH),
   lastName: (value: string) => validateRequiredWithMaxLength(value, 'Last name', MAX_NAME_LENGTH),
@@ -185,6 +195,22 @@ export function validateUserProfileForm(formData: {
   ]);
 }
 
+export function validateAgentProfileForm(formData: {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}): ValidationResult {
+  return validateFields([
+    { field: 'firstName', error: userFormValidations.firstName(formData.firstName) },
+    { field: 'lastName', error: userFormValidations.lastName(formData.lastName) },
+    { field: 'phoneNumber', error: userFormValidations.phoneNumber(formData.phoneNumber) },
+    { field: 'streetAddress', error: userFormValidations.streetAddress(formData.streetAddress) },
+    { field: 'city', error: userFormValidations.city(formData.city) },
+  ]);
+}
+
 /**
  * Validate user creation form (with email and password)
  */
@@ -207,6 +233,26 @@ export function validateUserCreationForm(formData: {
     { field: 'password', error: userFormValidations.password(formData.password) },
     { field: 'phoneNumber', error: userFormValidations.phoneNumber(formData.phoneNumber) },
     { field: 'dateOfBirth', error: userFormValidations.dateOfBirth(formData.dateOfBirth) },
+    { field: 'streetAddress', error: userFormValidations.streetAddress(formData.streetAddress) },
+    { field: 'city', error: userFormValidations.city(formData.city) },
+  ]);
+}
+
+export function validateAgentCreationForm(formData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}): ValidationResult {
+  return validateFields([
+    { field: 'firstName', error: userFormValidations.firstName(formData.firstName) },
+    { field: 'lastName', error: userFormValidations.lastName(formData.lastName) },
+    { field: 'email', error: userFormValidations.email(formData.email) },
+    { field: 'password', error: userFormValidations.password(formData.password) },
+    { field: 'phoneNumber', error: userFormValidations.phoneNumber(formData.phoneNumber) },
     { field: 'streetAddress', error: userFormValidations.streetAddress(formData.streetAddress) },
     { field: 'city', error: userFormValidations.city(formData.city) },
   ]);

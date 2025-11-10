@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import AgentLoginPage from './pages/AgentLoginPage';
+import AgentLayout from './components/AgentLayout';
+import AgentProfilePage from './pages/AgentProfilePage';
+import AgentsPage from './pages/AgentsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserLayout from './components/UserLayout';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -21,26 +25,38 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login/manager" replace />} />
         <Route path="/login/manager" element={<LoginPage />} />
+        <Route path="/login/agent" element={<AgentLoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
-        
+        <Route
+          path="/agent/dashboard"
+          element={
+            <ProtectedRoute redirectTo="/login/agent" allowedRoles={['agent']}>
+              <AgentLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/agent/dashboard/profile" replace />} />
+          <Route path="profile" element={<AgentProfilePage />} />
+        </Route>
+
         {/* Public Store Routes - more specific route first */}
         <Route path="/store/order/:orderId" element={<StorePage />} />
         <Route path="/store/:userId" element={<StorePage />} />
         
-        <Route 
-          path="/admin/dashboard" 
+        <Route
+          path="/admin/dashboard"
           element={
-            <ProtectedRoute redirectTo="/admin">
+            <ProtectedRoute redirectTo="/admin" allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
         
         {/* User Dashboard Routes */}
         <Route 
           path="/dashboard" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['manager', 'admin']}>
               <UserLayout />
             </ProtectedRoute>
           }
@@ -49,6 +65,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="agents" element={<AgentsPage />} />
           <Route path="customers/:customerId/overrides" element={<CustomerOverridesPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="overrides" element={<OverridesPage />} />
