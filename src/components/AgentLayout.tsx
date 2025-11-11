@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { name: 'Profile', path: '/agent/dashboard/profile', icon: '👤' },
+  { name: 'Customers', path: '/agent/dashboard/customers', icon: '🗂️' },
 ];
 
 export default function AgentLayout() {

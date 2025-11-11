@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { publicAPI } from '../services/api';
-import type { PageResponse, Customer } from '../services/api';
+import { customerAPI, publicAPI } from '../services/api';
+import type { PageResponse, Customer, CustomerRequest } from '../services/api';
 import type { ProductOverride, ProductListItem } from '../utils/types';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -63,16 +63,9 @@ export default function CustomerOverridesPage() {
   }, [customerId, currentPage, pageSize]);
 
   const fetchCustomer = async () => {
+    if (!customerId) return;
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) throw new Error('Failed to fetch customer');
-      const data = await response.json();
+      const data = await customerAPI.getCustomer(customerId);
       setCustomer(data);
     } catch (err) {
       console.error('Failed to fetch customer:', err);
@@ -108,21 +101,21 @@ export default function CustomerOverridesPage() {
   };
 
   const fetchProducts = useCallback(async () => {
-    if (!customer?.userId) return;
+    if (!customer?.managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByUserId(customer.userId, 0, 1000);
+      const data = await publicAPI.products.getAllByUserId(customer.managerId, 0, 1000);
       setProducts(data.content || []);
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }
-  }, [customer?.userId]);
+  }, [customer?.managerId]);
 
   useEffect(() => {
-    if (customer?.userId) {
+    if (customer?.managerId) {
       fetchProducts();
     }
-  }, [customer?.userId, fetchProducts]);
+  }, [customer?.managerId, fetchProducts]);
 
   const productMap = useMemo(() => {
     const map = new Map<string, ProductListItem>();
@@ -211,22 +204,14 @@ export default function CustomerOverridesPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/customers/${customerId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editFormData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to update customer');
-      }
-
-      const updatedCustomer = await response.json();
+      const payload: CustomerRequest = {
+        name: editFormData.name,
+        phoneNumber: editFormData.phoneNumber,
+        email: editFormData.email,
+        streetAddress: editFormData.streetAddress,
+        city: editFormData.city,
+      };
+      const updatedCustomer = await customerAPI.updateCustomer(customerId, payload);
       setCustomer(updatedCustomer);
       handleCloseEditModal();
     } catch (err: any) {

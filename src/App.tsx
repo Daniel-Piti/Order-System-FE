@@ -4,6 +4,7 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AgentLoginPage from './pages/AgentLoginPage';
 import AgentLayout from './components/AgentLayout';
 import AgentProfilePage from './pages/AgentProfilePage';
+import AgentCustomersPage from './pages/AgentCustomersPage';
 import AgentsPage from './pages/AgentsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserLayout from './components/UserLayout';
@@ -37,19 +38,20 @@ function App() {
         >
           <Route index element={<Navigate to="/agent/dashboard/profile" replace />} />
           <Route path="profile" element={<AgentProfilePage />} />
+          <Route path="customers" element={<AgentCustomersPage />} />
         </Route>
-
+        
         {/* Public Store Routes - more specific route first */}
         <Route path="/store/order/:orderId" element={<StorePage />} />
         <Route path="/store/:userId" element={<StorePage />} />
         
-        <Route
-          path="/admin/dashboard"
+        <Route 
+          path="/admin/dashboard" 
           element={
             <ProtectedRoute redirectTo="/admin" allowedRoles={['admin']}>
               <AdminDashboard />
             </ProtectedRoute>
-          }
+          } 
         />
         
         {/* User Dashboard Routes */}

@@ -165,6 +165,33 @@ export const managerAPI = {
   },
 };
 
+export const customerAPI = {
+  getAllCustomers: async (): Promise<Customer[]> => {
+    const response = await api.get<Customer[]>('/manager/customers');
+    return response.data;
+  },
+
+  getCustomer: async (customerId: string): Promise<Customer> => {
+    const response = await api.get<Customer>(`/manager/customers/${customerId}`);
+    return response.data;
+  },
+
+  createCustomer: async (data: CustomerRequest): Promise<Customer> => {
+    const response = await api.post<Customer>('/manager/customers', data);
+    return response.data;
+  },
+
+  updateCustomer: async (customerId: string, data: CustomerRequest): Promise<Customer> => {
+    const response = await api.put<Customer>(`/manager/customers/${customerId}`, data);
+    return response.data;
+  },
+
+  deleteCustomer: async (customerId: string): Promise<string> => {
+    const response = await api.delete<string>(`/manager/customers/${customerId}`);
+    return response.data;
+  },
+};
+
 export const agentAPI = {
   getCurrentAgent: async (): Promise<Agent> => {
     const response = await api.get<Agent>('/agents/me');
@@ -181,15 +208,28 @@ export const agentAPI = {
     return response.data;
   },
 
-  updateCurrentAgent: async (data: {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    streetAddress: string;
-    city: string;
-  }): Promise<Agent> => {
+  updateCurrentAgent: async (data: UpdateAgentRequest): Promise<Agent> => {
     const response = await api.put<Agent>('/agents/me', data);
     return response.data;
+  },
+
+  getCustomersForAgent: async (): Promise<Customer[]> => {
+    const response = await api.get<Customer[]>('/agent/customers');
+    return response.data;
+  },
+
+  createCustomerForAgent: async (data: CustomerRequest): Promise<Customer> => {
+    const response = await api.post<Customer>('/agent/customers', data);
+    return response.data;
+  },
+
+  updateCustomerForAgent: async (customerId: string, data: CustomerRequest): Promise<Customer> => {
+    const response = await api.put<Customer>(`/agent/customers/${customerId}`, data);
+    return response.data;
+  },
+
+  deleteCustomerForAgent: async (customerId: string): Promise<void> => {
+    await api.delete(`/agent/customers/${customerId}`);
   },
 };
 
@@ -270,82 +310,14 @@ export interface PageResponse<T> {
 
 export interface Customer {
   id: string;
-  userId: string;
+  managerId: string;
+  agentId: number | null;
   name: string;
   phoneNumber: string;
   email: string;
   streetAddress: string;
   city: string;
 }
-
-export const categoryAPI = {
-  createCategory: async (categoryName: string): Promise<number> => {
-    const response = await api.post<number>('/categories', {
-      category: categoryName,
-    });
-    return response.data;
-  },
-
-  updateCategory: async (categoryId: number, categoryName: string): Promise<number> => {
-    const response = await api.put<number>(`/categories/${categoryId}`, {
-      category: categoryName,
-    });
-    return response.data;
-  },
-
-  deleteCategory: async (categoryId: number): Promise<string> => {
-    const response = await api.delete<string>(`/categories/${categoryId}`);
-    return response.data;
-  },
-};
-
-export const brandAPI = {
-  createBrand: async (name: string): Promise<number> => {
-    const response = await api.post<number>('/brands', {
-      name: name,
-    });
-    return response.data;
-  },
-
-  updateBrand: async (brandId: number, name: string): Promise<number> => {
-    const response = await api.put<number>(`/brands/${brandId}`, {
-      name: name,
-    });
-    return response.data;
-  },
-
-  deleteBrand: async (brandId: number): Promise<string> => {
-    const response = await api.delete<string>(`/brands/${brandId}`);
-    return response.data;
-  },
-};
-
-export interface ProductRequest {
-  name: string;
-  brandId: number | null;
-  categoryId: number | null;
-  originalPrice: number;
-  specialPrice: number;
-  description: string;
-}
-
-export const productAPI = {
-
-  createProduct: async (data: ProductRequest): Promise<string> => {
-    const response = await api.post<string>('/products', data);
-    return response.data;
-  },
-
-  updateProduct: async (productId: string, data: ProductRequest): Promise<string> => {
-    const response = await api.put<string>(`/products/${productId}`, data);
-    return response.data;
-  },
-
-  deleteProduct: async (productId: string): Promise<string> => {
-    const response = await api.delete<string>(`/products/${productId}`);
-    return response.data;
-  },
-};
 
 export interface CustomerRequest {
   name: string;
@@ -353,35 +325,6 @@ export interface CustomerRequest {
   email: string;
   streetAddress: string;
   city: string;
-}
-
-export const customerAPI = {
-  getAllCustomers: async (): Promise<Customer[]> => {
-    const response = await api.get<Customer[]>('/customers');
-    return response.data;
-  },
-
-  createCustomer: async (data: CustomerRequest): Promise<Customer> => {
-    const response = await api.post<Customer>('/customers', data);
-    return response.data;
-  },
-
-  updateCustomer: async (customerId: string, data: CustomerRequest): Promise<Customer> => {
-    const response = await api.put<Customer>(`/customers/${customerId}`, data);
-    return response.data;
-  },
-
-  deleteCustomer: async (customerId: string): Promise<string> => {
-    const response = await api.delete<string>(`/customers/${customerId}`);
-    return response.data;
-  },
-};
-
-export interface ProductDataForOrder {
-  productId: string;
-  productName: string;
-  quantity: number;
-  pricePerUnit: number;
 }
 
 export interface Order {
@@ -451,6 +394,27 @@ export const orderAPI = {
 
   markOrderCancelled: async (orderId: string): Promise<void> => {
     await api.put(`/orders/${orderId}/status/cancelled`);
+  },
+};
+
+export const categoryAPI = {
+  createCategory: async (categoryName: string): Promise<number> => {
+    const response = await api.post<number>('/categories', {
+      category: categoryName,
+    });
+    return response.data;
+  },
+
+  updateCategory: async (categoryId: number, categoryName: string): Promise<number> => {
+    const response = await api.put<number>(`/categories/${categoryId}`, {
+      category: categoryName,
+    });
+    return response.data;
+  },
+
+  deleteCategory: async (categoryId: number): Promise<string> => {
+    const response = await api.delete<string>(`/categories/${categoryId}`);
+    return response.data;
   },
 };
 

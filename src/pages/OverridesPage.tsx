@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { managerAPI, publicAPI } from '../services/api';
+import { customerAPI, managerAPI, publicAPI } from '../services/api';
 import type { PageResponse } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductOverrideWithUserId, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
@@ -128,17 +128,8 @@ export default function OverridesPage() {
 
   const fetchCustomers = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/customers', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCustomers(data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
-      }
+      const data = await customerAPI.getAllCustomers();
+      setCustomers(data.map((c) => ({ id: c.id, name: c.name })));
     } catch (err) {
       console.error('Failed to fetch customers:', err);
     }
