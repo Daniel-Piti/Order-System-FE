@@ -195,14 +195,6 @@ export default function AgentProductsPage() {
     setSearchQuery(event.target.value);
   };
 
-  const categoryNameById = useMemo(() => {
-    const map: Record<number, string> = {};
-    categories.forEach((category) => {
-      map[category.id] = category.category;
-    });
-    return map;
-  }, [categories]);
-
   const filteredProducts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return products;
@@ -236,7 +228,7 @@ export default function AgentProductsPage() {
               <select
                 value={pageSize}
                 onChange={handlePageSizeChange}
-                className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
               >
                 {PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -251,9 +243,18 @@ export default function AgentProductsPage() {
               <button
                 type="button"
                 onClick={handleSortToggle}
-                className="glass-select px-3 py-2 rounded-xl text-xs font-semibold text-gray-800 flex items-center justify-center gap-2 w-28"
+                className="glass-select bg-none pl-4 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center justify-center gap-2 min-w-[88px]"
+                style={{ backgroundImage: 'none' }}
               >
-                <span>{sortDirection === 'ASC' ? 'Sort A–Z' : 'Sort Z–A'}</span>
+                <span>{sortDirection === 'ASC' ? 'A–Z' : 'Z–A'}</span>
+                <svg
+                  className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'ASC' ? '' : 'rotate-180'}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
               </button>
             </div>
 
@@ -291,24 +292,24 @@ export default function AgentProductsPage() {
           </div>
 
           <div className="relative w-full xl:w-80">
-          <label className="sr-only" htmlFor="agent-products-search">Search products</label>
-          <input
-            id="agent-products-search"
-            type="search"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search by name, description, or brand..."
-            className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          />
-          <svg
-            className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103 10.5a7.5 7.5 0 0013.65 6.15z" />
-          </svg>
-        </div>
+            <label className="sr-only" htmlFor="agent-products-search">Search products</label>
+            <input
+              id="agent-products-search"
+              type="search"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search by name, description, or brand..."
+              className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+            <svg
+              className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103 10.5a7.5 7.5 0 0013.65 6.15z" />
+            </svg>
+          </div>
         </div>
       </div>
 

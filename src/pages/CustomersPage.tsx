@@ -621,7 +621,6 @@ export default function CustomersPage() {
                               >
                                 {customer.name}
                               </button>
-                              <p className="text-xs text-gray-500 mt-0.5">ID: {customer.id}</p>
                             </div>
                           </div>
                         </td>

@@ -178,7 +178,7 @@ export default function AgentCustomersPage() {
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+              className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
             >
               {PAGE_SIZE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -188,27 +188,25 @@ export default function AgentCustomersPage() {
             </select>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSortToggle}
-            className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2 border border-sky-200 hover:border-sky-300 transition-colors"
-          >
-            {sortDirection === 'asc' ? (
-              <>
-                <svg className="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-                <span>Name A → Z</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4 text-sky-600 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-                <span>Name Z → A</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Sort</span>
+            <button
+              type="button"
+              onClick={handleSortToggle}
+              className="glass-select bg-none pl-4 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center justify-center gap-2 min-w-[88px]"
+              style={{ backgroundImage: 'none' }}
+            >
+              <span>{sortDirection === 'asc' ? 'A–Z' : 'Z–A'}</span>
+              <svg
+                className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'asc' ? '' : 'rotate-180'}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="relative w-full lg:w-96">
@@ -332,7 +330,6 @@ export default function AgentCustomersPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-gray-900">{customer.name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">Customer ID: {customer.id}</p>
                         </div>
                       </div>
                     </td>
