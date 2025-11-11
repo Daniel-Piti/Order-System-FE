@@ -6,7 +6,7 @@ import { formatPrice } from '../utils/formatPrice';
 interface CheckoutFlowProps {
   orderId: string;
   userId: string;
-  cart: Array<{ product: { id: string; name: string; specialPrice: number }; quantity: number }>;
+  cart: Array<{ product: { id: string; name: string; price: number }; quantity: number }>;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -149,7 +149,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
         productId: item.product.id,
         productName: item.product.name,
         quantity: item.quantity,
-        pricePerUnit: item.product.specialPrice,
+        pricePerUnit: item.product.price,
       }));
 
       const trimmedName = customerName.trim();
@@ -179,7 +179,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
     }
   };
 
-  const totalPrice = cart.reduce((sum, item) => sum + (item.product.specialPrice * item.quantity), 0);
+  const totalPrice = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   if (step === 'success') {
     return (
@@ -461,7 +461,7 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
                       {item.product.name} × {item.quantity}
                     </span>
                     <span className="font-semibold text-gray-800 text-right break-words break-all">
-                      {formatPrice(item.product.specialPrice * item.quantity)}
+                      {formatPrice(item.product.price * item.quantity)}
                     </span>
                   </div>
                 ))}

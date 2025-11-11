@@ -197,14 +197,14 @@ export default function StorePage() {
             const comparison = a.name.localeCompare(b.name);
             return sortDirection === 'ASC' ? comparison : -comparison;
           });
-        } else if (sortBy === 'specialPrice') {
+        } else if (sortBy === 'price') {
           sortedProducts.sort((a, b) => {
-            const comparison = a.specialPrice - b.specialPrice;
+            const comparison = a.price - b.price;
             return sortDirection === 'ASC' ? comparison : -comparison;
           });
-        } else if (sortBy === 'originalPrice') {
+        } else if (sortBy === 'minimumPrice') {
           sortedProducts.sort((a, b) => {
-            const comparison = a.originalPrice - b.originalPrice;
+            const comparison = a.minimumPrice - b.minimumPrice;
             return sortDirection === 'ASC' ? comparison : -comparison;
           });
         }
@@ -228,7 +228,7 @@ export default function StorePage() {
         
         if (hasFilters) {
           // Fetch all products and filter client-side
-          const allProductsResponse = await publicAPI.products.getAllByUserId(
+          const allProductsResponse = await publicAPI.products.getAllByManagerId(
             userId,
             0,
             1000, // Large page size to get all products
@@ -255,9 +255,9 @@ export default function StorePage() {
               const comparison = a.name.localeCompare(b.name);
               return sortDirection === 'ASC' ? comparison : -comparison;
             });
-          } else if (sortBy === 'specialPrice') {
+          } else if (sortBy === 'price') {
             sortedProducts.sort((a, b) => {
-              const comparison = a.specialPrice - b.specialPrice;
+              const comparison = a.price - b.price;
               return sortDirection === 'ASC' ? comparison : -comparison;
             });
           }
@@ -274,7 +274,7 @@ export default function StorePage() {
           await fetchProductImagesForAll(paginatedProducts);
         } else {
           // No filters - use normal pagination
-          const pageResponse = await publicAPI.products.getAllByUserId(
+          const pageResponse = await publicAPI.products.getAllByManagerId(
             userId,
             currentPage,
             pageSize,
@@ -453,7 +453,7 @@ export default function StorePage() {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.product.specialPrice * item.quantity), 0);
+    return cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   };
 
   const getTotalItems = () => {
@@ -643,15 +643,15 @@ export default function StorePage() {
                 )}
               </button>
               <button
-                onClick={() => handleSortChange('specialPrice')}
+                onClick={() => handleSortChange('price')}
                 className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1 ${
-                  sortBy === 'specialPrice'
+                  sortBy === 'price'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'glass-button text-gray-800 hover:shadow-md'
                 }`}
               >
                 <span>Price</span>
-                {sortBy === 'specialPrice' && (
+                {sortBy === 'price' && (
                   <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {sortDirection === 'ASC' ? (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -913,23 +913,23 @@ export default function StorePage() {
                       {product.description || ''}
                     </p>
 
-                                {/* Price */}
-                                <div className="pb-1">
-                                  {product.originalPrice !== product.specialPrice ? (
-                                    <div className="flex items-baseline gap-1.5">
-                                      <span className="text-xl font-bold text-purple-600">
-                                        {formatPrice(product.specialPrice)}
-                                      </span>
-                                      <span className="text-xs text-gray-400 line-through">
-                                        {formatPrice(product.originalPrice)}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <span className="text-xl font-bold text-purple-600">
-                                      {formatPrice(product.specialPrice)}
-                                    </span>
-                                  )}
-                                </div>
+                    {/* Price */}
+                    <div className="pb-1">
+                      {product.minimumPrice !== product.price ? (
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-xl font-bold text-purple-600">
+                            {formatPrice(product.price)}
+                          </span>
+                          <span className="text-xs text-gray-400 line-through">
+                            {formatPrice(product.minimumPrice)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xl font-bold text-purple-600">
+                          {formatPrice(product.price)}
+                        </span>
+                      )}
+                    </div>
 
                     {/* Quantity and Add to Cart */}
                     <div className="flex items-center gap-1.5 mt-auto" onClick={(e) => e.stopPropagation()}>
@@ -1287,10 +1287,10 @@ export default function StorePage() {
                           <div className="flex flex-col gap-2 min-w-0">
                             <div className="bg-gray-100/80 border border-gray-200 rounded-2xl px-3 py-2 text-center flex flex-col items-center justify-center min-h-[90px] h-full">
                               <span className="text-sm text-gray-600 whitespace-nowrap">
-                                {formatPrice(item.product.specialPrice)} × {item.quantity}
+                                {formatPrice(item.product.price)} × {item.quantity}
                               </span>
                               <span className="text-lg font-bold text-purple-600 whitespace-nowrap">
-                                {formatPrice(item.product.specialPrice * item.quantity)}
+                                {formatPrice(item.product.price * item.quantity)}
                               </span>
                             </div>
                           </div>

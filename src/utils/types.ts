@@ -7,7 +7,8 @@
 export interface ProductListItem {
   id: string;
   name: string;
-  specialPrice: number;
+  price: number;
+  minimumPrice: number;
 }
 
 /**
@@ -16,16 +17,18 @@ export interface ProductListItem {
 export interface ProductOverride {
   id: number;
   productId: string;
+  managerId: string;
+  agentId: number | null;
   customerId: string;
   overridePrice: number;
-  originalPrice: number;
 }
 
 /**
- * Extended ProductOverride with userId (used in OverridesPage)
+ * Extended ProductOverride including base product price (used in OverridesPage)
  */
-export interface ProductOverrideWithUserId extends ProductOverride {
-  userId: string;
+export interface ProductOverrideWithPrice extends ProductOverride {
+  productPrice: number;
+  productMinimumPrice: number;
 }
 
 /**

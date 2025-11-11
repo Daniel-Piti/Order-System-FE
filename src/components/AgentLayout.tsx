@@ -5,6 +5,7 @@ const menuItems = [
   { name: 'Profile', path: '/agent/dashboard/profile', icon: '👤' },
   { name: 'Customers', path: '/agent/dashboard/customers', icon: '🗂️' },
   { name: 'Products', path: '/agent/dashboard/products', icon: '🛍️' },
+  { name: 'Overrides', path: '/agent/dashboard/overrides', icon: '💰' },
 ];
 
 export default function AgentLayout() {

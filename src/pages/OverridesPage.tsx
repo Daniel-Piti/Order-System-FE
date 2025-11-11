@@ -1,17 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { customerAPI, managerAPI, publicAPI } from '../services/api';
-import type { PageResponse } from '../services/api';
+import { customerAPI, managerAPI, publicAPI, agentAPI } from '../services/api';
+import type { PageResponse, Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
-import type { ProductOverrideWithUserId, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
+import type { ProductOverrideWithPrice, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
 import { formatPrice } from '../utils/formatPrice';
 
 const MAX_PRICE = 1_000_000;
 
 export default function OverridesPage() {
-  const [overrides, setOverrides] = useState<ProductOverrideWithUserId[]>([]);
+  const [overrides, setOverrides] = useState<ProductOverrideWithPrice[]>([]);
   const [products, setProducts] = useState<ProductListItem[]>([]);
   const [customers, setCustomers] = useState<CustomerListItem[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -23,6 +24,7 @@ export default function OverridesPage() {
   // Filters
   const [productFilter, setProductFilter] = useState<string>('');
   const [customerFilter, setCustomerFilter] = useState<string>('');
+  const [agentFilter, setAgentFilter] = useState<string>('all');
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -58,7 +60,14 @@ export default function OverridesPage() {
       fetchProducts();
       fetchCustomers();
     }
-  }, [managerId, currentPage, pageSize, productFilter, customerFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [managerId, currentPage, pageSize, productFilter, customerFilter, agentFilter]);
+
+  useEffect(() => {
+    if (managerId) {
+      fetchAgents();
+    }
+  }, [managerId]);
 
   const fetchOverrides = async () => {
     try {
@@ -79,6 +88,11 @@ export default function OverridesPage() {
       if (customerFilter) {
         params.append('customerId', customerFilter);
       }
+      if (agentFilter === 'manager') {
+        params.append('agentId', 'manager');
+      } else if (agentFilter !== 'all') {
+        params.append('agentId', agentFilter);
+      }
 
       const response = await fetch(`http://localhost:8080/api/product-overrides?${params.toString()}`, {
         headers: {
@@ -90,7 +104,7 @@ export default function OverridesPage() {
         throw new Error('Failed to fetch overrides');
       }
 
-      const data: PageResponse<ProductOverrideWithUserId> = await response.json();
+      const data: PageResponse<ProductOverrideWithPrice> = await response.json();
       
       setOverrides(data.content);
       setTotalPages(data.totalPages);
@@ -119,8 +133,9 @@ export default function OverridesPage() {
     if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByUserId(managerId, 0, 1000);
-      setProducts(data.content.map(p => ({ id: p.id, name: p.name, specialPrice: p.specialPrice })));
+      const data = await publicAPI.products.getAllByManagerId(managerId, 0, 1000);
+      const items = data.content ?? [];
+      setProducts(items.map(p => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }
@@ -135,6 +150,15 @@ export default function OverridesPage() {
     }
   };
 
+  const fetchAgents = async () => {
+    try {
+      const data = await agentAPI.getAgentsForManager();
+      setAgents(data);
+    } catch (err) {
+      console.error('Failed to fetch agents:', err);
+    }
+  };
+
   // Create maps for O(1) lookups instead of O(n) .find() on every render
   const productMap = useMemo(() => {
     return new Map(products.map(p => [p.id, p]));
@@ -144,12 +168,27 @@ export default function OverridesPage() {
     return new Map(customers.map(c => [c.id, c]));
   }, [customers]);
 
+  const agentMap = useMemo(() => {
+    return new Map(agents.map((agent) => [agent.id, agent]));
+  }, [agents]);
+
   const getProductName = (productId: string) => {
     return productMap.get(productId)?.name ?? productId;
   };
 
   const getCustomerName = (customerId: string) => {
     return customerMap.get(customerId)?.name ?? customerId;
+  };
+
+  const getAgentLabel = (agentId: number | null) => {
+    if (agentId == null) {
+      return 'Me';
+    }
+    const agent = agentMap.get(agentId);
+    if (!agent) {
+      return `Agent #${agentId}`;
+    }
+    return `${agent.firstName} ${agent.lastName}`.trim();
   };
 
   const handleProductFilterChange = (productId: string) => {
@@ -387,7 +426,7 @@ export default function OverridesPage() {
       </div>
 
       {/* Filters & Controls */}
-      {(overrides.length > 0 || productFilter || customerFilter) && (
+      {(overrides.length > 0 || productFilter || customerFilter || agentFilter !== 'all') && (
         <div className="glass-card rounded-3xl p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             {/* Page Size */}
@@ -417,7 +456,7 @@ export default function OverridesPage() {
                 <option value="">All</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} - {formatPrice(product.specialPrice)}
+                    {product.name} - {formatPrice(product.price)}
                   </option>
                 ))}
               </select>
@@ -435,6 +474,27 @@ export default function OverridesPage() {
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
                     {customer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Agent Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Agent:</span>
+              <select
+                value={agentFilter}
+                onChange={(e) => {
+                  setAgentFilter(e.target.value);
+                  setCurrentPage(0);
+                }}
+                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
+              >
+                <option value="all">All</option>
+                <option value="manager">Me</option>
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id.toString()}>
+                    {agent.firstName} {agent.lastName}
                   </option>
                 ))}
               </select>
@@ -462,6 +522,7 @@ export default function OverridesPage() {
                   onClick={() => {
                     setProductFilter('');
                     setCustomerFilter('');
+                    setAgentFilter('all');
                   }}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
@@ -496,8 +557,10 @@ export default function OverridesPage() {
               <thead className="bg-white/30 border-b border-gray-200/50">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">Agent</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Product</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Original Price</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Minimum Price</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Base Price</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Override Price</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
@@ -510,6 +573,9 @@ export default function OverridesPage() {
                       {getCustomerName(override.customerId)}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {getAgentLabel(override.agentId)}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
                       <span
                         className="inline-block max-w-[220px] truncate align-middle"
@@ -519,7 +585,10 @@ export default function OverridesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
-                      {formatPrice(override.originalPrice)}
+                      {formatPrice(override.productMinimumPrice ?? override.productPrice)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-800">
+                      {formatPrice(override.productPrice)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800 font-semibold">
                       {formatPrice(override.overridePrice)}
@@ -608,7 +677,7 @@ export default function OverridesPage() {
                   <option value="">Select a product</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name} - {formatPrice(product.specialPrice)}
+                      {product.name} - {formatPrice(product.price)}
                     </option>
                   ))}
                 </select>
@@ -829,7 +898,7 @@ export default function OverridesPage() {
                   <span className="font-semibold">Product:</span> {getProductName(overrideToDelete.productId)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Original Price:</span> {formatPrice(overrideToDelete.originalPrice)}
+                  <span className="font-semibold">Original Price:</span> {formatPrice(overrideToDelete.productPrice)}
                 </p>
                 <p className="text-sm text-gray-600">
                   <span className="font-semibold">Override Price:</span> {formatPrice(overrideToDelete.overridePrice)}
