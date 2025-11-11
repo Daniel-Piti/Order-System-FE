@@ -20,6 +20,8 @@ export default function ProductsPage() {
   const [productImages, setProductImages] = useState<Record<string, string[]>>({});
   // Store current image index for each product: productId -> currentIndex
   const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
+  const [productImageDirections, setProductImageDirections] = useState<Record<string, 'next' | 'prev'>>({});
+  const [productPrevImageIndices, setProductPrevImageIndices] = useState<Record<string, number | null>>({});
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -40,8 +42,8 @@ export default function ProductsPage() {
     name: '',
     brandId: '',
     categoryId: '',
-    originalPrice: '',
-    specialPrice: '',
+    minimumPrice: '',
+    price: '',
     description: '',
   });
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -58,7 +60,7 @@ export default function ProductsPage() {
   interface ProductImage {
     id: number;
     productId: string;
-    userId: string;
+    managerId: string;
     url: string; // Full public URL from R2 (constructed from s3_key)
     fileName: string; // From product_images.file_name (NOT NULL)
     mimeType: string; // From product_images.mime_type (NOT NULL)
@@ -74,8 +76,8 @@ export default function ProductsPage() {
     name: '',
     brandId: '',
     categoryId: '',
-    originalPrice: '',
-    specialPrice: '',
+    minimumPrice: '',
+    price: '',
     description: '',
   });
   const [managerId, setManagerId] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export default function ProductsPage() {
       setIsLoading(true);
       setError('');
 
-      const pageResponse = await publicAPI.products.getAllByUserId(
+      const pageResponse = await publicAPI.products.getAllByManagerId(
         id,
         page, 
         pageSize, 
@@ -145,7 +147,7 @@ export default function ProductsPage() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/user/${managerId}/product/${product.id}/images`);
+          const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
           if (response.ok) {
             const images: ProductImage[] = await response.json();
             // Sort images by filename
@@ -225,7 +227,7 @@ export default function ProductsPage() {
       value = value.slice(0, MAX_PRODUCT_NAME_LENGTH);
     } else if (name === 'description') {
       value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
-    } else if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+    } else if ((name === 'minimumPrice' || name === 'price') && value !== '') {
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -251,8 +253,8 @@ export default function ProductsPage() {
       name: '',
       brandId: '',
       categoryId: '',
-      originalPrice: '',
-      specialPrice: '',
+      minimumPrice: '',
+      price: '',
       description: '',
     });
     setSelectedImages([]);
@@ -465,8 +467,8 @@ export default function ProductsPage() {
       name: product.name.slice(0, MAX_PRODUCT_NAME_LENGTH),
       brandId: product.brandId?.toString() || '',
       categoryId: product.categoryId?.toString() || '',
-      originalPrice: product.originalPrice.toString(),
-      specialPrice: product.specialPrice.toString(),
+      minimumPrice: product.minimumPrice.toString(),
+      price: product.price.toString(),
       description: (product.description || '').slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH),
     });
     setExistingImages([]);
@@ -476,14 +478,14 @@ export default function ProductsPage() {
     setIsEditModalOpen(true);
     
     // Fetch existing images
-    await fetchProductImages(product.userId, product.id);
+    await fetchProductImages(product.managerId, product.id);
   };
 
-  const fetchProductImages = async (userId: string, productId: string) => {
+  const fetchProductImages = async (managerId: string, productId: string) => {
     try {
       setIsLoadingImages(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-      const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${productId}/images`);
+      const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}/images`);
       
       if (response.ok) {
         const images: ProductImage[] = await response.json();
@@ -499,6 +501,30 @@ export default function ProductsPage() {
     }
   };
 
+  const schedulePrevReset = (productId: string) => {
+    window.setTimeout(() => {
+      setProductPrevImageIndices(prev => ({ ...prev, [productId]: null }));
+    }, 250);
+  };
+
+  const handlePrevProductImage = (productId: string, images: string[]) => {
+    const currentIndex = productImageIndices[productId] || 0;
+    const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+    setProductPrevImageIndices(prev => ({ ...prev, [productId]: currentIndex }));
+    setProductImageDirections(prev => ({ ...prev, [productId]: 'prev' }));
+    setProductImageIndices(prev => ({ ...prev, [productId]: newIndex }));
+    schedulePrevReset(productId);
+  };
+
+  const handleNextProductImage = (productId: string, images: string[]) => {
+    const currentIndex = productImageIndices[productId] || 0;
+    const newIndex = (currentIndex + 1) % images.length;
+    setProductPrevImageIndices(prev => ({ ...prev, [productId]: currentIndex }));
+    setProductImageDirections(prev => ({ ...prev, [productId]: 'next' }));
+    setProductImageIndices(prev => ({ ...prev, [productId]: newIndex }));
+    schedulePrevReset(productId);
+  };
+
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setProductToEdit(null);
@@ -506,8 +532,8 @@ export default function ProductsPage() {
       name: '',
       brandId: '',
       categoryId: '',
-      originalPrice: '',
-      specialPrice: '',
+      minimumPrice: '',
+      price: '',
       description: '',
     });
     setExistingImages([]);
@@ -528,7 +554,7 @@ export default function ProductsPage() {
       value = value.slice(0, MAX_PRODUCT_NAME_LENGTH);
     } else if (name === 'description') {
       value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
-    } else if ((name === 'originalPrice' || name === 'specialPrice') && value !== '') {
+    } else if ((name === 'minimumPrice' || name === 'price') && value !== '') {
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -559,21 +585,21 @@ export default function ProductsPage() {
     if (!editFormData.name.trim()) {
       errors.name = 'Product name is required';
     }
-    if (!editFormData.originalPrice) {
-      errors.originalPrice = 'Original price is required';
-    } else if (isNaN(Number(editFormData.originalPrice)) || Number(editFormData.originalPrice) <= 0) {
-      errors.originalPrice = 'Original price must be a positive number';
-    } else if (Number(editFormData.originalPrice) > MAX_PRICE) {
-      errors.originalPrice = 'Original price cannot exceed 1,000,000';
+    if (!editFormData.minimumPrice) {
+      errors.minimumPrice = 'Minimum price is required';
+    } else if (isNaN(Number(editFormData.minimumPrice)) || Number(editFormData.minimumPrice) <= 0) {
+      errors.minimumPrice = 'Minimum price must be a positive number';
+    } else if (Number(editFormData.minimumPrice) > MAX_PRICE) {
+      errors.minimumPrice = 'Minimum price cannot exceed 1,000,000';
     }
-    if (editFormData.specialPrice && (isNaN(Number(editFormData.specialPrice)) || Number(editFormData.specialPrice) <= 0)) {
-      errors.specialPrice = 'Special price must be a positive number';
-    } else if (editFormData.specialPrice && Number(editFormData.specialPrice) > MAX_PRICE) {
-      errors.specialPrice = 'Special price cannot exceed 1,000,000';
-    }
-    // Validate that special price is not greater than original price
-    if (editFormData.specialPrice && editFormData.originalPrice && Number(editFormData.specialPrice) > Number(editFormData.originalPrice)) {
-      errors.specialPrice = 'Special price cannot be greater than original price';
+    if (!editFormData.price) {
+      errors.price = 'Price is required';
+    } else if (isNaN(Number(editFormData.price)) || Number(editFormData.price) <= 0) {
+      errors.price = 'Price must be a positive number';
+    } else if (Number(editFormData.price) > MAX_PRICE) {
+      errors.price = 'Price cannot exceed 1,000,000';
+    } else if (Number(editFormData.price) < Number(editFormData.minimumPrice || 0)) {
+      errors.price = 'Price cannot be lower than minimum price';
     }
 
     // Validate image count (existing visible + new to add)
@@ -594,10 +620,8 @@ export default function ProductsPage() {
       const token = localStorage.getItem('authToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
-      const originalPriceValue = Math.min(Number(editFormData.originalPrice), MAX_PRICE);
-      const finalSpecialPrice = editFormData.specialPrice
-        ? Math.min(Number(editFormData.specialPrice), MAX_PRICE)
-        : originalPriceValue;
+      const minimumPriceValue = Math.min(Number(editFormData.minimumPrice), MAX_PRICE);
+      const finalPrice = Math.min(Number(editFormData.price), MAX_PRICE);
       
       // Update product data
       const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
@@ -610,8 +634,8 @@ export default function ProductsPage() {
           name: editFormData.name,
           brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
           categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
-          originalPrice: originalPriceValue,
-          specialPrice: finalSpecialPrice,
+          minimumPrice: minimumPriceValue,
+          price: finalPrice,
           description: editFormData.description,
         }),
       });
@@ -701,22 +725,21 @@ export default function ProductsPage() {
     if (!formData.name.trim()) {
       errors.name = 'Product name is required';
     }
-    if (!formData.originalPrice) {
-      errors.originalPrice = 'Original price is required';
-    } else if (isNaN(Number(formData.originalPrice)) || Number(formData.originalPrice) <= 0) {
-      errors.originalPrice = 'Original price must be a positive number';
-    } else if (Number(formData.originalPrice) > MAX_PRICE) {
-      errors.originalPrice = 'Original price cannot exceed 1,000,000';
+    if (!formData.minimumPrice) {
+      errors.minimumPrice = 'Minimum price is required';
+    } else if (isNaN(Number(formData.minimumPrice)) || Number(formData.minimumPrice) <= 0) {
+      errors.minimumPrice = 'Minimum price must be a positive number';
+    } else if (Number(formData.minimumPrice) > MAX_PRICE) {
+      errors.minimumPrice = 'Minimum price cannot exceed 1,000,000';
     }
-    // Special price is optional - if not provided, use originalPrice
-    if (formData.specialPrice && (isNaN(Number(formData.specialPrice)) || Number(formData.specialPrice) <= 0)) {
-      errors.specialPrice = 'Special price must be a positive number';
-    } else if (formData.specialPrice && Number(formData.specialPrice) > MAX_PRICE) {
-      errors.specialPrice = 'Special price cannot exceed 1,000,000';
-    }
-    // Validate that special price is not greater than original price
-    if (formData.specialPrice && formData.originalPrice && Number(formData.specialPrice) > Number(formData.originalPrice)) {
-      errors.specialPrice = 'Special price cannot be greater than original price';
+    if (!formData.price) {
+      errors.price = 'Price is required';
+    } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+      errors.price = 'Price must be a positive number';
+    } else if (Number(formData.price) > MAX_PRICE) {
+      errors.price = 'Price cannot exceed 1,000,000';
+    } else if (Number(formData.price) < Number(formData.minimumPrice || 0)) {
+      errors.price = 'Price cannot be lower than minimum price';
     }
 
     // Validate image count
@@ -735,11 +758,8 @@ export default function ProductsPage() {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
       
-      // Use originalPrice as specialPrice if specialPrice is not provided
-      const originalPriceValue = Math.min(Number(formData.originalPrice), MAX_PRICE);
-      const finalSpecialPrice = formData.specialPrice
-        ? Math.min(Number(formData.specialPrice), MAX_PRICE)
-        : originalPriceValue;
+      const minimumPriceValue = Math.min(Number(formData.minimumPrice), MAX_PRICE);
+      const finalPrice = Math.min(Number(formData.price), MAX_PRICE);
       
       // Create FormData
       const formDataToSend = new FormData();
@@ -750,8 +770,8 @@ export default function ProductsPage() {
       if (formData.categoryId) {
         formDataToSend.append('categoryId', formData.categoryId);
       }
-      formDataToSend.append('originalPrice', originalPriceValue.toString());
-      formDataToSend.append('specialPrice', finalSpecialPrice.toString());
+      formDataToSend.append('minimumPrice', minimumPriceValue.toString());
+      formDataToSend.append('price', finalPrice.toString());
       formDataToSend.append('description', formData.description || ''); // Always send, even if empty
       
       // Add images
@@ -912,15 +932,15 @@ export default function ProductsPage() {
                     )}
                   </button>
                   <button
-                    onClick={() => handleSortChange('specialPrice')}
+                    onClick={() => handleSortChange('price')}
                     className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
-                      sortBy === 'specialPrice'
+                      sortBy === 'price'
                         ? 'bg-indigo-600 text-white shadow-md'
                         : 'glass-button text-gray-800 hover:shadow-md'
                     }`}
                   >
                     <span>Price</span>
-                    {sortBy === 'specialPrice' && (
+                    {sortBy === 'price' && (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {sortDirection === 'ASC' ? (
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -1019,16 +1039,41 @@ export default function ProductsPage() {
       ) : (
         <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
           {products.map((product) => {
+            const images = productImages[product.id] || [];
+            const currentImageIndex = productImageIndices[product.id] || 0;
+            const previousImageIndex = productPrevImageIndices[product.id];
+            const direction = productImageDirections[product.id];
             return (
               <div key={product.id} className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col">
                 {/* Product Image */}
                 <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
-                  {productImages[product.id] && productImages[product.id].length > 0 ? (
+                  {images.length > 0 ? (
                     <>
+                      {previousImageIndex != null && previousImageIndex !== currentImageIndex && images[previousImageIndex] && (
+                        <img
+                          key={`${product.id}-prev-${previousImageIndex}`}
+                          src={images[previousImageIndex]}
+                          alt={product.name}
+                          className={`absolute inset-0 w-full h-full object-contain transition-transform duration-500 ${
+                            direction === 'next'
+                              ? 'animate-slide-out-left'
+                              : direction === 'prev'
+                                ? 'animate-slide-out-right'
+                                : ''
+                          }`}
+                        />
+                      )}
                       <img
-                        src={productImages[product.id][productImageIndices[product.id] || 0]}
+                        key={`${product.id}-current-${currentImageIndex}`}
+                        src={images[currentImageIndex]}
                         alt={product.name}
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                        className={`absolute inset-0 w-full h-full object-contain transition-transform duration-500 ${
+                          direction === 'prev'
+                            ? 'animate-slide-in-right'
+                            : direction === 'next'
+                              ? 'animate-slide-in-left'
+                              : ''
+                        }`}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                           const placeholder = (e.target as HTMLImageElement).parentElement?.querySelector('.image-placeholder');
@@ -1038,15 +1083,13 @@ export default function ProductsPage() {
                         }}
                       />
                       {/* Navigation arrows - only show if multiple images */}
-                      {productImages[product.id].length > 1 && (
+                      {images.length > 1 && (
                         <>
                           {/* Left Arrow */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              const currentIndex = productImageIndices[product.id] || 0;
-                              const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
-                              setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                              handlePrevProductImage(product.id, images);
                             }}
                             className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                             title="Previous image"
@@ -1059,9 +1102,7 @@ export default function ProductsPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              const currentIndex = productImageIndices[product.id] || 0;
-                              const newIndex = (currentIndex + 1) % productImages[product.id].length;
-                              setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
+                              handleNextProductImage(product.id, images);
                             }}
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                             title="Next image"
@@ -1074,16 +1115,16 @@ export default function ProductsPage() {
                       )}
                     </>
                   ) : null}
-                  {(!productImages[product.id] || productImages[product.id].length === 0) && (
+                  {(images.length === 0) && (
                     <div className="image-placeholder w-full h-full flex items-center justify-center text-4xl opacity-40">
                       📦
                     </div>
                   )}
                   {/* Show image count badge if multiple images */}
-                  {productImages[product.id] && productImages[product.id].length > 1 && (
+                  {images.length > 1 && (
                     <div className="absolute bottom-2 left-2">
                       <span className="px-2 py-1 text-xs font-semibold bg-black/60 text-white rounded-full backdrop-blur-sm">
-                        {(productImageIndices[product.id] || 0) + 1} / {productImages[product.id].length}
+                        {currentImageIndex + 1} / {images.length}
                       </span>
                     </div>
                   )}
@@ -1131,20 +1172,16 @@ export default function ProductsPage() {
 
                   {/* Price */}
                   <div className="pb-1">
-                    {product.originalPrice !== product.specialPrice ? (
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-xl font-bold text-purple-600">
-                          {formatPrice(product.specialPrice)}
-                        </span>
-                        <span className="text-xs text-gray-400 line-through">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                      </div>
-                    ) : (
+                    <div className="flex flex-col items-start gap-0.5">
                       <span className="text-xl font-bold text-purple-600">
-                        {formatPrice(product.specialPrice)}
+                        {formatPrice(product.price)}
                       </span>
-                    )}
+                      {product.price > product.minimumPrice && (
+                        <span className="text-xs text-gray-400">
+                          Min {formatPrice(product.minimumPrice)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1258,54 +1295,54 @@ export default function ProductsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="originalPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Original Price *
+                  <label htmlFor="minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Minimum Price *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
-                      id="originalPrice"
-                      name="originalPrice"
+                      id="minimumPrice"
+                      name="minimumPrice"
                       type="number"
                       step="0.01"
                       min="0"
                       max={MAX_PRICE}
-                      value={formData.originalPrice}
+                      value={formData.minimumPrice}
                       onChange={handleInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        showErrors && fieldErrors.originalPrice ? 'border-red-400 focus:ring-red-400' : ''
+                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
                       placeholder="0.00"
                     />
                   </div>
-                  {showErrors && fieldErrors.originalPrice && (
-                    <p className="text-red-500 text-xs mt-1">{fieldErrors.originalPrice}</p>
+                  {showErrors && fieldErrors.minimumPrice && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.minimumPrice}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="specialPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Special Price <span className="text-gray-500 text-xs">(optional)</span>
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                    Price *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
-                      id="specialPrice"
-                      name="specialPrice"
+                      id="price"
+                      name="price"
                       type="number"
                       step="0.01"
                       min="0"
                       max={MAX_PRICE}
-                      value={formData.specialPrice}
+                      value={formData.price}
                       onChange={handleInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        showErrors && fieldErrors.specialPrice ? 'border-red-400 focus:ring-red-400' : ''
+                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
-                      placeholder="Leave empty to use original price"
+                      placeholder="0.00"
                     />
                   </div>
-                  {showErrors && fieldErrors.specialPrice && (
-                    <p className="text-red-500 text-xs mt-1">{fieldErrors.specialPrice}</p>
+                  {showErrors && fieldErrors.price && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.price}</p>
                   )}
                 </div>
               </div>
@@ -1549,54 +1586,54 @@ export default function ProductsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="edit-originalPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Original Price *
+                  <label htmlFor="edit-minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                    Minimum Price *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
-                      id="edit-originalPrice"
-                      name="originalPrice"
+                      id="edit-minimumPrice"
+                      name="minimumPrice"
                       type="number"
                       step="0.01"
                       min="0"
                       max={MAX_PRICE}
-                      value={editFormData.originalPrice}
+                      value={editFormData.minimumPrice}
                       onChange={handleEditInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        showErrors && fieldErrors.originalPrice ? 'border-red-400 focus:ring-red-400' : ''
+                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
                       placeholder="0.00"
                     />
                   </div>
-                  {showErrors && fieldErrors.originalPrice && (
-                    <p className="text-red-500 text-xs mt-1">{fieldErrors.originalPrice}</p>
+                  {showErrors && fieldErrors.minimumPrice && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.minimumPrice}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="edit-specialPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Special Price <span className="text-gray-500 text-xs">(optional)</span>
+                  <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700 mb-2">
+                    Price *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
-                      id="edit-specialPrice"
-                      name="specialPrice"
+                      id="edit-price"
+                      name="price"
                       type="number"
                       step="0.01"
                       min="0"
                       max={MAX_PRICE}
-                      value={editFormData.specialPrice}
+                      value={editFormData.price}
                       onChange={handleEditInputChange}
                       className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        showErrors && fieldErrors.specialPrice ? 'border-red-400 focus:ring-red-400' : ''
+                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
-                      placeholder="Leave empty to use original price"
+                      placeholder="0.00"
                     />
                   </div>
-                  {showErrors && fieldErrors.specialPrice && (
-                    <p className="text-red-500 text-xs mt-1">{fieldErrors.specialPrice}</p>
+                  {showErrors && fieldErrors.price && (
+                    <p className="text-red-500 text-xs mt-1">{fieldErrors.price}</p>
                   )}
                 </div>
               </div>

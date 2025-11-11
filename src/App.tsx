@@ -5,6 +5,7 @@ import AgentLoginPage from './pages/AgentLoginPage';
 import AgentLayout from './components/AgentLayout';
 import AgentProfilePage from './pages/AgentProfilePage';
 import AgentCustomersPage from './pages/AgentCustomersPage';
+import AgentProductsPage from './pages/AgentProductsPage';
 import AgentsPage from './pages/AgentsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserLayout from './components/UserLayout';
@@ -39,6 +40,7 @@ function App() {
           <Route index element={<Navigate to="/agent/dashboard/profile" replace />} />
           <Route path="profile" element={<AgentProfilePage />} />
           <Route path="customers" element={<AgentCustomersPage />} />
+          <Route path="products" element={<AgentProductsPage />} />
         </Route>
         
         {/* Public Store Routes - more specific route first */}

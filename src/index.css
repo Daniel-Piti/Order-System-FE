@@ -2,6 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.25s ease;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.25s ease;
+}
+
+@keyframes slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+@keyframes slide-out-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+.animate-slide-out-left {
+  animation: slide-out-left 0.25s ease forwards;
+}
+
+.animate-slide-out-right {
+  animation: slide-out-right 0.25s ease forwards;
+}
+
 @layer base {
   body {
     @apply bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen;

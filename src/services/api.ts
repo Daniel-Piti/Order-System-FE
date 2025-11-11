@@ -288,13 +288,13 @@ export interface Brand {
 
 export interface Product {
   id: string;
-  userId: string;
+  managerId: string;
   name: string;
   brandId: number | null;
   brandName: string | null;
   categoryId: number | null;
-  originalPrice: number;
-  specialPrice: number;
+  minimumPrice: number;
+  price: number;
   description: string;
 }
 
@@ -421,9 +421,9 @@ export const categoryAPI = {
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {
-    // Get all products for a user (seller) with pagination
-    getAllByUserId: async (
-      userId: string,
+    // Get all products for a manager (seller) with pagination
+    getAllByManagerId: async (
+      managerId: string,
       page: number = 0,
       size: number = 20,
       sortBy: string = 'name',
@@ -438,13 +438,13 @@ export const publicAPI = {
       if (brandId) {
         params.brandId = brandId;
       }
-      const response = await axios.get<PageResponse<Product>>(`${API_BASE_URL}/public/products/user/${userId}`, { params });
+      const response = await axios.get<PageResponse<Product>>(`${API_BASE_URL}/public/products/manager/${managerId}`, { params });
       return response.data;
     },
 
-    // Get single product by userId and productId
-    getByUserIdAndProductId: async (userId: string, productId: string): Promise<Product> => {
-      const response = await axios.get<Product>(`${API_BASE_URL}/public/products/user/${userId}/product/${productId}`);
+    // Get single product by managerId and productId
+    getByManagerIdAndProductId: async (managerId: string, productId: string): Promise<Product> => {
+      const response = await axios.get<Product>(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}`);
       return response.data;
     },
 
