@@ -1409,23 +1409,25 @@ export default function ProductsPage() {
                   {selectedImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
                       {[...selectedImages].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map((image, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={URL.createObjectURL(image)}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                            title="Remove image"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                          <p className="text-xs text-gray-600 truncate mt-1" title={image.name}>
+                        <div key={index} className="flex flex-col">
+                          <div className="relative group bg-gray-100 rounded-lg border-2 border-gray-200 p-2 flex items-center justify-center">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              className="max-w-full max-h-24 object-contain rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                              title="Remove image"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-600 truncate mt-1 text-center" title={image.name}>
                             {image.name}
                           </p>
                         </div>
@@ -1677,23 +1679,25 @@ export default function ProductsPage() {
                       <p className="text-xs font-medium text-gray-600 mb-2">Existing Images:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {[...existingImages].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' })).map((image) => (
-                          <div key={image.id} className="relative group">
-                            <img
-                              src={image.url}
-                              alt={image.fileName}
-                              className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteExistingImage(image.id)}
-                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                              title="Delete image"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                            <p className="text-xs text-gray-600 truncate mt-1" title={image.fileName}>
+                          <div key={image.id} className="flex flex-col">
+                            <div className="relative group bg-gray-100 rounded-lg border-2 border-gray-200 p-2 flex items-center justify-center">
+                              <img
+                                src={image.url}
+                                alt={image.fileName}
+                                className="max-w-full max-h-24 object-contain rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteExistingImage(image.id)}
+                                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                title="Delete image"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-600 truncate mt-1 text-center" title={image.fileName}>
                               {image.fileName}
                             </p>
                           </div>
@@ -1740,23 +1744,25 @@ export default function ProductsPage() {
                       <p className="text-xs font-medium text-green-600 mb-2">New Images to Add:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {[...newImagesToAdd].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map((image, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`New ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-lg border-2 border-green-200"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveNewImage(index)}
-                              className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                              title="Remove image"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
-                            <p className="text-xs text-gray-600 truncate mt-1" title={image.name}>
+                          <div key={index} className="flex flex-col">
+                            <div className="relative group bg-gray-100 rounded-lg border-2 border-green-200 p-2 flex items-center justify-center">
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`New ${index + 1}`}
+                                className="max-w-full max-h-24 object-contain rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveNewImage(index)}
+                                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                title="Remove image"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-600 truncate mt-1 text-center" title={image.name}>
                               {image.name}
                             </p>
                           </div>

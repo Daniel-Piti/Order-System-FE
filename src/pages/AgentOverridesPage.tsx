@@ -131,8 +131,37 @@ export default function AgentOverridesPage() {
     }
   };
 
-  const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
-  const customerMap = useMemo(() => new Map(customers.map((c) => [c.id, c])), [customers]);
+  // Create maps for O(1) lookups instead of O(n) .find() on every render
+  // Store products with both original ID and string ID to handle type mismatches
+  const productMap = useMemo(() => {
+    const map = new Map();
+    products.forEach(p => {
+      map.set(p.id, p);
+      map.set(String(p.id), p);
+      if (typeof p.id !== 'string') {
+        map.set(p.id.toString(), p);
+      }
+    });
+    return map;
+  }, [products]);
+
+  const customerMap = useMemo(() => {
+    return new Map(customers.map(c => [c.id, c]));
+  }, [customers]);
+
+  // Get selected product for add modal - useMemo to ensure React tracks changes
+  const selectedProductForAdd = useMemo(() => {
+    if (!formData.productId || products.length === 0) {
+      return undefined;
+    }
+    // Try multiple lookup methods to handle any type mismatches
+    const product = productMap.get(formData.productId) 
+      || productMap.get(String(formData.productId))
+      || products.find(p => p.id === formData.productId)
+      || products.find(p => String(p.id) === String(formData.productId))
+      || products.find(p => p.id.toString() === formData.productId.toString());
+    return product;
+  }, [formData.productId, productMap, products]);
 
   const handleProductFilterChange = (value: string) => {
     setProductFilter(value);
@@ -422,7 +451,9 @@ export default function AgentOverridesPage() {
                       {formatPrice(override.productMinimumPrice ?? override.productPrice)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {formatPrice(override.productPrice)}
+                      <span className="line-through text-gray-500">
+                        {formatPrice(override.productPrice)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">
                       {formatPrice(override.overridePrice)}
@@ -498,11 +529,31 @@ export default function AgentOverridesPage() {
                   <option value="">Select a product</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.name}
+                      {product.name} - {formatPrice(product.price)}
                     </option>
                   ))}
                 </select>
                 {showErrors && fieldErrors.productId && <p className="text-xs text-red-500 mt-1">{fieldErrors.productId}</p>}
+                {(() => {
+                  if (!formData.productId) return null;
+                  const product = products.find(p => String(p.id) === String(formData.productId));
+                  if (!product) return null;
+                  return (
+                    <div className="mt-3 p-4 bg-gradient-to-br from-sky-50 to-sky-100/60 border-2 border-sky-300 rounded-xl shadow-sm">
+                      <p className="font-bold text-gray-900 text-base mb-3">{product.name}</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-sky-700 uppercase tracking-wide">Minimum Price</span>
+                          <span className="text-sm font-bold text-sky-900">{formatPrice(product.minimumPrice ?? 0)}</span>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-sky-200 pt-2">
+                          <span className="text-xs font-semibold text-sky-700 uppercase tracking-wide">Base Price</span>
+                          <span className="text-sm font-bold text-sky-900">{formatPrice(product.price ?? 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div>
@@ -569,30 +620,36 @@ export default function AgentOverridesPage() {
               </button>
             </div>
 
-            <div className="mb-5 rounded-2xl bg-gradient-to-br from-sky-50 via-white to-sky-100/60 border border-white/40 shadow-inner divide-y divide-sky-100">
-              <div className="p-4">
-                <span className="block text-xs uppercase tracking-[0.2em] text-sky-500 font-semibold mb-1">Customer</span>
-                <p className="text-sm font-semibold text-gray-900">
-                  {customerMap.get(overrideToEdit.customerId)?.name ?? overrideToEdit.customerId}
-                </p>
-              </div>
-              <div className="p-4">
-                <span className="block text-xs uppercase tracking-[0.2em] text-sky-500 font-semibold mb-1">Product</span>
-                <p className="text-sm font-semibold text-gray-900">
-                  {productMap.get(overrideToEdit.productId)?.name ?? overrideToEdit.productId}
-                </p>
-              </div>
-              <div className="p-4">
-                <span className="block text-xs uppercase tracking-[0.2em] text-sky-500 font-semibold mb-1">Minimum Price</span>
-                <p className="text-sm font-semibold text-gray-900">
-                  {formatPrice(
-                    overrides.find((o) => o.id === overrideToEdit.id)?.productMinimumPrice ??
-                      overrides.find((o) => o.id === overrideToEdit.id)?.productPrice ??
-                      overrideToEdit.overridePrice
-                  )}
-                </p>
-              </div>
-            </div>
+            {(() => {
+              const overrideWithPrice = overrides.find((o) => o.id === overrideToEdit.id);
+              const productMinimumPrice = overrideWithPrice?.productMinimumPrice ?? overrideWithPrice?.productPrice ?? 0;
+              const productPrice = overrideWithPrice?.productPrice ?? 0;
+              
+              return (
+                <div className="mb-5 rounded-2xl bg-gradient-to-br from-sky-50 via-white to-sky-100/60 border border-white/40 shadow-inner divide-y divide-sky-100">
+                  <div className="p-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">Customer:</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {customerMap.get(overrideToEdit.customerId)?.name ?? overrideToEdit.customerId}
+                    </span>
+                  </div>
+                  <div className="p-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">Product:</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {productMap.get(overrideToEdit.productId)?.name ?? overrideToEdit.productId}
+                    </span>
+                  </div>
+                  <div className="p-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">Minimum Price:</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatPrice(productMinimumPrice)}</span>
+                  </div>
+                  <div className="p-3 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-sky-600 uppercase tracking-wide">Base Price:</span>
+                    <span className="text-sm font-semibold text-gray-900">{formatPrice(productPrice)}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {formError && (
               <div className="mb-4 rounded-2xl bg-red-50 border border-red-200 p-3 text-sm text-red-600 shadow">

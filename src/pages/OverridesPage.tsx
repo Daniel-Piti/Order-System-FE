@@ -191,6 +191,8 @@ export default function OverridesPage() {
     return `${agent.firstName} ${agent.lastName}`.trim();
   };
 
+  const selectedProductForAdd = formData.productId ? productMap.get(formData.productId) : undefined;
+
   const handleProductFilterChange = (productId: string) => {
     setProductFilter(productId);
     setCurrentPage(0);
@@ -588,7 +590,9 @@ export default function OverridesPage() {
                       {formatPrice(override.productMinimumPrice ?? override.productPrice)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
-                      {formatPrice(override.productPrice)}
+                      <span className="line-through text-gray-500">
+                        {formatPrice(override.productPrice)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800 font-semibold">
                       {formatPrice(override.overridePrice)}
@@ -683,6 +687,15 @@ export default function OverridesPage() {
                 </select>
                 {showErrors && fieldErrors.productId && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.productId}</p>
+                )}
+                {selectedProductForAdd && (
+                  <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-200 rounded-xl text-sm text-indigo-800">
+                    <p className="font-semibold">{selectedProductForAdd.name}</p>
+                    <p className="mt-1 text-xs text-indigo-700">
+                      Minimum price: {formatPrice(selectedProductForAdd.minimumPrice)}
+                    </p>
+                    <p className="mt-1 text-xs text-indigo-700">Base price: {formatPrice(selectedProductForAdd.price)}</p>
+                  </div>
                 )}
               </div>
 

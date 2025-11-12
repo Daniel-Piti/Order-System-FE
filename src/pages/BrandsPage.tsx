@@ -491,7 +491,7 @@ export default function BrandsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     )}
-                    <span>{sortDirection === 'asc' ? 'Name A → Z' : 'Name Z → A'}</span>
+                    <span>{sortDirection === 'asc' ? 'A → Z' : 'Z → A'}</span>
                   </button>
                 </div>
               </div>
@@ -565,12 +565,12 @@ export default function BrandsPage() {
                     className="glass-card rounded-2xl p-4 flex flex-col items-center text-center hover:shadow-lg transition-all relative"
                   >
                     {/* Brand Image or Icon */}
-                    <div className="w-full h-32 mb-3 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <div className="w-full h-32 mb-3 rounded-xl bg-gray-100 flex items-center justify-center p-2">
                       {brand.imageUrl ? (
                         <img
                           src={brand.imageUrl}
                           alt={brand.name}
-                          className="w-full h-full object-cover"
+                          className="max-h-full max-w-full object-contain"
                           onError={(e) => {
                             // Fallback to icon if image fails to load
                             const target = e.target as HTMLImageElement;
@@ -730,11 +730,13 @@ export default function BrandsPage() {
                   {previewImage && (
                     <div className="flex flex-col items-center">
                       <div className="relative group">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
-                        />
+                        <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => {
@@ -866,15 +868,17 @@ export default function BrandsPage() {
                     <div className="flex flex-col items-center">
                       <p className="text-xs text-gray-500 mb-2">Current image:</p>
                       <div className="relative group">
-                        <img
-                          src={brandToEdit.imageUrl}
-                          alt={brandToEdit.name}
-                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
-                          onError={(e) => {
-                            // Hide image if it fails to load
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
+                        <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
+                          <img
+                            src={brandToEdit.imageUrl}
+                            alt={brandToEdit.name}
+                            className="max-h-full max-w-full object-contain"
+                            onError={(e) => {
+                              // Hide image if it fails to load
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -919,11 +923,13 @@ export default function BrandsPage() {
                     <div className="flex flex-col items-center">
                       <p className="text-xs text-gray-500 mb-2">New image preview:</p>
                       <div className="relative group">
-                        <img
-                          src={previewImage}
-                          alt="Preview"
-                          className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-200"
-                        />
+                        <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
                         <button
                           type="button"
                           onClick={() => {

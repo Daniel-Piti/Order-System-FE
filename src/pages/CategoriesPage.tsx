@@ -369,7 +369,7 @@ export default function CategoriesPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     )}
-                    <span>{sortDirection === 'asc' ? 'Name A → Z' : 'Name Z → A'}</span>
+                    <span>{sortDirection === 'asc' ? 'A → Z' : 'Z → A'}</span>
                   </button>
                 </div>
               </div>
