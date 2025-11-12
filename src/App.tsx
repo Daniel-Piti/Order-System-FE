@@ -14,7 +14,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CustomersPage from './pages/CustomersPage';
-import CustomerOverridesPage from './pages/CustomerOverridesPage';
 import ProductsPage from './pages/ProductsPage';
 import OverridesPage from './pages/OverridesPage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -72,7 +71,6 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="agents" element={<AgentsPage />} />
-          <Route path="customers/:customerId/overrides" element={<CustomerOverridesPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="overrides" element={<OverridesPage />} />
           <Route path="categories" element={<CategoriesPage />} />

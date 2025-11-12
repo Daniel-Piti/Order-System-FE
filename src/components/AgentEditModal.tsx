@@ -1,54 +1,72 @@
 import { useEffect, useState } from 'react';
-import { agentAPI } from '../services/api';
+import { agentAPI, type UpdateAgentRequest, type Agent } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
-import { validateAgentProfileForm } from '../utils/validation';
+import { validateAgentProfileForm, AGENT_FIELD_LIMITS } from '../utils/validation';
 
-interface AgentEditProfileModalProps {
+interface AgentEditModalProps {
   isOpen: boolean;
+  agent: Agent | null;
   onClose: () => void;
   onSuccess: () => void;
-  currentProfile: {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    streetAddress: string;
-    city: string;
-  };
 }
 
-export default function AgentEditProfileModal({
-  isOpen,
-  onClose,
-  onSuccess,
-  currentProfile,
-}: AgentEditProfileModalProps) {
-  const [formData, setFormData] = useState(currentProfile);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+const INITIAL_FORM: UpdateAgentRequest = {
+  firstName: '',
+  lastName: '',
+  phoneNumber: '',
+  streetAddress: '',
+  city: '',
+};
+
+export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: AgentEditModalProps) {
+  const [formData, setFormData] = useState<UpdateAgentRequest>(INITIAL_FORM);
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isOpen) {
-      setFormData(currentProfile);
-      setShowErrors(false);
+    if (isOpen && agent) {
+      setFormData({
+        firstName: agent.firstName,
+        lastName: agent.lastName,
+        phoneNumber: agent.phoneNumber,
+        streetAddress: agent.streetAddress,
+        city: agent.city,
+      });
       setFieldErrors({});
+      setShowErrors(false);
       setError('');
     }
-  }, [isOpen, currentProfile]);
+  }, [isOpen, agent]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !agent) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const sanitizedValue =
-      name === 'phoneNumber'
-        ? value.replace(/\D/g, '').slice(0, 20)
-        : value;
+    let sanitized = value;
+
+    switch (name) {
+      case 'firstName':
+      case 'lastName':
+        sanitized = value.slice(0, AGENT_FIELD_LIMITS.firstName);
+        break;
+      case 'phoneNumber':
+        sanitized = value.replace(/\D/g, '').slice(0, AGENT_FIELD_LIMITS.phoneNumber);
+        break;
+      case 'streetAddress':
+        sanitized = value.slice(0, AGENT_FIELD_LIMITS.streetAddress);
+        break;
+      case 'city':
+        sanitized = value.slice(0, AGENT_FIELD_LIMITS.city);
+        break;
+      default:
+        sanitized = value;
+    }
 
     setFormData((prev) => ({
       ...prev,
-      [name]: sanitizedValue,
+      [name]: sanitized,
     }));
 
     if (showErrors && fieldErrors[name]) {
@@ -64,15 +82,17 @@ export default function AgentEditProfileModal({
     const validation = validateAgentProfileForm(formData);
     setFieldErrors(validation.errors);
 
-    if (!validation.isValid) return;
+    if (!validation.isValid) {
+      return;
+    }
 
     // Check if anything has changed
     const hasChanges =
-      formData.firstName !== currentProfile.firstName ||
-      formData.lastName !== currentProfile.lastName ||
-      formData.phoneNumber !== currentProfile.phoneNumber ||
-      formData.streetAddress !== currentProfile.streetAddress ||
-      formData.city !== currentProfile.city;
+      formData.firstName !== agent.firstName ||
+      formData.lastName !== agent.lastName ||
+      formData.phoneNumber !== agent.phoneNumber ||
+      formData.streetAddress !== agent.streetAddress ||
+      formData.city !== agent.city;
 
     // If nothing changed, just close the modal without making an API call
     if (!hasChanges) {
@@ -83,7 +103,7 @@ export default function AgentEditProfileModal({
     setIsSubmitting(true);
 
     try {
-      await agentAPI.updateCurrentAgent(formData);
+      await agentAPI.updateAgent(agent.id, formData);
       onSuccess();
       handleClose();
     } catch (err: any) {
@@ -91,7 +111,7 @@ export default function AgentEditProfileModal({
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to update profile'
+          'Failed to update agent'
       );
     } finally {
       setIsSubmitting(false);
@@ -99,45 +119,40 @@ export default function AgentEditProfileModal({
   };
 
   const handleClose = () => {
-    setError('');
+    setFormData(INITIAL_FORM);
     setFieldErrors({});
     setShowErrors(false);
+    setError('');
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">Edit Personal Details</h2>
+      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/85">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-800">Edit Agent</h2>
+            <p className="text-xs text-gray-500 mt-1">Update contact details for {agent.firstName} {agent.lastName}</p>
+          </div>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            aria-label="Close modal"
           >
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {error && (
-          <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+          <div className="glass-card bg-red-50/60 border border-red-200 rounded-xl p-3 text-red-600 text-sm mb-4">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">First Name *</label>
               <input
@@ -145,16 +160,15 @@ export default function AgentEditProfileModal({
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
                 placeholder="John"
               />
               {showErrors && fieldErrors.firstName && (
-                <p className="text-red-500 text-xs mt-0.5">{fieldErrors.firstName}</p>
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
               )}
             </div>
-
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Last Name *</label>
               <input
@@ -162,18 +176,16 @@ export default function AgentEditProfileModal({
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
                 placeholder="Doe"
               />
-              {showErrors && fieldErrors.lastName && (
-                <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
-              )}
+              {showErrors && fieldErrors.lastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
               <input
@@ -181,16 +193,15 @@ export default function AgentEditProfileModal({
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
                 placeholder="5551234567"
               />
               {showErrors && fieldErrors.phoneNumber && (
-                <p className="text-red-500 text-xs mt-0.5">{fieldErrors.phoneNumber}</p>
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
               )}
             </div>
-
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
               <input
@@ -198,14 +209,12 @@ export default function AgentEditProfileModal({
                 type="text"
                 value={formData.city}
                 onChange={handleChange}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
                 placeholder="New York"
               />
-              {showErrors && fieldErrors.city && (
-                <p className="text-red-500 text-xs mt-0.5">{fieldErrors.city}</p>
-              )}
+              {showErrors && fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
             </div>
           </div>
 
@@ -216,48 +225,36 @@ export default function AgentEditProfileModal({
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+              className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
               placeholder="123 Main St"
             />
             {showErrors && fieldErrors.streetAddress && (
-              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.streetAddress}</p>
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
             )}
           </div>
 
-          <div className="flex space-x-3 pt-3">
+          <div className="flex space-x-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
+              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/70 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 
-                       bg-sky-100/60 hover:bg-sky-200/70 border-sky-600 hover:border-sky-700 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2"
+              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 
+                       bg-indigo-100/80 hover:bg-indigo-200/80 border border-indigo-400 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed
+                       flex items-center justify-center space-x-2 transition-colors"
             >
               {isSubmitting ? (
                 <>
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path
                       className="opacity-75"
                       fill="currentColor"

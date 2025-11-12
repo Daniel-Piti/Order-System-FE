@@ -125,6 +125,20 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
       return;
     }
 
+    // Check if anything has changed
+    const hasChanges =
+      formData.name !== customer.name ||
+      formData.phoneNumber !== customer.phoneNumber ||
+      formData.email !== customer.email ||
+      formData.streetAddress !== customer.streetAddress ||
+      formData.city !== customer.city;
+
+    // If nothing changed, just close the modal without making an API call
+    if (!hasChanges) {
+      handleClose();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await agentAPI.updateCustomerForAgent(customer.id, formData);

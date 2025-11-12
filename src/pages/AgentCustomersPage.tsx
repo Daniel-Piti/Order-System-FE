@@ -138,16 +138,6 @@ export default function AgentCustomersPage() {
     return `${value.slice(0, 3)}-${value.slice(3)}`;
   };
 
-  const formatInitials = (value: string) => {
-    if (!value) return 'CU';
-    return value
-      .split(' ')
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('')
-      .slice(0, 2)
-      .padEnd(2, value.charAt(0).toUpperCase());
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-24">
       <div className="glass-card rounded-3xl p-6 md:p-8">
@@ -324,14 +314,7 @@ export default function AgentCustomersPage() {
                 {paginatedCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-sky-50/60 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-semibold">
-                          {formatInitials(customer.name)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{customer.name}</p>
-                        </div>
-                      </div>
+                      <span className="text-sm font-semibold text-gray-900">{customer.name}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">

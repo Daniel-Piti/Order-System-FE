@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { agentAPI, type Agent } from '../services/api';
 import AgentAddModal from '../components/AgentAddModal';
+import AgentEditModal from '../components/AgentEditModal';
+import AgentDeleteModal from '../components/AgentDeleteModal';
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -11,6 +13,10 @@ export default function AgentsPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [pageSize, setPageSize] = useState(10);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [agentToEdit, setAgentToEdit] = useState<Agent | null>(null);
+  const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
   const navigate = useNavigate();
 
   const fetchAgents = useCallback(async () => {
@@ -56,6 +62,36 @@ export default function AgentsPage() {
   }, [agents, searchQuery, sortDirection]);
 
   const displayAgents = filteredAgents.slice(0, pageSize);
+
+  const handleEditAgent = (agent: Agent) => {
+    setAgentToEdit(agent);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteAgent = (agent: Agent) => {
+    setAgentToDelete(agent);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setAgentToEdit(null);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setAgentToDelete(null);
+  };
+
+  const handleEditSuccess = () => {
+    fetchAgents();
+    handleCloseEditModal();
+  };
+
+  const handleDeleteSuccess = () => {
+    fetchAgents();
+    handleCloseDeleteModal();
+  };
 
   return (
     <div className="space-y-6">
@@ -198,12 +234,15 @@ export default function AgentsPage() {
                   <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     Added
                   </th>
+                  <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-indigo-50">
                 {displayAgents.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
                       No agents match your current filters.
                     </td>
                   </tr>
@@ -231,6 +270,30 @@ export default function AgentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {new Date(agent.createdAt).toLocaleDateString()}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditAgent(agent)}
+                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
+                            title="Edit agent"
+                          >
+                            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAgent(agent)}
+                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
+                            title="Delete agent"
+                          >
+                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -244,6 +307,21 @@ export default function AgentsPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={fetchAgents}
+      />
+
+      <AgentEditModal
+        isOpen={isEditModalOpen}
+        agent={agentToEdit}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+      />
+
+      <AgentDeleteModal
+        isOpen={isDeleteModalOpen}
+        agentName={agentToDelete ? `${agentToDelete.firstName} ${agentToDelete.lastName}` : null}
+        agentId={agentToDelete?.id ?? null}
+        onClose={handleCloseDeleteModal}
+        onDeleted={handleDeleteSuccess}
       />
     </div>
   );

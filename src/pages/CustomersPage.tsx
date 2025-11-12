@@ -9,14 +9,6 @@ import {
   validatePhoneNumberDigitsOnly,
 } from '../utils/validation';
 
-interface CustomerOverrideData {
-  overrides: never[];
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  isLoading: boolean;
-}
-
 const MAX_CUSTOMER_NAME_LENGTH = 50;
 const MAX_CUSTOMER_PHONE_LENGTH = 10;
 const MAX_CUSTOMER_STREET_LENGTH = 120;
@@ -26,7 +18,6 @@ const MAX_CUSTOMER_EMAIL_LENGTH = 100;
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [customerOverridesData, setCustomerOverridesData] = useState<Map<string, CustomerOverrideData>>(new Map());
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
@@ -100,37 +91,6 @@ export default function CustomersPage() {
     }
   };
 
-  const fetchOverrideCount = async (customerId: string) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(
-        `http://localhost:8080/api/product-overrides?customerId=${customerId}&page=0&size=1`,
-        {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-        }
-      );
-      
-      if (!response.ok) throw new Error('Failed to fetch override count');
-      const data = await response.json();
-      
-      setCustomerOverridesData(prev => {
-        const newMap = new Map(prev);
-        newMap.set(customerId, {
-          overrides: [],
-          currentPage: 0,
-          totalPages: data.totalPages || 0,
-          totalElements: data.totalElements || 0,
-          isLoading: false
-        });
-        return newMap;
-      });
-    } catch (err) {
-      console.error(`Failed to fetch override count for customer ${customerId}:`, err);
-    }
-  };
-
   // Sort customers by name
   const agentNameMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -184,18 +144,6 @@ export default function CustomersPage() {
     }
   }, [currentPage, totalPages]);
 
-  // Fetch override counts for visible customers
-  useEffect(() => {
-    if (paginatedCustomers.length > 0) {
-      paginatedCustomers.forEach(customer => {
-        // Only fetch if we don't have data for this customer yet
-        if (!customerOverridesData.has(customer.id)) {
-          fetchOverrideCount(customer.id);
-        }
-      });
-    }
-  }, [paginatedCustomers]);
-
   const formatPhoneNumber = (phone: string) => {
     if (phone.length >= 3) {
       return `${phone.substring(0, 3)}-${phone.substring(3)}`;
@@ -214,10 +162,6 @@ export default function CustomersPage() {
       return value.charAt(0).toUpperCase();
     }
     return initials.slice(0, 2).padEnd(2, initials.charAt(0));
-  };
-
-  const handleViewOverrides = (customerId: string) => {
-    navigate(`/dashboard/customers/${customerId}/overrides`);
   };
 
   const handlePageSizeChange = (newSize: number) => {
@@ -428,6 +372,20 @@ export default function CustomersPage() {
     }
 
     if (!customerToEdit) return;
+
+    // Check if anything has changed
+    const hasChanges =
+      editFormData.name !== customerToEdit.name ||
+      editFormData.phoneNumber !== customerToEdit.phoneNumber ||
+      editFormData.email !== customerToEdit.email ||
+      editFormData.streetAddress !== customerToEdit.streetAddress ||
+      editFormData.city !== customerToEdit.city;
+
+    // If nothing changed, just close the modal without making an API call
+    if (!hasChanges) {
+      handleCloseEditModal();
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -647,13 +605,9 @@ export default function CustomersPage() {
                     return (
                       <tr key={customer.id} className="hover:bg-indigo-50/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => handleViewOverrides(customer.id)}
-                            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
-                          >
+                          <span className="text-sm font-semibold text-gray-900">
                             {customer.name}
-                          </button>
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -667,17 +621,6 @@ export default function CustomersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleViewOverrides(customer.id)}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                              title="View customer"
-                            >
-                              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
                             <button
                               type="button"
                               onClick={() => handleEditCustomer(customer)}
@@ -707,16 +650,17 @@ export default function CustomersPage() {
               </table>
             </div>
           </div>
-
-          <PaginationBar
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            maxWidth="max-w-5xl"
-            showCondition={filteredCustomers.length > pageSize}
-          />
         </>
       )}
+
+      {/* Pagination Controls - Bottom */}
+      <PaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        maxWidth="max-w-5xl"
+        showCondition={filteredCustomers.length > pageSize}
+      />
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (

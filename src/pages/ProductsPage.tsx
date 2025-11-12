@@ -615,65 +615,92 @@ export default function ProductsPage() {
       return;
     }
 
+    // Check if anything has changed
+    const minimumPriceValue = Math.min(Number(editFormData.minimumPrice), MAX_PRICE);
+    const finalPrice = Math.min(Number(editFormData.price), MAX_PRICE);
+    
+    // Compare product data fields
+    const productDataChanged =
+      editFormData.name !== productToEdit.name ||
+      (editFormData.brandId ? Number(editFormData.brandId) : null) !== productToEdit.brandId ||
+      (editFormData.categoryId ? Number(editFormData.categoryId) : null) !== productToEdit.categoryId ||
+      Math.abs(minimumPriceValue - productToEdit.minimumPrice) > 0.001 ||
+      Math.abs(finalPrice - productToEdit.price) > 0.001 ||
+      (editFormData.description || '') !== (productToEdit.description || '');
+    
+    // Check if images changed
+    const imagesChanged = imagesToDelete.length > 0 || newImagesToAdd.length > 0;
+    
+    const hasChanges = productDataChanged || imagesChanged;
+
+    // If nothing changed, just close the modal without making an API call
+    if (!hasChanges) {
+      handleCloseEditModal();
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       
-      const minimumPriceValue = Math.min(Number(editFormData.minimumPrice), MAX_PRICE);
-      const finalPrice = Math.min(Number(editFormData.price), MAX_PRICE);
-      
-      // Update product data
-      const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: editFormData.name,
-          brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
-          categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
-          minimumPrice: minimumPriceValue,
-          price: finalPrice,
-          description: editFormData.description,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to update product');
-      }
-
-      // Delete images
-      for (const imageId of imagesToDelete) {
-        const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images/${imageId}`, {
-          method: 'DELETE',
+      // Only update product data if it changed
+      if (productDataChanged) {
+        const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
+          method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            name: editFormData.name,
+            brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
+            categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
+            minimumPrice: minimumPriceValue,
+            price: finalPrice,
+            description: editFormData.description,
+          }),
         });
-        
-        if (!deleteResponse.ok) {
-          console.error(`Failed to delete image ${imageId}`);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to update product');
         }
       }
 
-      // Upload new images
-      for (const imageFile of newImagesToAdd) {
-        const formData = new FormData();
-        formData.append('image', imageFile);
-        
-        const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: formData,
-        });
-        
-        if (!uploadResponse.ok) {
-          console.error(`Failed to upload image ${imageFile.name}`);
+      // Delete images if any were marked for deletion
+      if (imagesToDelete.length > 0) {
+        for (const imageId of imagesToDelete) {
+          const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images/${imageId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (!deleteResponse.ok) {
+            console.error(`Failed to delete image ${imageId}`);
+          }
+        }
+      }
+
+      // Upload new images if any were added
+      if (newImagesToAdd.length > 0) {
+        for (const imageFile of newImagesToAdd) {
+          const formData = new FormData();
+          formData.append('image', imageFile);
+          
+          const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+          });
+          
+          if (!uploadResponse.ok) {
+            console.error(`Failed to upload image ${imageFile.name}`);
+          }
         }
       }
 

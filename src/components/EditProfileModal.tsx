@@ -73,6 +73,22 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
       return;
     }
 
+    // Check if anything has changed
+    const hasChanges =
+      formData.firstName !== currentProfile.firstName ||
+      formData.lastName !== currentProfile.lastName ||
+      formData.businessName !== currentProfile.businessName ||
+      formData.phoneNumber !== currentProfile.phoneNumber ||
+      formData.dateOfBirth !== currentProfile.dateOfBirth ||
+      formData.streetAddress !== currentProfile.streetAddress ||
+      formData.city !== currentProfile.city;
+
+    // If nothing changed, just close the modal without making an API call
+    if (!hasChanges) {
+      handleClose();
+      return;
+    }
+
     setIsLoading(true);
 
     try {

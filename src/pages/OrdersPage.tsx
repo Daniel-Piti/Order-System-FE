@@ -77,10 +77,9 @@ export default function OrdersPage() {
     setIsCreating(true);
     setError('');
     try {
-      const newOrderId = await orderAPI.createEmptyOrder({
+      await orderAPI.createEmptyOrder({
         customerId: selectedCustomerId || null,
       });
-      console.log('Order created:', newOrderId);
       setShowCreateModal(false);
       setSelectedCustomerId(null);
       setCurrentPage(0); // Reset to first page

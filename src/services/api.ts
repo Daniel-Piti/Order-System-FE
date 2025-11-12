@@ -114,6 +114,14 @@ export interface NewAgentRequest {
   city: string;
 }
 
+export interface UpdateAgentRequest {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}
+
 export const managerAPI = {
   getAllManagers: async (): Promise<Manager[]> => {
     const response = await api.get<Manager[]>('/managers');
@@ -205,6 +213,16 @@ export const agentAPI = {
 
   createAgent: async (data: NewAgentRequest): Promise<number> => {
     const response = await api.post<number>('/agents', data);
+    return response.data;
+  },
+
+  updateAgent: async (agentId: number, data: UpdateAgentRequest): Promise<Agent> => {
+    const response = await api.put<Agent>(`/agents/${agentId}`, data);
+    return response.data;
+  },
+
+  deleteAgent: async (agentId: number): Promise<string> => {
+    const response = await api.delete<string>(`/agents/${agentId}`);
     return response.data;
   },
 

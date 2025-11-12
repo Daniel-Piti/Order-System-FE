@@ -12,7 +12,7 @@ export interface ProductListItem {
 }
 
 /**
- * ProductOverride interface (used in OverridesPage and CustomerOverridesPage)
+ * ProductOverride interface (used in OverridesPage)
  */
 export interface ProductOverride {
   id: number;

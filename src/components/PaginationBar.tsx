@@ -5,6 +5,7 @@ interface PaginationBarProps {
   maxWidth?: string; // Tailwind max-width class
   showCondition?: boolean; // Condition to show/hide pagination
   sidebarOffset?: boolean; // Whether to add lg:left-64 offset for sidebar
+  fixed?: boolean; // Whether to use fixed positioning (default: true)
 }
 
 export default function PaginationBar({
@@ -14,6 +15,7 @@ export default function PaginationBar({
   maxWidth = 'max-w-6xl',
   showCondition = true,
   sidebarOffset = true,
+  fixed = true,
 }: PaginationBarProps) {
   if (!showCondition || totalPages === 0) {
     return null;
@@ -60,14 +62,20 @@ export default function PaginationBar({
     pagesToShow.push(page);
   }
 
+  const containerClasses = fixed
+    ? `fixed bottom-0 left-0 right-0 ${sidebarOffset ? 'lg:left-64' : ''} bg-white/85 backdrop-blur-sm pt-3 pb-3 border-t border-gray-300/30 shadow-lg z-40`
+    : `glass-card rounded-3xl py-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm`;
+
   return (
-    <div className={`fixed bottom-0 left-0 right-0 ${sidebarOffset ? 'lg:left-64' : ''} bg-white/85 backdrop-blur-sm pt-3 pb-3 border-t border-gray-300/30 shadow-lg z-40`}>
+    <div className={containerClasses}>
       <div className={`${maxWidth} mx-auto px-6`}>
         <div className="flex flex-col items-center gap-1.5">
           {/* Page Info - Above */}
-          <div className="text-xs text-gray-600 font-medium">
-            Page
-          </div>
+          {fixed && (
+            <div className="text-xs text-gray-600 font-medium">
+              Page
+            </div>
+          )}
 
           {/* Page Navigation */}
           <div className="flex items-center justify-center gap-1 flex-nowrap overflow-x-auto">

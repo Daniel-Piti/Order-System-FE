@@ -312,6 +312,20 @@ export default function OverridesPage() {
       return;
     }
 
+    // Check if anything has changed
+    // Compare the new price with the original override price
+    const newPrice = Math.min(Number(editFormData.overridePrice), MAX_PRICE);
+    const originalPrice = overrideToEdit.overridePrice;
+    
+    // Use a small epsilon for floating point comparison
+    const hasChanges = Math.abs(newPrice - originalPrice) > 0.001;
+
+    // If nothing changed, just close the modal without making an API call
+    if (!hasChanges) {
+      handleCloseEditModal();
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
@@ -322,7 +336,7 @@ export default function OverridesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          overridePrice: Math.min(Number(editFormData.overridePrice), MAX_PRICE),
+          overridePrice: newPrice,
         }),
       });
 
