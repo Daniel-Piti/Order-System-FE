@@ -347,11 +347,13 @@ export interface CustomerRequest {
 
 export interface Order {
   id: string;
-  userId: string;
-  userStreetAddress: string | null;
-  userCity: string | null;
-  userPhoneNumber: string | null;
+  orderSource: 'MANAGER' | 'AGENT';
+  managerId: string;
+  agentId: number | null;
   customerId: string | null;
+  storeStreetAddress: string | null;
+  storeCity: string | null;
+  storePhoneNumber: string | null;
   customerName: string | null;
   customerPhone: string | null;
   customerEmail: string | null;
@@ -371,12 +373,12 @@ export interface Order {
 
 // Minimal public order DTO (for order links)
 export interface OrderPublic {
-  userId: string;
+  managerId: string;
   status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
   customerId: string | null;
 }
 
-export interface CreateEmptyOrderRequest {
+export interface CreateOrderRequest {
   customerId?: string | null;
 }
 
@@ -386,11 +388,16 @@ export const orderAPI = {
     size: number = 20,
     sortBy: string = 'createdAt',
     sortDirection: string = 'DESC',
-    status?: string
+    status?: string,
+    filterAgent: boolean = false,
+    agentId?: number | null
   ): Promise<PageResponse<Order>> => {
-    const params: any = { page, size, sortBy, sortDirection };
+    const params: any = { page, size, sortBy, sortDirection, filterAgent };
     if (status) {
       params.status = status;
+    }
+    if (agentId !== undefined && agentId !== null) {
+      params.agentId = agentId;
     }
     const response = await api.get<PageResponse<Order>>('/orders', { params });
     return response.data;
@@ -401,7 +408,7 @@ export const orderAPI = {
     return response.data;
   },
 
-  createEmptyOrder: async (data: CreateEmptyOrderRequest): Promise<string> => {
+  createOrder: async (data: CreateOrderRequest): Promise<string> => {
     const response = await api.post<string>('/orders', data);
     return response.data;
   },

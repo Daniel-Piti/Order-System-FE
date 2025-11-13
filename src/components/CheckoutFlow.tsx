@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { publicAPI } from '../services/api';
-import type { Location, ProductDataForOrder } from '../services/api';
+import type { Location, ProductDataForOrder, OrderPublic } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
 interface CheckoutFlowProps {
   orderId: string;
   userId: string;
   cart: Array<{ product: { id: string; name: string; price: number }; quantity: number }>;
+  order: OrderPublic | null;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -19,8 +20,10 @@ const MAX_CHECKOUT_EMAIL_LENGTH = 50;
 const MAX_CHECKOUT_STREET_LENGTH = 50;
 const MAX_CHECKOUT_CITY_LENGTH = 50;
 
-export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess }: CheckoutFlowProps) {
-  const [step, setStep] = useState<Step>('customer-info');
+export default function CheckoutFlow({ orderId, userId, cart, order, onClose, onSuccess }: CheckoutFlowProps) {
+  // Skip customer-info step if order is linked to a customer
+  const isCustomerLinked = order?.customerId != null;
+  const [step, setStep] = useState<Step>(isCustomerLinked ? 'pickup-location' : 'customer-info');
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,8 +130,10 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
 
   const handleBack = () => {
     if (step === 'pickup-location') {
-      setStepDirection('backward');
-      setStep('customer-info');
+      if (!isCustomerLinked) {
+        setStepDirection('backward');
+        setStep('customer-info');
+      }
     } else if (step === 'review') {
       setStepDirection('backward');
       setStep('pickup-location');
@@ -157,12 +162,14 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
       const trimmedCity = customerCity.trim();
       const trimmedEmail = customerEmail.trim();
 
+      // If customer is linked, send empty values (backend will use customerId data)
+      // Otherwise, send the filled customer info
       await publicAPI.orders.placeOrder(orderId, {
-        customerName: trimmedName,
-        customerPhone,
-        customerEmail: trimmedEmail || undefined,
-        customerStreetAddress: trimmedStreet,
-        customerCity: trimmedCity,
+        customerName: isCustomerLinked ? '' : trimmedName,
+        customerPhone: isCustomerLinked ? '' : customerPhone,
+        customerEmail: isCustomerLinked ? undefined : (trimmedEmail || undefined),
+        customerStreetAddress: isCustomerLinked ? '' : trimmedStreet,
+        customerCity: isCustomerLinked ? '' : trimmedCity,
         pickupLocationId: selectedLocationId,
         products,
         notes: notes || undefined,
@@ -212,28 +219,45 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
         {/* Progress Steps */}
         <div className="flex justify-center mb-7 px-4">
           <div className="flex w-[65%] items-start">
-            {[
-              { key: 'customer-info', label: 'Info', step: 1 },
-              { key: 'pickup-location', label: 'Location', step: 2 },
-              { key: 'review', label: 'Review', step: 3 },
-            ].map(({ key, label, step: stepNum }, index, array) => {
+            {(isCustomerLinked
+              ? [
+                  { key: 'pickup-location', label: 'Location', step: 1 },
+                  { key: 'review', label: 'Review', step: 2 },
+                ]
+              : [
+                  { key: 'customer-info', label: 'Info', step: 1 },
+                  { key: 'pickup-location', label: 'Location', step: 2 },
+                  { key: 'review', label: 'Review', step: 3 },
+                ]
+            ).map(({ key, label, step: stepNum }, index, array) => {
               const isActive = step === key;
-              const isCompleted = 
-                (step === 'pickup-location' && stepNum < 2) ||
-                (step === 'review' && stepNum < 3);
-              
-              // Determine line color based on current step
+              let isCompleted = false;
               let lineColor = 'bg-gray-500';
-              if (step === 'customer-info') {
-                lineColor = 'bg-gray-500';
-              } else if (step === 'pickup-location') {
-                if (stepNum === 1) {
+              
+              if (isCustomerLinked) {
+                // 2-step flow: location -> review
+                isCompleted = step === 'review' && stepNum < 2;
+                if (step === 'pickup-location') {
+                  lineColor = stepNum === 1 ? 'bg-gray-500' : 'bg-gray-500';
+                } else if (step === 'review') {
                   lineColor = 'bg-green-500';
-                } else if (stepNum === 2) {
-                  lineColor = 'bg-gray-500';
                 }
-              } else if (step === 'review') {
-                lineColor = 'bg-green-500';
+              } else {
+                // 3-step flow: info -> location -> review
+                isCompleted = 
+                  (step === 'pickup-location' && stepNum < 2) ||
+                  (step === 'review' && stepNum < 3);
+                if (step === 'customer-info') {
+                  lineColor = 'bg-gray-500';
+                } else if (step === 'pickup-location') {
+                  if (stepNum === 1) {
+                    lineColor = 'bg-green-500';
+                  } else if (stepNum === 2) {
+                    lineColor = 'bg-gray-500';
+                  }
+                } else if (step === 'review') {
+                  lineColor = 'bg-green-500';
+                }
               }
               
               return (
@@ -428,16 +452,18 @@ export default function CheckoutFlow({ orderId, userId, cart, onClose, onSuccess
           }`}>
             <h3 className="text-xl font-bold text-gray-800 mb-4">Review Your Order</h3>
             
-            {/* Customer Info Summary */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
-              <div className="text-sm text-gray-600 space-y-1 break-words">
-                <div>Name: {customerName}</div>
-                <div>Phone: {customerPhone}</div>
-                {customerEmail && <div>Email: {customerEmail}</div>}
-                <div>Address: {customerStreetAddress}, {customerCity}</div>
+            {/* Customer Info Summary - Only show if not linked to customer */}
+            {!isCustomerLinked && (
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                <div className="text-sm text-gray-600 space-y-1 break-words">
+                  <div>Name: {customerName}</div>
+                  <div>Phone: {customerPhone}</div>
+                  {customerEmail && <div>Email: {customerEmail}</div>}
+                  <div>Address: {customerStreetAddress}, {customerCity}</div>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Pickup Location Summary */}
             {selectedLocationId && (

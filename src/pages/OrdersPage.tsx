@@ -77,7 +77,7 @@ export default function OrdersPage() {
     setIsCreating(true);
     setError('');
     try {
-      await orderAPI.createEmptyOrder({
+      await orderAPI.createOrder({
         customerId: selectedCustomerId || null,
       });
       setShowCreateModal(false);
@@ -780,22 +780,22 @@ export default function OrdersPage() {
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Pickup Location</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
-                {viewingOrder.userStreetAddress ? (
+                {viewingOrder.storeStreetAddress ? (
                   <>
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-sm text-gray-600">Address</span>
-                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userStreetAddress}</span>
+                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storeStreetAddress}</span>
                     </div>
-                    {viewingOrder.userCity && (
+                    {viewingOrder.storeCity && (
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">City</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userCity}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storeCity}</span>
                       </div>
                     )}
-                    {viewingOrder.userPhoneNumber && (
+                    {viewingOrder.storePhoneNumber && (
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">Phone</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.userPhoneNumber}</span>
+                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storePhoneNumber}</span>
                       </div>
                     )}
                   </>

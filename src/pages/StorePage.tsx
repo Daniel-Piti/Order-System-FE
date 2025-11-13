@@ -131,7 +131,7 @@ export default function StorePage() {
           setIsLoading(true);
           const fetchedOrder = await publicAPI.orders.getById(orderId);
           setOrder(fetchedOrder);
-          setUserId(fetchedOrder.userId);
+          setUserId(fetchedOrder.managerId);
           // Don't set loading to false here - fetchProducts will handle loading state
         } catch (err: any) {
           console.error('Error fetching order:', err);
@@ -312,7 +312,7 @@ export default function StorePage() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/user/${userId}/product/${product.id}/images`);
+          const response = await fetch(`${API_BASE_URL}/public/products/manager/${userId}/product/${product.id}/images`);
           if (response.ok) {
             const images: Array<{ id: number; url: string; fileName: string }> = await response.json();
             // Sort images by fileName (same as ProductsPage)
@@ -1362,6 +1362,7 @@ export default function StorePage() {
           orderId={orderId}
           userId={userId || ''}
           cart={cart}
+          order={order}
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={() => {
             setCart([]);
