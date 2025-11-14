@@ -7,6 +7,7 @@ import AgentProfilePage from './pages/AgentProfilePage';
 import AgentCustomersPage from './pages/AgentCustomersPage';
 import AgentProductsPage from './pages/AgentProductsPage';
 import AgentOverridesPage from './pages/AgentOverridesPage';
+import AgentOrdersPage from './pages/AgentOrdersPage';
 import AgentsPage from './pages/AgentsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserLayout from './components/UserLayout';
@@ -39,6 +40,7 @@ function App() {
         >
           <Route index element={<Navigate to="/agent/dashboard/profile" replace />} />
           <Route path="profile" element={<AgentProfilePage />} />
+          <Route path="orders" element={<AgentOrdersPage />} />
           <Route path="customers" element={<AgentCustomersPage />} />
           <Route path="products" element={<AgentProductsPage />} />
           <Route path="overrides" element={<AgentOverridesPage />} />

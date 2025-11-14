@@ -264,6 +264,36 @@ export const agentAPI = {
   deleteCustomerForAgent: async (customerId: string): Promise<void> => {
     await api.delete(`/agent/customers/${customerId}`);
   },
+
+  // Agent Orders API
+  getAllOrders: async (
+    page: number = 0,
+    size: number = 20,
+    sortBy: string = 'createdAt',
+    sortDirection: string = 'DESC',
+    status?: string
+  ): Promise<PageResponse<Order>> => {
+    const params: any = { page, size, sortBy, sortDirection };
+    if (status) {
+      params.status = status;
+    }
+    const response = await api.get<PageResponse<Order>>('/agent/orders', { params });
+    return response.data;
+  },
+
+  getOrderById: async (orderId: string): Promise<Order> => {
+    const response = await api.get<Order>(`/agent/orders/${orderId}`);
+    return response.data;
+  },
+
+  createOrder: async (data: CreateOrderRequest): Promise<string> => {
+    const response = await api.post<string>('/agent/orders', data);
+    return response.data;
+  },
+
+  markOrderCancelled: async (orderId: string): Promise<void> => {
+    await api.put(`/agent/orders/${orderId}/status/cancelled`);
+  },
 };
 
 export interface Location {

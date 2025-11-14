@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { orderAPI, customerAPI, agentAPI, type Order, type Customer, type Agent } from '../services/api';
+import { agentAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 
-export default function OrdersPage() {
+export default function AgentOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [currentAgentId, setCurrentAgentId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -16,7 +16,6 @@ export default function OrdersPage() {
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
-  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
@@ -32,31 +31,22 @@ export default function OrdersPage() {
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [agentFilter, setAgentFilter] = useState<string>(''); // '' = all, 'manager' = manager only, 'agentId' = specific agent
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders(currentPage);
-  }, [currentPage, sortBy, sortDirection, pageSize, statusFilter, agentFilter]);
+  }, [currentPage, sortBy, sortDirection, pageSize, statusFilter]);
 
   const fetchOrders = async (page: number = 0) => {
     setIsLoading(true);
     setError('');
     try {
-      // Determine filterAgent and agentId based on agentFilter
-      const filterAgent = agentFilter !== ''; // If agentFilter is not empty, we're filtering by agent
-      const agentId = agentFilter === '' || agentFilter === 'manager' 
-        ? null 
-        : parseInt(agentFilter, 10);
-
-      const pageResponse = await orderAPI.getAllOrders(
+      const pageResponse = await agentAPI.getAllOrders(
         page,
         pageSize,
         sortBy,
         sortDirection,
-        statusFilter || undefined,
-        filterAgent,
-        agentId
+        statusFilter || undefined
       );
       setOrders(pageResponse?.content || []);
       setTotalPages(pageResponse?.totalPages || 0);
@@ -72,32 +62,32 @@ export default function OrdersPage() {
 
   const fetchCustomers = async () => {
     try {
-      const data = await customerAPI.getAllCustomers();
+      const data = await agentAPI.getCustomersForAgent();
       setCustomers(data);
     } catch (err: any) {
       console.error('Error fetching customers:', err);
     }
   };
 
-  const fetchAgents = async () => {
+  const fetchCurrentAgent = async () => {
     try {
-      const data = await agentAPI.getAgentsForManager();
-      setAgents(data);
+      const agent = await agentAPI.getCurrentAgent();
+      setCurrentAgentId(agent.id);
     } catch (err: any) {
-      console.error('Error fetching agents:', err);
+      console.error('Error fetching current agent:', err);
     }
   };
 
   useEffect(() => {
     fetchCustomers();
-    fetchAgents();
+    fetchCurrentAgent();
   }, []);
 
   const handleCreateOrder = async () => {
     setIsCreating(true);
     setError('');
     try {
-      await orderAPI.createOrder({
+      await agentAPI.createOrder({
         customerId: selectedCustomerId || null,
       });
       setShowCreateModal(false);
@@ -134,30 +124,11 @@ export default function OrdersPage() {
     }
   };
 
-  const handleMarkOrderDone = async (orderId: string) => {
-    setUpdatingOrderId(orderId);
-    setError('');
-    try {
-      await orderAPI.markOrderDone(orderId);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) {
-          return { ...prev, status: 'DONE', doneAt: prev.doneAt ?? new Date().toISOString() };
-        }
-        return prev;
-      });
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to mark order as done');
-    } finally {
-      setUpdatingOrderId(null);
-    }
-  };
-
   const handleCancelOrder = async (orderId: string) => {
     setCancellingOrderId(orderId);
     setError('');
     try {
-      await orderAPI.markOrderCancelled(orderId);
+      await agentAPI.markOrderCancelled(orderId);
       await fetchOrders(currentPage);
       setViewingOrder((prev) => {
         if (prev && prev.id === orderId) {
@@ -174,8 +145,14 @@ export default function OrdersPage() {
     }
   };
 
-  const handleViewOrder = (order: Order) => {
-    setViewingOrder(order);
+  const handleViewOrder = async (order: Order) => {
+    try {
+      const orderDetails = await agentAPI.getOrderById(order.id);
+      setViewingOrder(orderDetails);
+    } catch (err: any) {
+      setError(err.response?.data?.userMessage || 'Failed to load order details');
+      console.error('Error fetching order details:', err);
+    }
   };
 
   const closeViewModal = () => {
@@ -239,53 +216,6 @@ export default function OrdersPage() {
     }
   };
 
-  const getLabelStyles = (status: string) => {
-    switch (status) {
-      case 'EMPTY':
-        return {
-          bg: 'bg-gradient-to-r from-gray-100/90 to-gray-100/90',
-          border: 'border-gray-300/60',
-          borderHover: 'group-hover:border-gray-400/80',
-          text: 'text-gray-900',
-        };
-      case 'PLACED':
-        return {
-          bg: 'bg-gradient-to-r from-blue-100/90 to-indigo-100/90',
-          border: 'border-blue-300/60',
-          borderHover: 'group-hover:border-blue-400/80',
-          text: 'text-blue-900',
-        };
-      case 'DONE':
-        return {
-          bg: 'bg-gradient-to-r from-green-100/90 to-emerald-100/90',
-          border: 'border-green-300/60',
-          borderHover: 'group-hover:border-green-400/80',
-          text: 'text-green-900',
-        };
-      case 'EXPIRED':
-        return {
-          bg: 'bg-gradient-to-r from-orange-100/90 to-amber-100/90',
-          border: 'border-orange-300/60',
-          borderHover: 'group-hover:border-orange-400/80',
-          text: 'text-orange-900',
-        };
-      case 'CANCELLED':
-        return {
-          bg: 'bg-gradient-to-r from-red-100/90 to-rose-100/90',
-          border: 'border-red-300/60',
-          borderHover: 'group-hover:border-red-400/80',
-          text: 'text-red-900',
-        };
-      default:
-        return {
-          bg: 'bg-gradient-to-r from-gray-100/90 to-gray-100/90',
-          border: 'border-gray-300/60',
-          borderHover: 'group-hover:border-gray-400/80',
-          text: 'text-gray-900',
-        };
-    }
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -342,27 +272,6 @@ export default function OrdersPage() {
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           {/* Left side: Filters */}
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            {/* Agent Filter */}
-            <div className="w-[180px]">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Agent</label>
-              <select
-                value={agentFilter}
-                onChange={(e) => {
-                  setAgentFilter(e.target.value);
-                  setCurrentPage(0);
-                }}
-                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
-              >
-                <option value="">All Orders</option>
-                <option value="manager">Manager Only</option>
-                {agents.map((agent) => (
-                  <option key={agent.id} value={agent.id.toString()}>
-                    {agent.firstName} {agent.lastName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Status Filter */}
             <div className="w-[140px]">
               <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
@@ -476,34 +385,18 @@ export default function OrdersPage() {
             const showOrderCustomerDetails = order.status !== 'EMPTY' && !!order.customerName;
 
             const cardStyles = getCardStyles(order.status);
-            const labelStyles = getLabelStyles(order.status);
-            const orderAgent = order.agentId ? agents.find(agent => agent.id === order.agentId) : null;
-            // Show "Me" if filtering by this agent (agentFilter matches this order's agentId)
-            const isMe = agentFilter !== '' && agentFilter !== 'manager' && order.agentId === parseInt(agentFilter, 10);
-            // Show "Me" label for manager's own orders (orderSource === 'MANAGER' and agentId === null)
-            const isManagerOrder = order.orderSource === 'MANAGER' && order.agentId === null;
             
             return (
-            <div key={order.id} className="flex flex-col w-full sm:max-w-[260px] items-center group">
-              {/* Agent/Manager Label - Outside and attached at top */}
-              {(orderAgent || isManagerOrder) && (
-                <div className={`w-[80%] px-3 py-1.5 ${labelStyles.bg} border-l-2 border-r-2 border-t-2 ${labelStyles.border} ${labelStyles.borderHover} rounded-t-xl backdrop-blur-sm transition-all duration-300 -mb-[2px]`}>
-                  <p className={`text-xs font-semibold ${labelStyles.text} text-center truncate`}>
-                    {isManagerOrder ? 'Me' : isMe ? 'Me' : `${orderAgent!.firstName} ${orderAgent!.lastName}`}
-                  </p>
-                </div>
-              )}
+            <div
+              key={order.id}
+              onClick={() => handleViewOrder(order)}
+              className={`${cardStyles.container} backdrop-blur-sm rounded-2xl p-4 transition-all duration-300 cursor-pointer group flex flex-col relative w-full sm:max-w-[260px] overflow-hidden`}
+            >
+              {/* Status Accent Bar - with rounded top to match card */}
+              <div className={`absolute top-0 left-0 right-0 h-1.5 ${cardStyles.accent} rounded-t-2xl`}></div>
               
-              {/* Card */}
-              <div
-                onClick={() => handleViewOrder(order)}
-                className={`${cardStyles.container} backdrop-blur-sm rounded-2xl p-4 transition-all duration-300 cursor-pointer flex flex-col relative w-full overflow-hidden h-[280px]`}
-              >
-                {/* Status Accent Bar - with rounded top to match card */}
-                <div className={`absolute top-0 left-0 right-0 h-1.5 ${cardStyles.accent} rounded-t-2xl`}></div>
-                
-                {/* Order Header - Status & ID */}
-                <div className="flex items-center justify-between mb-3 mt-1">
+              {/* Order Header - Status & ID */}
+              <div className="flex items-center justify-between mb-3 mt-1">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
                   {order.status}
                 </span>
@@ -544,7 +437,7 @@ export default function OrdersPage() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate('/dashboard/customers');
+                        navigate('/agent/dashboard/customers');
                       }}
                       className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 max-w-full overflow-hidden"
                       title="View linked customer"
@@ -571,74 +464,46 @@ export default function OrdersPage() {
               </div>
 
               {/* Created/Placed Date - Subtle */}
-              <div className="mt-auto pt-3 pb-2 flex items-center justify-between min-h-[40px]">
-                <p className="text-xs text-gray-500 font-medium flex items-center">
+              <div className="mt-auto pt-3 pb-2">
+                <p className="text-xs text-gray-500 font-medium">
                   {formatDate(order.createdAt)}
                 </p>
-                {/* Floating Actions */}
-                {order.status === 'EMPTY' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyLink(order.id);
-                    }}
-                    className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm flex-shrink-0 relative ${
-                      copiedOrderId === order.id
-                        ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
-                        : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
-                    }`}
-                    title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
-                  >
-                    <span
-                      className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
-                        copiedOrderId === order.id ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-                      }`}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    </span>
-                    <span
-                      className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
-                        copiedOrderId === order.id ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                      }`}
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  </button>
-                ) : order.status === 'PLACED' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMarkOrderDone(order.id);
-                    }}
-                    disabled={updatingOrderId === order.id}
-                    className={`px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 ${
-                      updatingOrderId === order.id
-                        ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
-                        : 'bg-green-100 text-green-700 border-green-700 hover:shadow-lg'
-                    }`}
-                    title="Mark as done"
-                  >
-                    {updatingOrderId === order.id ? (
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
-                      </svg>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-xs font-semibold text-green-700">Mark as Done</span>
-                      </>
-                    )}
-                  </button>
-                ) : null}
               </div>
-            </div>
+
+              {/* Floating Actions */}
+              {order.status === 'EMPTY' && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyLink(order.id);
+                  }}
+                  className={`absolute bottom-3 right-3 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm ${
+                    copiedOrderId === order.id
+                      ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
+                      : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
+                  }`}
+                  title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
+                >
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                      copiedOrderId === order.id ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <span
+                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                      copiedOrderId === order.id ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                </button>
+              )}
             </div>
             );
           })}
@@ -1053,28 +918,6 @@ export default function OrdersPage() {
                   {cancellingOrderId === viewingOrder.id ? 'Cancelling...' : 'Cancel Order'}
                 </button>
               )}
-              {viewingOrder.status === 'PLACED' && (
-                <button
-                  onClick={() => handleMarkOrderDone(viewingOrder.id)}
-                  disabled={updatingOrderId === viewingOrder.id}
-                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
-                    updatingOrderId === viewingOrder.id
-                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                      : 'text-green-600 border-green-700 bg-green-50 hover:shadow-lg'
-                  }`}
-                >
-                  {updatingOrderId === viewingOrder.id ? (
-                    'Marking...'
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Mark as Done</span>
-                    </>
-                  )}
-                </button>
-              )}
               <button
                 onClick={closeViewModal}
                 className="glass-button px-6 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
@@ -1140,3 +983,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+
