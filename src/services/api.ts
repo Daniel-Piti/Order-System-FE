@@ -294,6 +294,10 @@ export const agentAPI = {
   markOrderCancelled: async (orderId: string): Promise<void> => {
     await api.put(`/agent/orders/${orderId}/status/cancelled`);
   },
+
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
+    await api.put(`/agent/orders/${orderId}`, data);
+  },
 };
 
 export interface Location {
@@ -465,6 +469,10 @@ export const orderAPI = {
   markOrderCancelled: async (orderId: string): Promise<void> => {
     await api.put(`/orders/${orderId}/status/cancelled`);
   },
+
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
+    await api.put(`/orders/${orderId}`, data);
+  },
 };
 
 export const categoryAPI = {
@@ -584,6 +592,12 @@ export interface PlaceOrderRequest {
   customerEmail?: string;
   customerStreetAddress: string;
   customerCity: string;
+  pickupLocationId: number;
+  products: ProductDataForOrder[];
+  notes?: string;
+}
+
+export interface UpdateOrderRequest {
   pickupLocationId: number;
   products: ProductDataForOrder[];
   notes?: string;

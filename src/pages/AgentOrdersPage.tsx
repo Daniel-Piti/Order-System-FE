@@ -464,46 +464,59 @@ export default function AgentOrdersPage() {
               </div>
 
               {/* Created/Placed Date - Subtle */}
-              <div className="mt-auto pt-3 pb-2">
-                <p className="text-xs text-gray-500 font-medium">
+              <div className="mt-auto pt-3 pb-2 flex items-center justify-between min-h-[40px]">
+                <p className="text-xs text-gray-500 font-medium flex items-center">
                   {formatDate(order.createdAt)}
                 </p>
+                {/* Floating Actions */}
+                {order.status === 'EMPTY' ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyLink(order.id);
+                    }}
+                    className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm flex-shrink-0 relative ${
+                      copiedOrderId === order.id
+                        ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
+                        : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
+                    }`}
+                    title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
+                  >
+                    <span
+                      className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                        copiedOrderId === order.id ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                    <span
+                      className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
+                        copiedOrderId === order.id ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                  </button>
+                ) : order.status === 'PLACED' ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/store/edit/${order.id}`);
+                    }}
+                    className="px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
+                    title="Edit order"
+                  >
+                    <svg className="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span className="text-xs font-semibold text-blue-700">Edit</span>
+                  </button>
+                ) : null}
               </div>
-
-              {/* Floating Actions */}
-              {order.status === 'EMPTY' && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCopyLink(order.id);
-                  }}
-                  className={`absolute bottom-3 right-3 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm ${
-                    copiedOrderId === order.id
-                      ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
-                      : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
-                  }`}
-                  title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
-                >
-                  <span
-                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
-                      copiedOrderId === order.id ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </span>
-                  <span
-                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
-                      copiedOrderId === order.id ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                    }`}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                </button>
-              )}
             </div>
             );
           })}
@@ -916,6 +929,20 @@ export default function AgentOrdersPage() {
                   }`}
                 >
                   {cancellingOrderId === viewingOrder.id ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              )}
+              {viewingOrder.status === 'PLACED' && (
+                <button
+                  onClick={() => {
+                    setViewingOrder(null);
+                    navigate(`/store/edit/${viewingOrder.id}`);
+                  }}
+                  className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Edit Order</span>
                 </button>
               )}
               <button

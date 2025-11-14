@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { publicAPI } from '../services/api';
-import type { Location, ProductDataForOrder, OrderPublic } from '../services/api';
+import { publicAPI, orderAPI, agentAPI } from '../services/api';
+import type { Location, ProductDataForOrder, OrderPublic, Order, UpdateOrderRequest } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
 interface CheckoutFlowProps {
@@ -8,6 +8,8 @@ interface CheckoutFlowProps {
   userId: string; // managerId - required for both cases
   cart: Array<{ product: { id: string; name: string; price: number }; quantity: number }>;
   order: OrderPublic | null; // Optional - will be null for public store
+  editOrder?: Order | null; // Full order for edit mode
+  isEditMode?: boolean; // True if editing an existing order
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -20,17 +22,18 @@ const MAX_CHECKOUT_EMAIL_LENGTH = 50;
 const MAX_CHECKOUT_STREET_LENGTH = 50;
 const MAX_CHECKOUT_CITY_LENGTH = 50;
 
-export default function CheckoutFlow({ orderId, userId, cart, order, onClose, onSuccess }: CheckoutFlowProps) {
-  // Skip customer-info step if order is linked to a customer
+export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, isEditMode = false, onClose, onSuccess }: CheckoutFlowProps) {
+  // Skip customer-info step if order is linked to a customer OR if in edit mode
   const isCustomerLinked = order?.customerId != null;
-  const [step, setStep] = useState<Step>(isCustomerLinked ? 'pickup-location' : 'customer-info');
+  // In edit mode, start with pickup-location step (no customer info editing)
+  const [step, setStep] = useState<Step>(isEditMode || isCustomerLinked ? 'pickup-location' : 'customer-info');
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
 
-  // Customer info form
+  // Customer info form (not used in edit mode)
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -64,14 +67,32 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
     setCustomerCity(value.slice(0, MAX_CHECKOUT_CITY_LENGTH));
   };
 
-  // Fetch locations
+  // Fetch locations and pre-fill location/notes in edit mode
   useEffect(() => {
     const fetchLocations = async () => {
       setIsLoadingLocations(true);
       try {
         const data = await publicAPI.locations.getAllByManagerId(userId);
         setLocations(data);
-        if (data.length === 1) {
+        
+        // In edit mode, pre-fill location and notes from order
+        if (isEditMode && editOrder) {
+          // Find location by address match (storeStreetAddress, storeCity)
+          const matchingLocation = data.find(loc => 
+            loc.streetAddress === editOrder.storeStreetAddress && 
+            loc.city === editOrder.storeCity
+          );
+          if (matchingLocation) {
+            setSelectedLocationId(matchingLocation.id);
+          } else if (data.length === 1) {
+            setSelectedLocationId(data[0].id);
+          }
+          
+          // Pre-fill notes
+          if (editOrder.notes) {
+            setNotes(editOrder.notes);
+          }
+        } else if (data.length === 1) {
           setSelectedLocationId(data[0].id);
         }
       } catch (err) {
@@ -82,7 +103,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
       }
     };
     fetchLocations();
-  }, [userId]);
+  }, [userId, isEditMode, editOrder]);
 
   const validateStep1 = (): boolean => {
     if (!customerName.trim()) {
@@ -130,7 +151,8 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
 
   const handleBack = () => {
     if (step === 'pickup-location') {
-      if (!isCustomerLinked) {
+      // In edit mode, don't go back to customer-info (not editable)
+      if (!isEditMode && !isCustomerLinked) {
         setStepDirection('backward');
         setStep('customer-info');
       }
@@ -157,6 +179,29 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
         pricePerUnit: item.product.price,
       }));
 
+      // Edit mode: Update existing order (only location, products, notes)
+      if (isEditMode && orderId) {
+        const userRole = localStorage.getItem('userRole');
+        const updateRequest: UpdateOrderRequest = {
+          pickupLocationId: selectedLocationId!,
+          products,
+          notes: notes || undefined,
+        };
+
+        if (userRole === 'agent') {
+          await agentAPI.updateOrder(orderId, updateRequest);
+        } else if (userRole === 'manager') {
+          await orderAPI.updateOrder(orderId, updateRequest);
+        } else {
+          throw new Error('Unauthorized to update orders');
+        }
+
+        setStep('success');
+        onSuccess();
+        return;
+      }
+
+      // Regular flow: Place order (customer checkout)
       const trimmedName = customerName.trim();
       const trimmedStreet = customerStreetAddress.trim();
       const trimmedCity = customerCity.trim();
@@ -187,8 +232,8 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
       // Clear cart but keep success screen visible
       onSuccess();
     } catch (err: any) {
-      console.error('Failed to place order:', err);
-      setError(err.response?.data?.userMessage || err.message || 'Failed to place order');
+      console.error('Failed to place/update order:', err);
+      setError(err.response?.data?.userMessage || err.message || `Failed to ${isEditMode ? 'update' : 'place'} order`);
     } finally {
       setIsSubmitting(false);
     }
@@ -201,9 +246,13 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-8 md:p-12 max-w-xl w-full text-center shadow-2xl border border-white/40">
           <div className="text-6xl mb-6">✅</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Placed!</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            {isEditMode ? 'Order Updated!' : 'Order Placed!'}
+          </h1>
           <p className="text-lg text-gray-600">
-            Thank you for your order. We have received your order and will process it shortly.
+            {isEditMode
+              ? 'Your order has been successfully updated.'
+              : 'Thank you for your order. We have received your order and will process it shortly.'}
           </p>
         </div>
       </div>
@@ -227,7 +276,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
         {/* Progress Steps */}
         <div className="flex justify-center mb-7 px-4">
           <div className="flex w-[65%] items-start">
-            {(isCustomerLinked
+            {(isEditMode || isCustomerLinked
               ? [
                   { key: 'pickup-location', label: 'Location', step: 1 },
                   { key: 'review', label: 'Review', step: 2 },
@@ -242,8 +291,8 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
               let isCompleted = false;
               let lineColor = 'bg-gray-500';
               
-              if (isCustomerLinked) {
-                // 2-step flow: location -> review
+              if (isEditMode || isCustomerLinked) {
+                // 2-step flow: location -> review (edit mode or customer linked)
                 isCompleted = step === 'review' && stepNum < 2;
                 if (step === 'pickup-location') {
                   lineColor = stepNum === 1 ? 'bg-gray-500' : 'bg-gray-500';
@@ -458,10 +507,10 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
           <div className={`space-y-4 ${
             stepDirection === 'forward' ? 'animate-fade-in-left' : 'animate-fade-in-right'
           }`}>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Review Your Order</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">{isEditMode ? 'Review Order Changes' : 'Review Your Order'}</h3>
             
-            {/* Customer Info Summary - Only show if not linked to customer */}
-            {!isCustomerLinked && (
+            {/* Customer Info Summary - Only show if not linked to customer and not in edit mode */}
+            {!isEditMode && !isCustomerLinked && (
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
                 <div className="text-sm text-gray-600 space-y-1 break-words">
@@ -470,6 +519,20 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
                   {customerEmail && <div>Email: {customerEmail}</div>}
                   <div>Address: {customerStreetAddress}, {customerCity}</div>
                 </div>
+              </div>
+            )}
+            
+            {/* In edit mode, show customer info from order (read-only) */}
+            {isEditMode && editOrder && (
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                <div className="text-sm text-gray-600 space-y-1 break-words">
+                  <div>Name: {editOrder.customerName || 'N/A'}</div>
+                  <div>Phone: {editOrder.customerPhone || 'N/A'}</div>
+                  {editOrder.customerEmail && <div>Email: {editOrder.customerEmail}</div>}
+                  <div>Address: {editOrder.customerStreetAddress || 'N/A'}, {editOrder.customerCity || 'N/A'}</div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2 italic">Customer information cannot be edited</p>
               </div>
             )}
 
@@ -533,7 +596,9 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
                 disabled={isSubmitting}
                 className="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-400/50 backdrop-blur-sm shadow-lg shadow-green-500/30"
               >
-                {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                {isSubmitting 
+                  ? (isEditMode ? 'Updating Order...' : 'Placing Order...')
+                  : (isEditMode ? 'Update Order' : 'Place Order')}
               </button>
             </div>
           </div>

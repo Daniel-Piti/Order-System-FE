@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { publicAPI } from '../services/api';
-import type { Product, Category, Brand, OrderPublic } from '../services/api';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { publicAPI, orderAPI, agentAPI, managerAPI } from '../services/api';
+import type { Product, Category, Brand, OrderPublic, Order } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
 import PaginationBar from '../components/PaginationBar';
 import ProductDetailModal from '../components/ProductDetailModal';
@@ -14,9 +14,15 @@ interface CartItem {
 
 export default function StorePage() {
   const { managerId: managerIdParam, orderId } = useParams<{ managerId?: string; orderId?: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Detect edit mode from URL path
+  const isEditMode = location.pathname.includes('/edit/');
   
   const [managerId, setManagerId] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderPublic | null>(null);
+  const [editOrder, setEditOrder] = useState<Order | null>(null); // Full order for edit mode
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -119,11 +125,91 @@ export default function StorePage() {
   }, [cart, orderId, managerId, hasLoadedCart]);
 
   // Fetch managerId from order if orderId is provided, otherwise use managerIdParam
+  // Handle edit mode: load order via authenticated API and populate cart
   useEffect(() => {
     const fetchManagerId = async () => {
       setError('');
       
-      if (managerIdParam) {
+      // Edit mode: Load order via authenticated API
+      if (isEditMode && orderId) {
+        try {
+          setIsLoading(true);
+          const token = localStorage.getItem('authToken');
+          if (!token) {
+            setError('Please login to edit orders');
+            navigate('/login/manager');
+            setIsLoading(false);
+            return;
+          }
+          
+          const userRole = localStorage.getItem('userRole');
+          
+          // Load order based on user role
+          let fetchedOrder: Order;
+          if (userRole === 'agent') {
+            fetchedOrder = await agentAPI.getOrderById(orderId);
+          } else if (userRole === 'manager') {
+            fetchedOrder = await orderAPI.getOrderById(orderId);
+          } else {
+            setError('Unauthorized to edit orders');
+            navigate('/login/manager');
+            setIsLoading(false);
+            return;
+          }
+          
+          // Validate order is PLACED
+          if (fetchedOrder.status !== 'PLACED') {
+            setError('Only placed orders can be edited');
+            setIsLoading(false);
+            return;
+          }
+          
+          setEditOrder(fetchedOrder);
+          setManagerId(fetchedOrder.managerId);
+          
+          // Populate cart with order products (filter out deleted products)
+          // First, fetch all available products for the manager
+          const allProducts = await publicAPI.products.getAllByManagerId(
+            fetchedOrder.managerId,
+            0,
+            1000,
+            'name',
+            'ASC'
+          );
+          const availableProductIds = new Set(allProducts.content.map(p => p.id));
+          
+          // Build cart from order products, only including products that still exist
+          const cartItems: CartItem[] = [];
+          for (const orderProduct of fetchedOrder.products) {
+            const product = allProducts.content.find(p => p.id === orderProduct.productId);
+            if (product && availableProductIds.has(product.id)) {
+              cartItems.push({
+                product: product,
+                quantity: orderProduct.quantity
+              });
+            }
+            // If product doesn't exist, skip it (deleted product)
+          }
+          
+          setCart(cartItems);
+          setHasLoadedCart(true);
+          
+          // Don't set loading to false here - fetchProducts will handle loading state
+        } catch (err: any) {
+          console.error('Error fetching order for edit:', err);
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            setError('Unauthorized to edit this order');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            navigate('/login/manager');
+          } else if (err.response?.status === 404) {
+            setError('Order not found');
+          } else {
+            setError(err.response?.data?.userMessage || 'Failed to load order');
+          }
+          setIsLoading(false);
+        }
+      } else if (managerIdParam) {
         setManagerId(managerIdParam);
         // Don't set loading to false here - fetchProducts will handle loading state
       } else if (orderId) {
@@ -145,7 +231,7 @@ export default function StorePage() {
       }
     };
     fetchManagerId();
-  }, [managerIdParam, orderId]);
+  }, [managerIdParam, orderId, isEditMode, navigate]);
 
   const fetchCategories = useCallback(async () => {
     if (!managerId) return;
@@ -1361,9 +1447,11 @@ export default function StorePage() {
       {isCheckoutOpen && managerId && (
         <CheckoutFlow
           orderId={orderId || undefined}
-          userId={managerId}
+          userId={managerId!}
           cart={cart}
           order={order}
+          editOrder={editOrder}
+          isEditMode={isEditMode}
           onClose={() => setIsCheckoutOpen(false)}
           onSuccess={() => {
             setCart([]);
@@ -1373,7 +1461,16 @@ export default function StorePage() {
             } else if (managerId) {
               localStorage.removeItem(`cart_${managerId}`);
             }
-            // Keep checkout open to show success screen - no redirect
+            // In edit mode, redirect to orders page after successful update
+            if (isEditMode) {
+              const userRole = localStorage.getItem('userRole');
+              if (userRole === 'agent') {
+                navigate('/agent/dashboard/orders');
+              } else if (userRole === 'manager') {
+                navigate('/dashboard/orders');
+              }
+            }
+            // Keep checkout open to show success screen - no redirect (unless edit mode)
           }}
         />
       )}

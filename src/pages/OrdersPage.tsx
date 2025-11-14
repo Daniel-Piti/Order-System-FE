@@ -611,33 +611,48 @@ export default function OrdersPage() {
                     </span>
                   </button>
                 ) : order.status === 'PLACED' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMarkOrderDone(order.id);
-                    }}
-                    disabled={updatingOrderId === order.id}
-                    className={`px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 ${
-                      updatingOrderId === order.id
-                        ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
-                        : 'bg-green-100 text-green-700 border-green-700 hover:shadow-lg'
-                    }`}
-                    title="Mark as done"
-                  >
-                    {updatingOrderId === order.id ? (
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/store/edit/${order.id}`);
+                      }}
+                      className="px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
+                      title="Edit order"
+                    >
+                      <svg className="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <span className="text-xs font-semibold text-blue-700">Edit</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarkOrderDone(order.id);
+                      }}
+                      disabled={updatingOrderId === order.id}
+                      className={`px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 ${
+                        updatingOrderId === order.id
+                          ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                          : 'bg-green-100 text-green-700 border-green-700 hover:shadow-lg'
+                      }`}
+                      title="Mark as done"
+                    >
+                      {updatingOrderId === order.id ? (
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
                         </svg>
-                        <span className="text-xs font-semibold text-green-700">Mark as Done</span>
-                      </>
-                    )}
-                  </button>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-xs font-semibold text-green-700">Done</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -1056,26 +1071,40 @@ export default function OrdersPage() {
                 </button>
               )}
               {viewingOrder.status === 'PLACED' && (
-                <button
-                  onClick={() => handleMarkOrderDone(viewingOrder.id)}
-                  disabled={updatingOrderId === viewingOrder.id}
-                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
-                    updatingOrderId === viewingOrder.id
-                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                      : 'text-green-600 border-green-700 bg-green-50 hover:shadow-lg'
-                  }`}
-                >
-                  {updatingOrderId === viewingOrder.id ? (
-                    'Marking...'
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Mark as Done</span>
-                    </>
-                  )}
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      setViewingOrder(null);
+                      navigate(`/store/edit/${viewingOrder.id}`);
+                    }}
+                    className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Edit Order</span>
+                  </button>
+                  <button
+                    onClick={() => handleMarkOrderDone(viewingOrder.id)}
+                    disabled={updatingOrderId === viewingOrder.id}
+                    className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
+                      updatingOrderId === viewingOrder.id
+                        ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                        : 'text-green-600 border-green-700 bg-green-50 hover:shadow-lg'
+                    }`}
+                  >
+                    {updatingOrderId === viewingOrder.id ? (
+                      'Marking...'
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Mark as Done</span>
+                      </>
+                    )}
+                  </button>
+                </>
               )}
               <button
                 onClick={closeViewModal}

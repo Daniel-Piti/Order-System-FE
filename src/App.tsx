@@ -47,6 +47,7 @@ function App() {
         </Route>
         
         {/* Public Store Routes - more specific route first */}
+        <Route path="/store/edit/:orderId" element={<StorePage />} />
         <Route path="/store/order/:orderId" element={<StorePage />} />
         <Route path="/store/:managerId" element={<StorePage />} />
         
