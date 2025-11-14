@@ -426,7 +426,7 @@ export default function OverridesPage() {
       <div className="glass-card rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Product Overrides</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Product Overrides</h1>
             <p className="text-gray-600 mt-1">Manage customer-specific pricing</p>
           </div>
           <button

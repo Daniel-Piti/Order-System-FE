@@ -97,7 +97,6 @@ export default function AgentsPage() {
     <div className="space-y-6">
       <div className="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.35em] text-indigo-500 font-semibold mb-2">Team Overview</p>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Your Agents</h1>
           <p className="text-gray-600 mt-2">
             Keep track of your active agents and make sure their contact information stays current.

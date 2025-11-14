@@ -452,9 +452,6 @@ export default function CustomersPage() {
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <p className="text-sm uppercase tracking-[0.35em] text-indigo-500 font-semibold mb-2">
-              Customer Management
-            </p>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">Customers</h1>
             <p className="text-gray-600 text-sm mt-2">
               Manage {customers.length} customers across your sales team.

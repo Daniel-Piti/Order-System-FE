@@ -23,8 +23,7 @@ export default function AgentLayout() {
     <div className="min-h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-indigo-100">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-card border-b border-white/20 p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">Agent Workspace</h1>
+        <div className="flex items-center justify-between gap-3">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-lg hover:bg-white/20 transition-colors"
@@ -37,6 +36,37 @@ export default function AgentLayout() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
+          </button>
+          <h1 className="text-xl font-bold text-gray-800 flex-1">Dashboard</h1>
+          {/* Notification Button - Mobile Only */}
+          <button
+            onClick={() => {
+              // TODO: Open notifications panel
+              console.log('Notifications clicked');
+            }}
+            className="relative p-2 rounded-lg backdrop-blur-xl bg-white/40 border border-white/50 hover:bg-white/60 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95 group"
+            aria-label="Notifications"
+          >
+            <svg
+              className="w-6 h-6 text-gray-800 group-hover:text-sky-600 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+            {/* Notification Badge - Only show when count > 0 */}
+            {/* TODO: Replace with actual notification count */}
+            {/* {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-4.5 px-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold shadow-lg border-2 border-white/60 animate-pulse">
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </span>
+            )} */}
           </button>
         </div>
       </div>
@@ -59,7 +89,39 @@ export default function AgentLayout() {
       >
         <div className="p-6 h-full flex flex-col">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">Order System</h1>
+            <div className="flex items-center justify-between mb-1">
+              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+              {/* Notification Button */}
+              <button
+                onClick={() => {
+                  // TODO: Open notifications panel
+                  console.log('Notifications clicked');
+                }}
+                className="relative p-2 rounded-xl backdrop-blur-xl bg-white/40 border border-white/50 hover:bg-white/60 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95 group"
+                aria-label="Notifications"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-800 group-hover:text-sky-600 transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+                {/* Notification Badge - Only show when count > 0 */}
+                {/* TODO: Replace with actual notification count */}
+                {/* {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-4.5 px-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold shadow-lg border-2 border-white/60 animate-pulse">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )} */}
+              </button>
+            </div>
             <p className="text-sm text-gray-500 mb-8">Agent Console</p>
 
             <nav className="space-y-2">

@@ -40,8 +40,7 @@ export default function AgentProfilePage() {
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6">
         <div>
-          <p className="text-sm uppercase tracking-[0.35em] text-sky-500 font-semibold mb-1">Profile Overview</p>
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
             {agent ? `Hello ${agent.firstName}!` : 'Hello'}
           </h1>
           <p className="text-gray-600 mt-2 max-w-2xl">

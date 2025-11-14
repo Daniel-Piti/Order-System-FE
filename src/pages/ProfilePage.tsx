@@ -121,9 +121,6 @@ export default function ProfilePage() {
       <div className="glass-card rounded-3xl p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between gap-4 md:gap-6">
           <div className="max-w-full md:flex-1">
-            <p className="text-sm uppercase tracking-[0.35em] text-indigo-500 font-semibold mb-2">
-              Profile Overview
-            </p>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words leading-tight max-w-full">
               Hello {profile.firstName} {profile.lastName}!
             </h1>
