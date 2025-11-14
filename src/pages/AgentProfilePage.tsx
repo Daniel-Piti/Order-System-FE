@@ -2,12 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { agentAPI, type Agent } from '../services/api';
 import AgentEditProfileModal from '../components/AgentEditProfileModal';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 export default function AgentProfilePage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const loadAgentProfile = useCallback(async () => {
@@ -84,6 +86,7 @@ export default function AgentProfilePage() {
           {error}
         </div>
       ) : agent ? (
+        <>
         <div className="glass-card rounded-3xl p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="glass-input px-4 py-3 rounded-xl text-left">
@@ -114,24 +117,61 @@ export default function AgentProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Security Section */}
+        <div className="glass-card rounded-3xl p-6 md:p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Security</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+            <div>
+              <p className="font-medium text-gray-800">Password</p>
+              <p className="text-sm text-gray-600">
+                Manage your account password
+              </p>
+            </div>
+            <button 
+              onClick={() => setIsChangePasswordModalOpen(true)}
+              className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              <span>Change Password</span>
+            </button>
+          </div>
+        </div>
+        </>
       ) : (
         <div className="glass-card rounded-3xl p-6 text-center text-gray-600">
           No agent information available.
         </div>
       )}
       {agent && (
-        <AgentEditProfileModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onSuccess={loadAgentProfile}
-          currentProfile={{
-            firstName: agent.firstName,
-            lastName: agent.lastName,
-            phoneNumber: agent.phoneNumber,
-            streetAddress: agent.streetAddress,
-            city: agent.city,
-          }}
-        />
+        <>
+          <AgentEditProfileModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onSuccess={loadAgentProfile}
+            currentProfile={{
+              firstName: agent.firstName,
+              lastName: agent.lastName,
+              phoneNumber: agent.phoneNumber,
+              streetAddress: agent.streetAddress,
+              city: agent.city,
+            }}
+          />
+
+          {/* Change Password Modal */}
+          <ChangePasswordModal
+            isOpen={isChangePasswordModalOpen}
+            onClose={() => setIsChangePasswordModalOpen(false)}
+            onSuccess={() => {
+              // Password changed successfully - maybe show a notification
+            }}
+            onUpdatePassword={async (oldPassword, newPassword, newPasswordConfirmation) => {
+              await agentAPI.updateCurrentAgentPassword(oldPassword, newPassword, newPasswordConfirmation);
+            }}
+          />
+        </>
       )}
     </div>
   );

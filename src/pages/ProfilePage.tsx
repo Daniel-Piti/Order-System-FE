@@ -299,6 +299,9 @@ export default function ProfilePage() {
         onSuccess={() => {
           // Password changed successfully - maybe show a notification
         }}
+        onUpdatePassword={async (oldPassword, newPassword, newPasswordConfirmation) => {
+          await managerAPI.updateCurrentManagerPassword(oldPassword, newPassword, newPasswordConfirmation);
+        }}
       />
     </div>
   );

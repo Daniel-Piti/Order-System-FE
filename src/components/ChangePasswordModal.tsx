@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { validatePasswordChangeForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-import { managerAPI } from '../services/api';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onUpdatePassword: (oldPassword: string, newPassword: string, newPasswordConfirmation: string) => Promise<void>;
 }
 
-export default function ChangePasswordModal({ isOpen, onClose, onSuccess }: ChangePasswordModalProps) {
+export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpdatePassword }: ChangePasswordModalProps) {
   const [formData, setFormData] = useState({
     oldPassword: '',
     newPassword: '',
@@ -41,7 +41,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess }: Chan
     setIsLoading(true);
 
     try {
-      await managerAPI.updateCurrentManagerPassword(
+      await onUpdatePassword(
         formData.oldPassword,
         formData.newPassword,
         formData.newPasswordConfirmation

@@ -231,6 +231,21 @@ export const agentAPI = {
     return response.data;
   },
 
+  updateCurrentAgentPassword: async (
+    oldPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string
+  ): Promise<string> => {
+    const response = await api.put<string>('/agents/me/update-password', null, {
+      params: {
+        old_password: oldPassword,
+        new_password: newPassword,
+        new_password_confirmation: newPasswordConfirmation,
+      },
+    });
+    return response.data;
+  },
+
   getCustomersForAgent: async (): Promise<Customer[]> => {
     const response = await api.get<Customer[]>('/agent/customers');
     return response.data;
