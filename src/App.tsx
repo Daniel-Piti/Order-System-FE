@@ -48,7 +48,7 @@ function App() {
         
         {/* Public Store Routes - more specific route first */}
         <Route path="/store/order/:orderId" element={<StorePage />} />
-        <Route path="/store/:userId" element={<StorePage />} />
+        <Route path="/store/:managerId" element={<StorePage />} />
         
         <Route 
           path="/admin/dashboard" 

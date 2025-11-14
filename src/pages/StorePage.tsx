@@ -13,9 +13,9 @@ interface CartItem {
 }
 
 export default function StorePage() {
-  const { userId: userIdParam, orderId } = useParams<{ userId?: string; orderId?: string }>();
+  const { managerId: managerIdParam, orderId } = useParams<{ managerId?: string; orderId?: string }>();
   
-  const [userId, setUserId] = useState<string | null>(null);
+  const [managerId, setManagerId] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderPublic | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,9 +59,9 @@ export default function StorePage() {
 
   // Load cart from localStorage on mount
   useEffect(() => {
-    if (!userId && !orderId) return; // Wait for userId or orderId to be set
+    if (!managerId && !orderId) return; // Wait for managerId or orderId to be set
     
-    const key = orderId ? `cart_${orderId}` : `cart_${userId}`;
+    const key = orderId ? `cart_${orderId}` : `cart_${managerId}`;
     const savedCartData = localStorage.getItem(key);
     if (savedCartData) {
       try {
@@ -93,14 +93,14 @@ export default function StorePage() {
       }
     }
     setHasLoadedCart(true);
-  }, [orderId, userId]);
+  }, [orderId, managerId]);
 
   // Save cart to localStorage whenever it changes (but only after initial load)
   useEffect(() => {
     if (!hasLoadedCart) return; // Don't save until we've tried to load
-    if (!userId && !orderId) return; // Don't save if userId/orderId not set yet
+    if (!managerId && !orderId) return; // Don't save if managerId/orderId not set yet
     
-    const key = orderId ? `cart_${orderId}` : `cart_${userId}`;
+    const key = orderId ? `cart_${orderId}` : `cart_${managerId}`;
     if (cart.length > 0) {
       // Save with expiration date (7 days from now)
       const expiresAt = new Date();
@@ -116,22 +116,22 @@ export default function StorePage() {
       // If cart is empty, remove from localStorage
       localStorage.removeItem(key);
     }
-  }, [cart, orderId, userId, hasLoadedCart]);
+  }, [cart, orderId, managerId, hasLoadedCart]);
 
-  // Fetch userId from order if orderId is provided, otherwise use userIdParam
+  // Fetch managerId from order if orderId is provided, otherwise use managerIdParam
   useEffect(() => {
-    const fetchUserId = async () => {
+    const fetchManagerId = async () => {
       setError('');
       
-      if (userIdParam) {
-        setUserId(userIdParam);
+      if (managerIdParam) {
+        setManagerId(managerIdParam);
         // Don't set loading to false here - fetchProducts will handle loading state
       } else if (orderId) {
         try {
           setIsLoading(true);
           const fetchedOrder = await publicAPI.orders.getById(orderId);
           setOrder(fetchedOrder);
-          setUserId(fetchedOrder.managerId);
+          setManagerId(fetchedOrder.managerId);
           // Don't set loading to false here - fetchProducts will handle loading state
         } catch (err: any) {
           console.error('Error fetching order:', err);
@@ -139,38 +139,38 @@ export default function StorePage() {
           setIsLoading(false);
         }
       } else {
-        // No userId or orderId in URL - invalid route
+        // No managerId or orderId in URL - invalid route
         setError('Invalid store URL');
         setIsLoading(false);
       }
     };
-    fetchUserId();
-  }, [userIdParam, orderId]);
+    fetchManagerId();
+  }, [managerIdParam, orderId]);
 
   const fetchCategories = useCallback(async () => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
-      const data = await publicAPI.categories.getAllByManagerId(userId);
+      const data = await publicAPI.categories.getAllByManagerId(managerId);
       setCategories(data);
     } catch (err) {
       console.error('Failed to fetch categories:', err);
     }
-  }, [userId]);
+  }, [managerId]);
 
   const fetchBrands = useCallback(async () => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
-      const data = await publicAPI.brands.getAllByManagerId(userId);
+      const data = await publicAPI.brands.getAllByManagerId(managerId);
       setBrands(data);
     } catch (err) {
       console.error('Failed to fetch brands:', err);
     }
-  }, [userId]);
+  }, [managerId]);
 
   const fetchProducts = useCallback(async () => {
-    if (!userId) return;
+    if (!managerId) return;
     
     try {
       setIsLoading(true);
@@ -229,7 +229,7 @@ export default function StorePage() {
         if (hasFilters) {
           // Fetch all products and filter client-side
           const allProductsResponse = await publicAPI.products.getAllByManagerId(
-            userId,
+            managerId,
             0,
             1000, // Large page size to get all products
             sortBy,
@@ -275,7 +275,7 @@ export default function StorePage() {
         } else {
           // No filters - use normal pagination
           const pageResponse = await publicAPI.products.getAllByManagerId(
-            userId,
+            managerId,
             currentPage,
             pageSize,
             sortBy,
@@ -303,16 +303,16 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
+  }, [managerId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
-    if (!userId || productsList.length === 0) return;
+    if (!managerId || productsList.length === 0) return;
     
     try {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/manager/${userId}/product/${product.id}/images`);
+          const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
           if (response.ok) {
             const images: Array<{ id: number; url: string; fileName: string }> = await response.json();
             // Sort images by fileName (same as ProductsPage)
@@ -337,12 +337,12 @@ export default function StorePage() {
   };
 
   useEffect(() => {
-    if (userId) {
+    if (managerId) {
       fetchProducts();
       fetchCategories();
       fetchBrands();
     }
-  }, [userId, fetchProducts, fetchCategories, fetchBrands]);
+  }, [managerId, fetchProducts, fetchCategories, fetchBrands]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -1322,8 +1322,9 @@ export default function StorePage() {
                   {/* Checkout Button */}
                   <button
                     onClick={() => {
-                      if (!orderId) {
-                        alert('Please use an order link to place an order');
+                      // Allow checkout if we have managerId (public store) or orderId (order link)
+                      if (!managerId && !orderId) {
+                        alert('Unable to proceed to checkout');
                         return;
                       }
                       setIsCheckoutOpen(true);
@@ -1357,10 +1358,10 @@ export default function StorePage() {
       )}
 
       {/* Checkout Flow */}
-      {isCheckoutOpen && orderId && (
+      {isCheckoutOpen && managerId && (
         <CheckoutFlow
-          orderId={orderId}
-          userId={userId || ''}
+          orderId={orderId || undefined}
+          userId={managerId}
           cart={cart}
           order={order}
           onClose={() => setIsCheckoutOpen(false)}
@@ -1369,8 +1370,8 @@ export default function StorePage() {
             // Clear cart from localStorage
             if (orderId) {
               localStorage.removeItem(`cart_${orderId}`);
-            } else if (userId) {
-              localStorage.removeItem(`cart_${userId}`);
+            } else if (managerId) {
+              localStorage.removeItem(`cart_${managerId}`);
             }
             // Keep checkout open to show success screen - no redirect
           }}

@@ -392,7 +392,7 @@ export interface CustomerRequest {
 
 export interface Order {
   id: string;
-  orderSource: 'MANAGER' | 'AGENT';
+  orderSource: 'MANAGER' | 'AGENT' | 'PUBLIC';
   managerId: string;
   agentId: number | null;
   customerId: string | null;
@@ -556,9 +556,15 @@ export const publicAPI = {
       return response.data;
     },
 
-    // Place an order
+    // Place an order (for existing orders)
     placeOrder: async (orderId: string, request: PlaceOrderRequest): Promise<string> => {
       const response = await axios.put<string>(`${API_BASE_URL}/public/orders/${orderId}/place`, request);
+      return response.data;
+    },
+
+    // Create and place a public order (for public store - no existing order)
+    createAndPlacePublicOrder: async (managerId: string, request: PlaceOrderRequest): Promise<string> => {
+      const response = await axios.post<string>(`${API_BASE_URL}/public/orders/manager/${managerId}/create`, request);
       return response.data;
     },
   },

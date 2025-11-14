@@ -482,14 +482,16 @@ export default function OrdersPage() {
             const isMe = agentFilter !== '' && agentFilter !== 'manager' && order.agentId === parseInt(agentFilter, 10);
             // Show "Me" label for manager's own orders (orderSource === 'MANAGER' and agentId === null)
             const isManagerOrder = order.orderSource === 'MANAGER' && order.agentId === null;
+            // Show label for public orders (orderSource === 'PUBLIC')
+            const isPublicOrder = order.orderSource === 'PUBLIC';
             
             return (
             <div key={order.id} className="flex flex-col w-full sm:max-w-[260px] items-center group">
-              {/* Agent/Manager Label - Outside and attached at top */}
-              {(orderAgent || isManagerOrder) && (
+              {/* Agent/Manager/Public Label - Outside and attached at top */}
+              {(orderAgent || isManagerOrder || isPublicOrder) && (
                 <div className={`w-[80%] px-3 py-1.5 ${labelStyles.bg} border-l-2 border-r-2 border-t-2 ${labelStyles.border} ${labelStyles.borderHover} rounded-t-xl backdrop-blur-sm transition-all duration-300 -mb-[2px]`}>
                   <p className={`text-xs font-semibold ${labelStyles.text} text-center truncate`}>
-                    {isManagerOrder ? 'Me' : isMe ? 'Me' : `${orderAgent!.firstName} ${orderAgent!.lastName}`}
+                    {isPublicOrder ? '- Online -' : isManagerOrder ? 'Me' : isMe ? 'Me' : `${orderAgent!.firstName} ${orderAgent!.lastName}`}
                   </p>
                 </div>
               )}

@@ -4,10 +4,10 @@ import type { Location, ProductDataForOrder, OrderPublic } from '../services/api
 import { formatPrice } from '../utils/formatPrice';
 
 interface CheckoutFlowProps {
-  orderId: string;
-  userId: string;
+  orderId?: string; // Optional - if not provided, we'll create a new order
+  userId: string; // managerId - required for both cases
   cart: Array<{ product: { id: string; name: string; price: number }; quantity: number }>;
-  order: OrderPublic | null;
+  order: OrderPublic | null; // Optional - will be null for public store
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -162,18 +162,26 @@ export default function CheckoutFlow({ orderId, userId, cart, order, onClose, on
       const trimmedCity = customerCity.trim();
       const trimmedEmail = customerEmail.trim();
 
-      // If customer is linked, send empty values (backend will use customerId data)
-      // Otherwise, send the filled customer info
-      await publicAPI.orders.placeOrder(orderId, {
+      // Prepare order request
+      const orderRequest = {
         customerName: isCustomerLinked ? '' : trimmedName,
         customerPhone: isCustomerLinked ? '' : customerPhone,
         customerEmail: isCustomerLinked ? undefined : (trimmedEmail || undefined),
         customerStreetAddress: isCustomerLinked ? '' : trimmedStreet,
         customerCity: isCustomerLinked ? '' : trimmedCity,
-        pickupLocationId: selectedLocationId,
+        pickupLocationId: selectedLocationId!,
         products,
         notes: notes || undefined,
-      });
+      };
+
+      // If orderId exists, place existing order
+      // Otherwise, create and place new public order
+      if (orderId) {
+        await publicAPI.orders.placeOrder(orderId, orderRequest);
+      } else {
+        // Public store - create and place new order with PUBLIC source
+        await publicAPI.orders.createAndPlacePublicOrder(userId, orderRequest);
+      }
 
       setStep('success');
       // Clear cart but keep success screen visible
