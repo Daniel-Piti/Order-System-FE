@@ -199,7 +199,7 @@ export default function AgentProductsPage() {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return products;
     return products.filter((product) => {
-      const haystack = [product.name, product.description, product.brandName ?? '', product.categoryId?.toString() ?? '']
+      const haystack = [product.name, product.description, product.brandName ?? '', product.categoryName ?? '']
         .join(' ')
         .toLowerCase();
       return haystack.includes(query);

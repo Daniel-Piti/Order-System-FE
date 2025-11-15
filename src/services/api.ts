@@ -360,6 +360,7 @@ export interface Product {
   brandId: number | null;
   brandName: string | null;
   categoryId: number | null;
+  categoryName: string | null;
   minimumPrice: number;
   price: number;
   description: string;
