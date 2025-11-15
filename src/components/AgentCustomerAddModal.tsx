@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type CustomerRequest } from '../services/api';
-import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail } from '../utils/validation';
+import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
 interface AgentCustomerAddModalProps {
@@ -21,6 +21,7 @@ const INITIAL_FORM: CustomerRequest = {
   email: '',
   streetAddress: '',
   city: '',
+  discountPercentage: 0,
 };
 
 export default function AgentCustomerAddModal({
@@ -65,6 +66,16 @@ export default function AgentCustomerAddModal({
       case 'city':
         sanitized = value.slice(0, MAX_CUSTOMER_CITY_LENGTH);
         break;
+      case 'discountPercentage':
+        const numValue = value === '' ? 0 : Math.max(0, Math.min(100, parseInt(value, 10) || 0));
+        setFormData((prev) => ({
+          ...prev,
+          [name]: numValue,
+        }));
+        if (showErrors && fieldErrors[name]) {
+          setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+        }
+        return;
       default:
         sanitized = value;
     }
@@ -95,6 +106,10 @@ export default function AgentCustomerAddModal({
       MAX_CUSTOMER_STREET_LENGTH
     );
     errors.city = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    errors.discountPercentage = validateDiscountPercentage(
+      formData.discountPercentage ?? 0,
+      'Discount percentage'
+    );
 
     const cleanedErrors: ValidationErrors = {};
     Object.entries(errors).forEach(([key, value]) => {
@@ -245,6 +260,46 @@ export default function AgentCustomerAddModal({
                 placeholder="Tel Aviv"
               />
               {showErrors && fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Discount Percentage</label>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-medium text-gray-500 w-5">0%</span>
+                <input
+                  name="discountPercentage"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={formData.discountPercentage ?? 0}
+                  onChange={handleChange}
+                  className="flex-1 h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-sky-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-500 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-sky-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
+                  style={{
+                    background: `linear-gradient(to right, #0ea5e9 0%, #0ea5e9 ${formData.discountPercentage ?? 0}%, #d1d5db ${formData.discountPercentage ?? 0}%, #d1d5db 100%)`
+                  }}
+                />
+                <span className="text-xs font-medium text-gray-500 w-7 text-right">100%</span>
+                <div className="flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-lg border border-sky-200 min-w-[4rem]">
+                  <input
+                    name="discountPercentage"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.discountPercentage ?? 0}
+                    onChange={handleChange}
+                    className={`w-11 px-1 py-0.5 text-xs font-semibold text-sky-700 bg-transparent border-none focus:outline-none focus:ring-0 text-center ${
+                      showErrors && fieldErrors.discountPercentage ? 'text-red-600' : ''
+                    }`}
+                    placeholder="0"
+                  />
+                  <span className="text-xs font-medium text-sky-600">%</span>
+                </div>
+              </div>
+              {showErrors && fieldErrors.discountPercentage && (
+                <p className="text-red-500 text-xs ml-7">{fieldErrors.discountPercentage}</p>
+              )}
             </div>
           </div>
 

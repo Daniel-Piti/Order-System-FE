@@ -7,6 +7,7 @@ import {
   validateEmail,
   validateRequiredWithMaxLength,
   validatePhoneNumberDigitsOnly,
+  validateDiscountPercentage,
 } from '../utils/validation';
 
 const MAX_CUSTOMER_NAME_LENGTH = 50;
@@ -37,6 +38,7 @@ export default function CustomersPage() {
     email: '',
     streetAddress: '',
     city: '',
+    discountPercentage: 0,
   });
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -44,6 +46,7 @@ export default function CustomersPage() {
     email: '',
     streetAddress: '',
     city: '',
+    discountPercentage: 0,
   });
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -181,7 +184,7 @@ export default function CustomersPage() {
 
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
-    setFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '' });
+    setFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', discountPercentage: 0 });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -190,7 +193,7 @@ export default function CustomersPage() {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setCustomerToEdit(null);
-    setEditFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '' });
+    setEditFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', discountPercentage: 0 });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -204,6 +207,7 @@ export default function CustomersPage() {
       email: customer.email,
       streetAddress: customer.streetAddress,
       city: customer.city,
+      discountPercentage: customer.discountPercentage,
     });
     setIsEditModalOpen(true);
   };
@@ -238,12 +242,17 @@ export default function CustomersPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const sanitizedValue =
-      name === 'phoneNumber'
-        ? value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH)
-        : name === 'email'
-        ? value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH)
-        : value;
+    let sanitizedValue: string | number = value;
+    
+    if (name === 'phoneNumber') {
+      sanitizedValue = value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH);
+    } else if (name === 'email') {
+      sanitizedValue = value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH);
+    } else if (name === 'discountPercentage') {
+      const numValue = value === '' ? 0 : Math.max(0, Math.min(100, parseInt(value, 10) || 0));
+      sanitizedValue = numValue;
+    }
+    
     setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     if (showErrors && fieldErrors[name]) {
       setFieldErrors(prev => ({ ...prev, [name]: '' }));
@@ -252,12 +261,17 @@ export default function CustomersPage() {
 
   const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const sanitizedValue =
-      name === 'phoneNumber'
-        ? value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH)
-        : name === 'email'
-        ? value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH)
-        : value;
+    let sanitizedValue: string | number = value;
+    
+    if (name === 'phoneNumber') {
+      sanitizedValue = value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH);
+    } else if (name === 'email') {
+      sanitizedValue = value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH);
+    } else if (name === 'discountPercentage') {
+      const numValue = value === '' ? 0 : Math.max(0, Math.min(100, parseInt(value, 10) || 0));
+      sanitizedValue = numValue;
+    }
+    
     setEditFormData(prev => ({ ...prev, [name]: sanitizedValue }));
     if (showErrors && fieldErrors[name]) {
       setFieldErrors(prev => ({ ...prev, [name]: '' }));
@@ -303,6 +317,11 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
+    const discountError = validateDiscountPercentage(formData.discountPercentage, 'Discount percentage');
+    if (discountError) {
+      errors.discountPercentage = discountError;
+    }
+
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -316,6 +335,7 @@ export default function CustomersPage() {
         email: formData.email,
         streetAddress: formData.streetAddress,
         city: formData.city,
+        discountPercentage: formData.discountPercentage,
       };
       await customerAPI.createCustomer(payload);
       await fetchCustomers();
@@ -366,6 +386,11 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
+    const discountError = validateDiscountPercentage(editFormData.discountPercentage, 'Discount percentage');
+    if (discountError) {
+      errors.discountPercentage = discountError;
+    }
+
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       return;
@@ -379,7 +404,8 @@ export default function CustomersPage() {
       editFormData.phoneNumber !== customerToEdit.phoneNumber ||
       editFormData.email !== customerToEdit.email ||
       editFormData.streetAddress !== customerToEdit.streetAddress ||
-      editFormData.city !== customerToEdit.city;
+      editFormData.city !== customerToEdit.city ||
+      editFormData.discountPercentage !== customerToEdit.discountPercentage;
 
     // If nothing changed, just close the modal without making an API call
     if (!hasChanges) {
@@ -395,6 +421,7 @@ export default function CustomersPage() {
         email: editFormData.email,
         streetAddress: editFormData.streetAddress,
         city: editFormData.city,
+        discountPercentage: editFormData.discountPercentage,
       };
       await customerAPI.updateCustomer(customerToEdit.id, payload);
       await fetchCustomers();
@@ -800,6 +827,49 @@ export default function CustomersPage() {
                 )}
               </div>
 
+              <div>
+                <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Discount Percentage
+                </label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500 w-6">0%</span>
+                    <input
+                      id="discountPercentage"
+                      name="discountPercentage"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={formData.discountPercentage}
+                      onChange={handleInputChange}
+                      className="flex-1 h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
+                      style={{
+                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${formData.discountPercentage}%, #d1d5db ${formData.discountPercentage}%, #d1d5db 100%)`
+                      }}
+                    />
+                    <span className="text-xs font-medium text-gray-500 w-8 text-right">100%</span>
+                    <div className="flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 min-w-[4.5rem]">
+                      <input
+                        name="discountPercentage"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.discountPercentage}
+                        onChange={handleInputChange}
+                        className={`w-12 px-1 py-0.5 text-sm font-semibold text-indigo-700 bg-transparent border-none focus:outline-none focus:ring-0 text-center ${
+                          showErrors && fieldErrors.discountPercentage ? 'text-red-600' : ''
+                        }`}
+                        placeholder="0"
+                      />
+                      <span className="text-sm font-medium text-indigo-600">%</span>
+                    </div>
+                  </div>
+                  {showErrors && fieldErrors.discountPercentage && (
+                    <p className="text-red-500 text-xs ml-9">{fieldErrors.discountPercentage}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
@@ -987,6 +1057,49 @@ export default function CustomersPage() {
                 {showErrors && fieldErrors.city && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
                 )}
+              </div>
+
+              <div>
+                <label htmlFor="editDiscountPercentage" className="block text-sm font-medium text-gray-700 mb-2">
+                  Discount Percentage
+                </label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-gray-500 w-6">0%</span>
+                    <input
+                      id="editDiscountPercentage"
+                      name="discountPercentage"
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={editFormData.discountPercentage}
+                      onChange={handleEditInputChange}
+                      className="flex-1 h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
+                      style={{
+                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${editFormData.discountPercentage}%, #d1d5db ${editFormData.discountPercentage}%, #d1d5db 100%)`
+                      }}
+                    />
+                    <span className="text-xs font-medium text-gray-500 w-8 text-right">100%</span>
+                    <div className="flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 min-w-[4.5rem]">
+                      <input
+                        name="discountPercentage"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editFormData.discountPercentage}
+                        onChange={handleEditInputChange}
+                        className={`w-12 px-1 py-0.5 text-sm font-semibold text-indigo-700 bg-transparent border-none focus:outline-none focus:ring-0 text-center ${
+                          showErrors && fieldErrors.discountPercentage ? 'text-red-600' : ''
+                        }`}
+                        placeholder="0"
+                      />
+                      <span className="text-sm font-medium text-indigo-600">%</span>
+                    </div>
+                  </div>
+                  {showErrors && fieldErrors.discountPercentage && (
+                    <p className="text-red-500 text-xs ml-9">{fieldErrors.discountPercentage}</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex space-x-3 pt-4">

@@ -1001,20 +1001,9 @@ export default function StorePage() {
 
                     {/* Price */}
                     <div className="pb-1">
-                      {product.minimumPrice !== product.price ? (
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-xl font-bold text-purple-600">
-                            {formatPrice(product.price)}
-                          </span>
-                          <span className="text-xs text-gray-400 line-through">
-                            {formatPrice(product.minimumPrice)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xl font-bold text-purple-600">
-                          {formatPrice(product.price)}
-                        </span>
-                      )}
+                      <span className="text-xl font-bold text-purple-600">
+                        {formatPrice(product.price)}
+                      </span>
                     </div>
 
                     {/* Quantity and Add to Cart */}

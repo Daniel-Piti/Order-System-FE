@@ -576,7 +576,6 @@ export default function OverridesPage() {
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">Agent</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Product</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Minimum Price</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Base Price</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Override Price</th>
                   <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
@@ -602,11 +601,6 @@ export default function OverridesPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800">
                       {formatPrice(override.productMinimumPrice ?? override.productPrice)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-800">
-                      <span className="line-through text-gray-500">
-                        {formatPrice(override.productPrice)}
-                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-800 font-semibold">
                       {formatPrice(override.overridePrice)}

@@ -377,6 +377,7 @@ export interface PageResponse<T> {
 }
 
 export interface Customer {
+  discountPercentage: number;
   id: string;
   managerId: string;
   agentId: number | null;
@@ -393,6 +394,7 @@ export interface CustomerRequest {
   email: string;
   streetAddress: string;
   city: string;
+  discountPercentage?: number;
 }
 
 export interface Order {

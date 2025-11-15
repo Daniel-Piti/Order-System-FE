@@ -284,23 +284,9 @@ export default function ProductDetailModal({
 
                   {/* Price */}
                   <div className="space-y-1">
-                    {product.price < product.minimumPrice ? (
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-3xl font-bold text-purple-600">
-                          {formatPrice(product.price)}
-                        </span>
-                        <span className="text-base text-gray-400 line-through">
-                          {formatPrice(product.minimumPrice)}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-red-100 text-red-700">
-                          Save {formatPrice(product.minimumPrice - product.price)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-3xl font-bold text-purple-600">
-                        {formatPrice(product.price)}
-                      </span>
-                    )}
+                    <span className="text-3xl font-bold text-purple-600">
+                      {formatPrice(product.price)}
+                    </span>
                   </div>
 
                   {/* Product Name */}

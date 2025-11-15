@@ -82,6 +82,23 @@ export function validateEmail(email: string, maxLength: number = 100): string | 
 }
 
 /**
+ * Validates discount percentage (0-100)
+ */
+export function validateDiscountPercentage(value: string | number, fieldName: string = 'Discount percentage'): string | null {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return `${fieldName} must be a valid number`;
+  }
+  
+  if (numValue < 0 || numValue > 100) {
+    return `${fieldName} must be between 0 and 100`;
+  }
+  
+  return null;
+}
+
+/**
  * Validates password length
  */
 export function validatePassword(password: string, minLength: number = 8): string | null {
