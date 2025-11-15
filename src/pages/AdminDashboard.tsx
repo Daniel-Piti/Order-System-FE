@@ -80,7 +80,6 @@ export default function AdminDashboard() {
       setNewPassword('');
       setShowResetConfirmation(false);
       setResetConfirmText('');
-      // Show success message or notification here if needed
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'Failed to reset password');
       if (err.response?.status === 401 || err.response?.status === 403) {

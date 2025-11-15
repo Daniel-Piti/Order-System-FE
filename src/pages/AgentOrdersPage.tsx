@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { agentAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
@@ -32,6 +32,7 @@ export default function AgentOrdersPage() {
   // Filter state
   const [statusFilter, setStatusFilter] = useState<string>('');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     fetchOrders(currentPage);
@@ -48,7 +49,8 @@ export default function AgentOrdersPage() {
         sortDirection,
         statusFilter || undefined
       );
-      setOrders(pageResponse?.content || []);
+      const fetchedOrders = pageResponse?.content || [];
+      setOrders(fetchedOrders);
       setTotalPages(pageResponse?.totalPages || 0);
     } catch (err: any) {
       setError('Failed to load orders');
@@ -82,6 +84,39 @@ export default function AgentOrdersPage() {
     fetchCustomers();
     fetchCurrentAgent();
   }, []);
+
+  // Check URL params for orderId after orders are loaded
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get('orderId');
+    if (orderIdFromUrl && !viewingOrder) {
+      // First check if order is in current page
+      const orderToView = orders.find(o => o.id === orderIdFromUrl);
+      if (orderToView) {
+        setViewingOrder(orderToView);
+        // Clear the URL parameter after opening
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete('orderId');
+        setSearchParams(newSearchParams, { replace: true });
+      } else if (orders.length > 0) {
+        // Order not in current page, fetch it by ID
+        agentAPI.getOrderById(orderIdFromUrl)
+          .then((fetchedOrder) => {
+            setViewingOrder(fetchedOrder);
+            // Clear the URL parameter after opening
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.delete('orderId');
+            setSearchParams(newSearchParams, { replace: true });
+          })
+          .catch((err) => {
+            console.error('Failed to fetch order by ID:', err);
+            // Clear the URL parameter even on error
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.delete('orderId');
+            setSearchParams(newSearchParams, { replace: true });
+          });
+      }
+    }
+  }, [orders, searchParams, setSearchParams, viewingOrder]);
 
   const handleCreateOrder = async () => {
     setIsCreating(true);

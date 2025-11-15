@@ -164,7 +164,6 @@ export default function AgentProfilePage() {
             isOpen={isChangePasswordModalOpen}
             onClose={() => setIsChangePasswordModalOpen(false)}
             onSuccess={() => {
-              // Password changed successfully - maybe show a notification
             }}
             onUpdatePassword={async (oldPassword, newPassword, newPasswordConfirmation) => {
               await agentAPI.updateCurrentAgentPassword(oldPassword, newPassword, newPasswordConfirmation);

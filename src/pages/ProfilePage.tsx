@@ -294,7 +294,6 @@ export default function ProfilePage() {
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}
         onSuccess={() => {
-          // Password changed successfully - maybe show a notification
         }}
         onUpdatePassword={async (oldPassword, newPassword, newPasswordConfirmation) => {
           await managerAPI.updateCurrentManagerPassword(oldPassword, newPassword, newPasswordConfirmation);
