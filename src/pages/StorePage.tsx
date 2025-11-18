@@ -168,20 +168,14 @@ export default function StorePage() {
           setManagerId(fetchedOrder.managerId);
           
           // Populate cart with order products (filter out deleted products)
-          // First, fetch all available products for the manager
-          const allProducts = await publicAPI.products.getAllByManagerId(
-            fetchedOrder.managerId,
-            0,
-            1000,
-            'name',
-            'ASC'
-          );
-          const availableProductIds = new Set(allProducts.content.map(p => p.id));
+          // Use getAllByOrderId to get products with correct prices (overrides and discounts)
+          const allProducts = await publicAPI.products.getAllByOrderId(fetchedOrder.id);
+          const availableProductIds = new Set(allProducts.map(p => p.id));
           
           // Build cart from order products, only including products that still exist
           const cartItems: CartItem[] = [];
           for (const orderProduct of fetchedOrder.products) {
-            const product = allProducts.content.find(p => p.id === orderProduct.productId);
+            const product = allProducts.find(p => p.id === orderProduct.productId);
             if (product && availableProductIds.has(product.id)) {
               cartItems.push({
                 product: product,
@@ -266,6 +260,23 @@ export default function StorePage() {
       // Otherwise use regular store endpoint with pagination
       if (orderId) {
         const allProducts = await publicAPI.products.getAllByOrderId(orderId);
+        
+        // In edit mode, update cart items with new product prices
+        if (isEditMode) {
+          setCart(prevCart => {
+            if (prevCart.length === 0) return prevCart; // No cart items to update
+            return prevCart.map(cartItem => {
+              const updatedProduct = allProducts.find(p => p.id === cartItem.product.id);
+              if (updatedProduct) {
+                return {
+                  ...cartItem,
+                  product: updatedProduct // Update with new product object that has correct prices
+                };
+              }
+              return cartItem; // Keep original if product not found
+            });
+          });
+        }
         
         // Filter by categories and brands client-side if selected
         let filteredProducts = allProducts;
@@ -389,7 +400,7 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [managerId, orderId, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
+  }, [managerId, orderId, isEditMode, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!managerId || productsList.length === 0) return;
