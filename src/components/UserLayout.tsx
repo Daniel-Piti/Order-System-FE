@@ -14,6 +14,7 @@ export default function UserLayout() {
   const menuItems = [
     { name: 'Profile', path: '/dashboard/profile', icon: '👤' },
     { name: 'Orders', path: '/dashboard/orders', icon: '📦' },
+    { name: 'Business Info', path: '/dashboard/business-info', icon: '📊' },
     { name: 'Agents', path: '/dashboard/agents', icon: '🧑‍🤝‍🧑' },
     { name: 'Customers', path: '/dashboard/customers', icon: '👥' },
     { name: 'Products', path: '/dashboard/products', icon: '🛍️' },

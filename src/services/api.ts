@@ -434,6 +434,33 @@ export interface CreateOrderRequest {
   customerId?: string | null;
 }
 
+export interface AgentLinkInfo {
+  agentId: number;
+  agentName: string;
+  linkCount: number;
+}
+
+export interface LinksCreatedStats {
+  managerLinks: number;
+  agentLinks: number;
+  total: number;
+  linksPerAgent: Record<number, AgentLinkInfo>;
+}
+
+export interface MonthlyData {
+  month: number;
+  monthName: string;
+  revenue: number;
+  completedOrders: number;
+}
+
+export interface BusinessStats {
+  linksCreatedThisMonth: LinksCreatedStats;
+  ordersByStatus: Record<string, number>;
+  monthlyIncome: number;
+  yearlyData: MonthlyData[];
+}
+
 export const orderAPI = {
   getAllOrders: async (
     page: number = 0,
@@ -475,6 +502,45 @@ export const orderAPI = {
 
   updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
     await api.put(`/orders/${orderId}`, data);
+  },
+
+  getBusinessStats: async (year?: number, month?: number): Promise<BusinessStats> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get<BusinessStats>('/business-stats', { params });
+    return response.data;
+  },
+
+  getLinksCreatedStats: async (year?: number, month?: number): Promise<LinksCreatedStats> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get<LinksCreatedStats>('/business-stats/links-created', { params });
+    return response.data;
+  },
+
+  getOrdersByStatus: async (year?: number, month?: number): Promise<Record<string, number>> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get<Record<string, number>>('/business-stats/orders-by-status', { params });
+    return response.data;
+  },
+
+  getMonthlyIncome: async (year?: number, month?: number): Promise<number> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get<number>('/business-stats/monthly-income', { params });
+    return response.data;
+  },
+
+  getYearlyData: async (year?: number): Promise<MonthlyData[]> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    const response = await api.get<MonthlyData[]>('/business-stats/yearly-data', { params });
+    return response.data;
   },
 };
 
