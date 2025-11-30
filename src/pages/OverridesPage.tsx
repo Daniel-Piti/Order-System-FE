@@ -7,6 +7,7 @@ import type { ProductOverrideWithPrice, ProductListItem, CustomerListItem, Produ
 import { formatPrice } from '../utils/formatPrice';
 
 const MAX_PRICE = 1_000_000;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 export default function OverridesPage() {
   const [overrides, setOverrides] = useState<ProductOverrideWithPrice[]>([]);
@@ -94,7 +95,7 @@ export default function OverridesPage() {
         params.append('agentId', agentFilter);
       }
 
-      const response = await fetch(`http://localhost:8080/api/product-overrides?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/product-overrides?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -244,7 +245,7 @@ export default function OverridesPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/product-overrides', {
+      const response = await fetch(`${API_BASE_URL}/product-overrides`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -329,7 +330,7 @@ export default function OverridesPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/product-overrides/override/${overrideToEdit.id}`, {
+      const response = await fetch(`${API_BASE_URL}/product-overrides/override/${overrideToEdit.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -360,7 +361,7 @@ export default function OverridesPage() {
     try {
       setIsDeleting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/product-overrides/override/${overrideToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/product-overrides/override/${overrideToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

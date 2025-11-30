@@ -720,7 +720,8 @@ export default function ProductsPage() {
     try {
       setIsDeleting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/products/${productToDelete.id}`, {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const response = await fetch(`${API_BASE_URL}/products/${productToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

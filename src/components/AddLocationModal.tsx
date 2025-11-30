@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 interface AddLocationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,7 +44,7 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/locations', {
+      const response = await fetch(`${API_BASE_URL}/locations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

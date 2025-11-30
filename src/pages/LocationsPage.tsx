@@ -4,6 +4,8 @@ import AddLocationModal from '../components/AddLocationModal';
 import EditLocationModal from '../components/EditLocationModal';
 import { managerAPI, publicAPI } from '../services/api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 interface Location {
   id: number;
   managerId: string;
@@ -78,7 +80,7 @@ export default function LocationsPage() {
       setIsDeleting(true);
       setDeleteError('');
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/locations/${locationToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/locations/${locationToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

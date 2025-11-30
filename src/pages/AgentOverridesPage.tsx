@@ -6,6 +6,7 @@ import { formatPrice } from '../utils/formatPrice';
 import type { ProductListItem, CustomerListItem, ProductOverride, ProductOverrideWithPrice } from '../utils/types';
 
 const MAX_PRICE = 1_000_000;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
 export default function AgentOverridesPage() {
   const [overrides, setOverrides] = useState<ProductOverrideWithPrice[]>([]);
@@ -86,7 +87,7 @@ export default function AgentOverridesPage() {
       if (productFilter) params.append('productId', productFilter);
       if (customerFilter) params.append('customerId', customerFilter);
 
-      const response = await fetch(`http://localhost:8080/api/agent/product-overrides?${params.toString()}`, {
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -223,7 +224,7 @@ export default function AgentOverridesPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/api/agent/product-overrides', {
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -295,7 +296,7 @@ export default function AgentOverridesPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/agent/product-overrides/override/${overrideToEdit.id}`, {
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides/override/${overrideToEdit.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -326,7 +327,7 @@ export default function AgentOverridesPage() {
     try {
       setIsDeleting(true);
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:8080/api/agent/product-overrides/override/${overrideToDelete.id}`, {
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides/override/${overrideToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

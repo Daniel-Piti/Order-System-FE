@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { validateUserCreationForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
 interface AddManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -71,7 +73,7 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/managers', {
+      const response = await fetch(`${API_BASE_URL}/managers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

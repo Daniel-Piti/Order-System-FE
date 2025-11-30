@@ -157,7 +157,8 @@ export default function BusinessInfoPage() {
   const getYearOptions = () => {
     const currentYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentYear; i >= currentYear - 5; i--) {
+    const startYear = 2024; // Start from 2024 (first order year)
+    for (let i = currentYear; i >= startYear; i--) {
       years.push(i);
     }
     return years;
