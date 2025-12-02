@@ -61,8 +61,9 @@ export default function UserLayout() {
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
+        style={{ maxHeight: '100vh', height: '100vh' }}
       >
-        <div className="h-full flex flex-col p-6 pb-6 overflow-hidden">
+        <div className="h-full flex flex-col p-6 pb-6 overflow-hidden" style={{ maxHeight: '100%' }}>
           <div className="mb-8 flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-800">
               Dashboard
@@ -89,7 +90,7 @@ export default function UserLayout() {
             ))}
           </nav>
 
-          <div className="mt-auto pt-4 flex-shrink-0">
+          <div className="mt-auto pt-4 pb-2 flex-shrink-0 border-t border-gray-200/50">
             <button
               onClick={handleLogout}
               className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"

@@ -228,6 +228,14 @@ export default function ProductsPage() {
     } else if (name === 'description') {
       value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
     } else if ((name === 'minimumPrice' || name === 'price') && value !== '') {
+      // Limit to 2 decimal places
+      const decimalIndex = value.indexOf('.');
+      if (decimalIndex !== -1) {
+        const decimalPart = value.substring(decimalIndex + 1);
+        if (decimalPart.length > 2) {
+          value = value.substring(0, decimalIndex + 3); // Keep only 2 decimal places
+        }
+      }
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -555,6 +563,14 @@ export default function ProductsPage() {
     } else if (name === 'description') {
       value = value.slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH);
     } else if ((name === 'minimumPrice' || name === 'price') && value !== '') {
+      // Limit to 2 decimal places
+      const decimalIndex = value.indexOf('.');
+      if (decimalIndex !== -1) {
+        const decimalPart = value.substring(decimalIndex + 1);
+        if (decimalPart.length > 2) {
+          value = value.substring(0, decimalIndex + 3); // Keep only 2 decimal places
+        }
+      }
       const numericValue = Number(value);
       if (!Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
         value = MAX_PRICE.toString();
@@ -616,8 +632,8 @@ export default function ProductsPage() {
     }
 
     // Check if anything has changed
-    const minimumPriceValue = Math.min(Number(editFormData.minimumPrice), MAX_PRICE);
-    const finalPrice = Math.min(Number(editFormData.price), MAX_PRICE);
+    const minimumPriceValue = Math.round(Math.min(Number(editFormData.minimumPrice), MAX_PRICE) * 100) / 100;
+    const finalPrice = Math.round(Math.min(Number(editFormData.price), MAX_PRICE) * 100) / 100;
     
     // Compare product data fields
     const productDataChanged =
@@ -786,8 +802,8 @@ export default function ProductsPage() {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
       
-      const minimumPriceValue = Math.min(Number(formData.minimumPrice), MAX_PRICE);
-      const finalPrice = Math.min(Number(formData.price), MAX_PRICE);
+      const minimumPriceValue = Math.round(Math.min(Number(formData.minimumPrice), MAX_PRICE) * 100) / 100;
+      const finalPrice = Math.round(Math.min(Number(formData.price), MAX_PRICE) * 100) / 100;
       
       // Create FormData
       const formDataToSend = new FormData();

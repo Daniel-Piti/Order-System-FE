@@ -127,7 +127,7 @@ export default function CategoriesPage() {
     if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByUserId(managerId, 0, 1000);
+      const data = await publicAPI.products.getAllByManagerId(managerId, 0, 1000);
       setProducts(data.content.map((p: any) => ({ id: p.id, categoryId: p.categoryId })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
@@ -449,7 +449,7 @@ export default function CategoriesPage() {
                           {category.category}
                         </h3>
                         <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                          {productCountByCategory.get(category.id) || 0}
+                          {productCountByCategory.get(category.id) || 0} {productCountByCategory.get(category.id) === 1 ? 'product' : 'products'}
                         </span>
                       </div>
                     </div>
