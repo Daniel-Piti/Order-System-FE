@@ -17,18 +17,18 @@ export default function AgentLoginPage() {
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail) {
-      setError('Please enter your email address');
+      setError('אנא הזן את כתובת האימייל שלך');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      setError('Please enter a valid email address');
+      setError('אנא הזן כתובת אימייל תקינה');
       return;
     }
 
     if (!trimmedPassword) {
-      setError('Please enter your password');
+      setError('אנא הזן את הסיסמה שלך');
       return;
     }
 
@@ -40,14 +40,14 @@ export default function AgentLoginPage() {
       localStorage.setItem('userRole', 'agent');
       navigate('/agent/dashboard/profile');
     } catch (err: any) {
-      setError('Invalid email or password');
+      setError('אימייל או סיסמה לא תקינים');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" dir="rtl">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
@@ -74,8 +74,8 @@ export default function AgentLoginPage() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Agent Portal</h1>
-          <p className="text-gray-600">Sign in to view your assignments</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">פורטל סוכן</h1>
+          <p className="text-gray-600">התחבר כדי לראות את המשימות שלך</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on">
@@ -87,31 +87,33 @@ export default function AgentLoginPage() {
 
           <div>
             <label htmlFor="agent-email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              אימייל
             </label>
             <input
               id="agent-email"
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center"
               placeholder="agent@example.com"
               autoComplete="email"
+              dir="ltr"
             />
           </div>
 
           <div>
             <label htmlFor="agent-password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              סיסמה
             </label>
             <input
               id="agent-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center"
               placeholder="••••••••"
               autoComplete="current-password"
+              dir="ltr"
             />
           </div>
 
@@ -144,19 +146,19 @@ export default function AgentLoginPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <span>Signing in...</span>
+                <span>מתחבר...</span>
               </>
             ) : (
-              <span>Sign In</span>
+              <span>התחבר</span>
             )}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
           <div>
-            Back to manager login?{' '}
+            חזרה להתחברות מנהל?{' '}
             <Link to="/login/manager" className="text-sky-600 hover:text-sky-700 font-medium">
-              Sign in here
+              התחבר כאן
             </Link>
           </div>
         </div>

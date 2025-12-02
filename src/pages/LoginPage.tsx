@@ -61,7 +61,7 @@ export default function LoginPage() {
           }, 1500);
         } catch (fallbackErr) {
           // Show popup with phone number if copy fails
-          alert(`Admin Phone: ${ADMIN_PHONE}`);
+          alert(`טלפון מנהל מערכת: ${ADMIN_PHONE}`);
         }
         document.body.removeChild(textArea);
       }
@@ -78,19 +78,19 @@ export default function LoginPage() {
 
     // Validate inputs
     if (!trimmedEmail) {
-      setError('Please enter your email address');
+      setError('אנא הזן את כתובת האימייל שלך');
       return;
     }
     
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      setError('Please enter a valid email address');
+      setError('אנא הזן כתובת אימייל תקינה');
       return;
     }
     
     if (!trimmedPassword) {
-      setError('Please enter your password');
+      setError('אנא הזן את הסיסמה שלך');
       return;
     }
 
@@ -103,14 +103,14 @@ export default function LoginPage() {
       navigate('/dashboard');
     } catch (err: any) {
       // Always show the same message for security (prevent user enumeration)
-      setError('Invalid email or password');
+      setError('אימייל או סיסמה לא תקינים');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" dir="rtl">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
@@ -137,8 +137,8 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Manager Portal</h1>
-          <p className="text-gray-600">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">פורטל מנהל</h1>
+          <p className="text-gray-600">התחבר לחשבון</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on">
@@ -150,31 +150,33 @@ export default function LoginPage() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              אימייל
             </label>
             <input
               id="email"
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
               placeholder="you@example.com"
               autoComplete="email"
+              dir="ltr"
             />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              סיסמה
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
               placeholder="••••••••"
               autoComplete="current-password"
+              dir="ltr"
             />
           </div>
 
@@ -184,7 +186,7 @@ export default function LoginPage() {
                 type="checkbox"
                 className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
               />
-              <span className="ml-2 text-gray-600">Remember me</span>
+              <span className="mr-2 text-gray-600">זכור אותי</span>
             </label>
           </div>
 
@@ -217,29 +219,29 @@ export default function LoginPage() {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <span>Signing in...</span>
+                <span>מתחבר...</span>
               </>
             ) : (
-              <span>Sign In</span>
+              <span>התחבר</span>
             )}
           </button>
         </form>
 
         <div className="mt-6 space-y-2 text-center text-sm text-gray-600">
           <div>
-            Need an account?{' '}
+            רוצה חשבון?{' '}
             <a 
               href={`tel:${ADMIN_PHONE_TEL}`}
               onClick={handleContactAdmin}
               className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer"
             >
-              Contact Admin
+              צור קשר
             </a>
           </div>
           <div>
-            Are you an agent?{' '}
+            סוכן?{' '}
             <Link to="/login/agent" className="text-purple-600 hover:text-purple-700 font-medium">
-              Login here
+              התחבר כאן
             </Link>
           </div>
         </div>
@@ -252,7 +254,7 @@ export default function LoginPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            <span>Phone number copied!</span>
+            <span>מספר טלפון הועתק!</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
