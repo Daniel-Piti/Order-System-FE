@@ -100,7 +100,7 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
       <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-800">הוסף סניף חדש</h2>

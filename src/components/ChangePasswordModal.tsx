@@ -88,7 +88,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
       <div className="glass-card rounded-3xl p-5 w-full max-w-md bg-white/85">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-800">שנה סיסמה</h2>

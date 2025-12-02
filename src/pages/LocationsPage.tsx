@@ -306,7 +306,7 @@ export default function LocationsPage() {
 
       {/* Delete Confirmation Modal */}
       {locationToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק סניף</h2>
@@ -346,8 +346,8 @@ export default function LocationsPage() {
               </div>
             ) : (
             <div className="mb-6">
-              <p className="text-gray-700 mb-4">
-                האם אתה בטוח שברצונך למחוק את <span className="font-semibold">{locationToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
+              <p className="text-gray-700 mb-4 break-words">
+                האם אתה בטוח שברצונך למחוק את <span className="font-semibold break-words">{locationToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
                 <div className="flex items-start space-x-2">
@@ -362,7 +362,7 @@ export default function LocationsPage() {
             </div>
             )}
 
-            <div className="flex space-x-3">
+            <div className="flex gap-5">
               <button
                 onClick={() => {
                   setLocationToDelete(null);
