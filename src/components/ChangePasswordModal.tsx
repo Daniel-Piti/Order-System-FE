@@ -53,7 +53,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to update password'
+          'נכשל בעדכון הסיסמה'
       );
     } finally {
       setIsLoading(false);
@@ -88,10 +88,10 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
       <div className="glass-card rounded-3xl p-5 w-full max-w-md bg-white/85">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">Change Password</h2>
+          <h2 className="text-lg font-bold text-gray-800">שנה סיסמה</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -121,7 +121,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
         <form onSubmit={handleSubmit} noValidate className="space-y-2.5">
           <div>
             <label htmlFor="oldPassword" className="block text-xs font-medium text-gray-700 mb-1">
-              Current Password *
+              סיסמה נוכחית *
             </label>
             <input
               id="oldPassword"
@@ -129,10 +129,11 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
               type="password"
               value={formData.oldPassword}
               onChange={handleChange}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.oldPassword ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="Enter current password"
+              placeholder="הזן סיסמה נוכחית"
+              dir="ltr"
             />
             {showErrors && fieldErrors.oldPassword && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.oldPassword}</p>
@@ -141,7 +142,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
 
           <div>
             <label htmlFor="newPassword" className="block text-xs font-medium text-gray-700 mb-1">
-              New Password *
+              סיסמה חדשה *
             </label>
             <input
               id="newPassword"
@@ -149,23 +150,24 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
               type="password"
               value={formData.newPassword}
               onChange={handleChange}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.newPassword ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="Enter new password"
+              placeholder="הזן סיסמה חדשה"
+              dir="ltr"
             />
             {showErrors && fieldErrors.newPassword ? (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.newPassword}</p>
             ) : (
               <p className="text-xs text-gray-500 mt-0.5">
-                Must contain uppercase, lowercase, numbers, and special characters
+                חייבת להכיל אותיות גדולות, אותיות קטנות, מספרים ותווים מיוחדים
               </p>
             )}
           </div>
 
           <div>
             <label htmlFor="newPasswordConfirmation" className="block text-xs font-medium text-gray-700 mb-1">
-              Confirm New Password *
+              אמת סיסמה חדשה *
             </label>
             <input
               id="newPasswordConfirmation"
@@ -173,31 +175,32 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
               type="password"
               value={formData.newPasswordConfirmation}
               onChange={handleChange}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.newPasswordConfirmation ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="Confirm new password"
+              placeholder="אמת סיסמה חדשה"
+              dir="ltr"
             />
             {showErrors && fieldErrors.newPasswordConfirmation && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.newPasswordConfirmation}</p>
             )}
           </div>
 
-          <div className="flex space-x-2.5 pt-2.5">
+          <div className="flex gap-3 pt-2.5">
             <button
               type="button"
               onClick={handleClose}
               disabled={isLoading}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
             >
-              Cancel
+              ביטול
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 
                        bg-indigo-100/60 hover:bg-indigo-200/70 border-indigo-600 hover:border-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2"
+                       flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -221,10 +224,10 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Updating...</span>
+                  <span>מעדכן...</span>
                 </>
               ) : (
-                <span>Update Password</span>
+                <span>עדכן סיסמה</span>
               )}
             </button>
           </div>

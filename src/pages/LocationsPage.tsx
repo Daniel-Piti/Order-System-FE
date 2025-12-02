@@ -50,7 +50,7 @@ export default function LocationsPage() {
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to load locations';
+        'נכשל בטעינת הסניפים';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -72,7 +72,7 @@ export default function LocationsPage() {
 
     // Check if this is the last location
     if (locations.length <= 1) {
-      setDeleteError('You must have at least one location. Cannot delete the last location.');
+      setDeleteError('חייב להיות לפחות סניף אחד. לא ניתן למחוק את הסניף האחרון.');
       return;
     }
 
@@ -89,13 +89,13 @@ export default function LocationsPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to delete location');
+        throw new Error(errorText || 'נכשל במחיקת הסניף');
       }
 
       setLocationToDelete(null);
       fetchLocations(); // Refresh the list
     } catch (err: any) {
-      setDeleteError(err.message || 'Failed to delete location');
+      setDeleteError(err.message || 'נכשל במחיקת הסניף');
     } finally {
       setIsDeleting(false);
     }
@@ -125,7 +125,7 @@ export default function LocationsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600">Loading locations...</p>
+          <p className="text-gray-600">טוען סניפים...</p>
         </div>
       </div>
     );
@@ -148,13 +148,13 @@ export default function LocationsPage() {
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-lg font-semibold mb-2">Error Loading Locations</p>
+          <p className="text-lg font-semibold mb-2">שגיאה בטעינת הסניפים</p>
           <p className="text-gray-600">{error}</p>
           <button
             onClick={fetchLocations}
             className="glass-button mt-4 px-6 py-2 rounded-xl font-medium"
           >
-            Try Again
+            נסה שוב
           </button>
         </div>
       </div>
@@ -162,27 +162,27 @@ export default function LocationsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
+    <div className="max-w-5xl mx-auto space-y-4" dir="rtl">
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              Locations
+              סניפים
             </h1>
             <p className="text-gray-600">
-              Manage your business locations
+              נהל את סניפי העסק שלך
             </p>
           </div>
           <div className="mt-4 md:mt-0">
             <button 
               onClick={() => setIsAddModalOpen(true)}
-              className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 border-0"
+              className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span>Add Location</span>
+              <span>הוסף סניף</span>
             </button>
           </div>
         </div>
@@ -210,15 +210,15 @@ export default function LocationsPage() {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <p className="text-lg font-semibold text-gray-800 mb-2">No Locations Yet</p>
+          <p className="text-lg font-semibold text-gray-800 mb-2">אין סניפים עדיין</p>
           <p className="text-gray-600 mb-4">
-            Start by adding your first business location
+            התחל בהוספת סניף העסק הראשון שלך
           </p>
           <button 
             onClick={() => setIsAddModalOpen(true)}
             className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40"
           >
-            Add Your First Location
+            הוסף את הסניף הראשון שלך
           </button>
         </div>
       ) : (
@@ -253,11 +253,11 @@ export default function LocationsPage() {
                 </div>
                 </div>
 
-              <div className="flex space-x-1.5 mt-2 pt-2 border-t border-gray-200/50">
+              <div className="flex gap-5 mt-2 pt-2 border-t border-gray-200/50">
                 <button 
                   onClick={() => handleEditLocation(location)}
                   className="glass-button flex-1 p-1.5 rounded-lg hover:bg-white/40 transition-colors"
-                  title="Edit location"
+                  title="ערוך סניף"
                 >
                   <svg className="w-4 h-4 text-gray-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -269,7 +269,7 @@ export default function LocationsPage() {
                     setDeleteError('');
                   }}
                   className="glass-button flex-1 p-1.5 rounded-lg hover:bg-red-50/40 transition-colors border-red-500 hover:border-red-600"
-                  title="Delete location"
+                  title="מחק סניף"
                 >
                   <svg className="w-4 h-4 text-red-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -309,7 +309,7 @@ export default function LocationsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Delete Location</h2>
+              <h2 className="text-xl font-bold text-gray-800">מחק סניף</h2>
               <button
                 onClick={() => {
                   setLocationToDelete(null);
@@ -347,7 +347,7 @@ export default function LocationsPage() {
             ) : (
             <div className="mb-6">
               <p className="text-gray-700 mb-4">
-                Are you sure you want to delete <span className="font-semibold">{locationToDelete.name}</span>? This action cannot be undone.
+                האם אתה בטוח שברצונך למחוק את <span className="font-semibold">{locationToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
                 <div className="flex items-start space-x-2">
@@ -355,7 +355,7 @@ export default function LocationsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="text-sm text-yellow-800">
-                    All orders, products, and customers associated with this location will no longer be linked to it.
+                    כל ההזמנות, המוצרים והלקוחות המשויכים לסניף זה לא יהיו עוד מקושרים אליו.
                   </p>
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function LocationsPage() {
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
               >
-                {deleteError ? 'Close' : 'Cancel'}
+                {deleteError ? 'סגור' : 'ביטול'}
               </button>
               {!deleteError && (
               <button
@@ -401,10 +401,10 @@ export default function LocationsPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Deleting...</span>
+                    <span>מוחק...</span>
                   </>
                 ) : (
-                  <span>Delete Location</span>
+                  <span>מחק סניף</span>
                 )}
               </button>
               )}

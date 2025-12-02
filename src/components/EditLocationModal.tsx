@@ -77,13 +77,13 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to update location');
+        throw new Error(errorData.userMessage || 'נכשל בעדכון הסניף');
       }
 
       onSuccess();
       handleClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to update location');
+      setError(err.message || 'נכשל בעדכון הסניף');
     } finally {
       setIsLoading(false);
     }
@@ -122,10 +122,10 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Edit Location</h2>
+          <h2 className="text-lg font-bold text-gray-800">ערוך סניף</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -155,7 +155,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Location Name *
+              שם הסניף *
             </label>
             <input
               id="name"
@@ -164,10 +164,11 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               value={formData.name}
               onChange={handleChange}
               maxLength={LOCATION_FIELD_LIMITS.name}
-              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="e.g., Main Store, Downtown Branch"
+              placeholder="לדוגמה: סניף ראשי, סניף מרכז"
+              dir="ltr"
             />
             {showErrors && fieldErrors.name && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
@@ -176,7 +177,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
 
           <div>
             <label htmlFor="streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
-              Street Address *
+              כתובת *
             </label>
             <input
               id="streetAddress"
@@ -185,10 +186,11 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               value={formData.streetAddress}
               onChange={handleChange}
               maxLength={LOCATION_FIELD_LIMITS.streetAddress}
-              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St"
+              placeholder="רחוב ראשי 123"
+              dir="ltr"
             />
             {showErrors && fieldErrors.streetAddress && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
@@ -197,7 +199,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
 
           <div>
             <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-              City *
+              עיר *
             </label>
             <input
               id="city"
@@ -206,10 +208,11 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               value={formData.city}
               onChange={handleChange}
               maxLength={LOCATION_FIELD_LIMITS.city}
-              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="New York"
+              placeholder="תל אביב"
+              dir="ltr"
             />
             {showErrors && fieldErrors.city && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
@@ -218,7 +221,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
 
           <div>
             <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number *
+              מספר טלפון *
             </label>
             <input
               id="phoneNumber"
@@ -229,30 +232,31 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
               maxLength={LOCATION_FIELD_LIMITS.phoneNumber}
               inputMode="numeric"
               pattern="[0-9]*"
-              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
               }`}
+              dir="ltr"
             />
             {showErrors && fieldErrors.phoneNumber && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
             )}
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={isLoading}
               className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
             >
-              Cancel
+              ביטול
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 
                        bg-indigo-100/60 hover:bg-indigo-200/70 border-indigo-600 hover:border-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2"
+                       flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -276,10 +280,10 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Saving...</span>
+                  <span>שומר...</span>
                 </>
               ) : (
-                <span>Save Changes</span>
+                <span>שמור שינויים</span>
               )}
             </button>
           </div>

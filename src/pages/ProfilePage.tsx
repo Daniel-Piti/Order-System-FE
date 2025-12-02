@@ -33,7 +33,7 @@ export default function ProfilePage() {
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to load profile'
+          'נכשל בטעינת הפרופיל'
       );
     } finally {
       setIsLoading(false);
@@ -41,7 +41,7 @@ export default function ProfilePage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('he-IL', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -77,7 +77,7 @@ export default function ProfilePage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600">Loading profile...</p>
+          <p className="text-gray-600">טוען פרופיל...</p>
         </div>
       </div>
     );
@@ -100,13 +100,13 @@ export default function ProfilePage() {
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-lg font-semibold mb-2">Error Loading Profile</p>
+          <p className="text-lg font-semibold mb-2">שגיאה בטעינת הפרופיל</p>
           <p className="text-gray-600">{error}</p>
           <button
             onClick={fetchProfile}
             className="glass-button mt-4 px-6 py-2 rounded-xl font-medium"
           >
-            Try Again
+            נסה שוב
           </button>
         </div>
       </div>
@@ -116,27 +116,27 @@ export default function ProfilePage() {
   if (!profile) return null;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="max-w-4xl mx-auto space-y-4" dir="rtl">
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between gap-4 md:gap-6">
           <div className="max-w-full md:flex-1">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words leading-tight max-w-full">
-              Hello {profile.firstName} {profile.lastName}!
+              שלום {profile.firstName} {profile.lastName}!
             </h1>
             <p className="text-gray-600 text-sm">
-              Here’s a snapshot of your personal details and account credentials.
+              פרטים אישיים ומידע על החשבון שלך
             </p>
           </div>
           <div className="mt-4 md:mt-0 w-full md:w-auto">
             <button 
               onClick={() => setIsEditModalOpen(true)}
-              className="glass-button w-full md:w-auto px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center justify-center space-x-2"
+              className="glass-button w-full md:w-auto px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center justify-center gap-3"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              <span>Edit Personal Details</span>
+              <span>ערוך פרטים אישיים</span>
             </button>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
           {/* First Name */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              First Name
+              שם פרטי
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.firstName}
@@ -158,7 +158,7 @@ export default function ProfilePage() {
           {/* Last Name */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Last Name
+              שם משפחה
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.lastName}
@@ -168,7 +168,7 @@ export default function ProfilePage() {
           {/* Business Name */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Business Name
+              שם העסק
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.businessName}
@@ -178,7 +178,7 @@ export default function ProfilePage() {
           {/* Manager ID */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Manager ID
+              ID
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 font-mono text-sm">
               {profile.id}
@@ -188,7 +188,7 @@ export default function ProfilePage() {
           {/* Email */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Email
+              אימייל
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.email}
@@ -198,7 +198,7 @@ export default function ProfilePage() {
           {/* Phone Number */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Phone Number
+              מספר טלפון
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
               {formatPhoneNumber(profile.phoneNumber)}
@@ -208,7 +208,7 @@ export default function ProfilePage() {
           {/* Street Address */}
           <div className="max-w-full">
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Street Address
+              כתובת
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.streetAddress}
@@ -218,7 +218,7 @@ export default function ProfilePage() {
           {/* City */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              City
+              עיר
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
               {profile.city}
@@ -228,7 +228,7 @@ export default function ProfilePage() {
           {/* Date of Birth */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Date of Birth
+              תאריך לידה
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
               {formatDate(profile.dateOfBirth)}
@@ -238,7 +238,7 @@ export default function ProfilePage() {
           {/* Account Created */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Account Created At
+              תאריך יצירת חשבון
             </label>
             <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm">
               {formatDate(profile.createdAt)}
@@ -249,22 +249,22 @@ export default function ProfilePage() {
 
       {/* Security Section */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Security</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">הגדרות אבטחה</h2>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <p className="font-medium text-gray-800">Password</p>
+            <p className="font-medium text-gray-800">סיסמה</p>
             <p className="text-sm text-gray-600">
-              Manage your account password
+              עדכן את הסיסמה שלך
             </p>
           </div>
           <button 
             onClick={() => setIsChangePasswordModalOpen(true)}
-            className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center space-x-2"
+            className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center gap-3"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
-            <span>Change Password</span>
+            <span>שנה סיסמה</span>
           </button>
         </div>
       </div>

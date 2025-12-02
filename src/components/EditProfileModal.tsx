@@ -100,7 +100,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to update profile'
+          'נכשל בעדכון הפרופיל'
       );
     } finally {
       setIsLoading(false);
@@ -151,10 +151,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
       <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">Edit Personal Details</h2>
+          <h2 className="text-lg font-bold text-gray-800">ערוך פרטים אישיים</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -185,7 +185,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label htmlFor="firstName" className="block text-xs font-medium text-gray-700 mb-1">
-                First Name *
+                שם פרטי *
               </label>
               <input
                 id="firstName"
@@ -194,10 +194,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 value={formData.firstName}
                 onChange={handleChange}
                 maxLength={MAX_NAME_LENGTH}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="John"
+                placeholder="יוחנן"
+                dir="ltr"
               />
               {showErrors && fieldErrors.firstName && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.firstName}</p>
@@ -206,7 +207,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
             <div>
               <label htmlFor="lastName" className="block text-xs font-medium text-gray-700 mb-1">
-                Last Name *
+                שם משפחה *
               </label>
               <input
                 id="lastName"
@@ -215,10 +216,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 value={formData.lastName}
                 onChange={handleChange}
                 maxLength={MAX_NAME_LENGTH}
-                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="Doe"
+                placeholder="כהן"
+                dir="ltr"
               />
               {showErrors && fieldErrors.lastName && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
@@ -228,7 +230,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
           <div>
             <label htmlFor="businessName" className="block text-xs font-medium text-gray-700 mb-1">
-              Business Name *
+              שם העסק *
             </label>
             <input
               id="businessName"
@@ -237,10 +239,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               value={formData.businessName}
               onChange={handleChange}
               maxLength={MAX_BUSINESS_NAME_LENGTH}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.businessName ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="Acme Corp"
+              placeholder="עסק בע״מ"
+              dir="ltr"
             />
             {showErrors && fieldErrors.businessName && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.businessName}</p>
@@ -249,7 +252,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
           <div>
             <label htmlFor="phoneNumber" className="block text-xs font-medium text-gray-700 mb-1">
-              Phone Number *
+              מספר טלפון *
             </label>
             <input
               id="phoneNumber"
@@ -260,9 +263,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               maxLength={10}
               inputMode="numeric"
               pattern="[0-9]*"
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
               }`}
+              dir="ltr"
             />
             {showErrors && fieldErrors.phoneNumber && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.phoneNumber}</p>
@@ -271,7 +275,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
           <div>
             <label htmlFor="dateOfBirth" className="block text-xs font-medium text-gray-700 mb-1">
-              Date of Birth *
+              תאריך לידה *
             </label>
             <input
               id="dateOfBirth"
@@ -279,9 +283,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="date"
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.dateOfBirth ? 'border-red-400 focus:ring-red-400' : ''
               }`}
+              dir="ltr"
             />
             {showErrors && fieldErrors.dateOfBirth && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.dateOfBirth}</p>
@@ -290,7 +295,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
           <div>
             <label htmlFor="streetAddress" className="block text-xs font-medium text-gray-700 mb-1">
-              Street Address *
+              כתובת *
             </label>
             <input
               id="streetAddress"
@@ -299,10 +304,11 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               value={formData.streetAddress}
               onChange={handleChange}
               maxLength={MAX_STREET_ADDRESS_LENGTH}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St"
+              placeholder="רחוב ראשי 123"
+              dir="ltr"
             />
             {showErrors && fieldErrors.streetAddress && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.streetAddress}</p>
@@ -311,7 +317,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
           <div>
             <label htmlFor="city" className="block text-xs font-medium text-gray-700 mb-1">
-              City *
+              עיר *
             </label>
             <input
               id="city"
@@ -320,31 +326,32 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               value={formData.city}
               onChange={handleChange}
               maxLength={MAX_CITY_LENGTH}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                 showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="New York"
+              placeholder="תל אביב"
+              dir="ltr"
             />
             {showErrors && fieldErrors.city && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.city}</p>
             )}
           </div>
 
-          <div className="flex space-x-2.5 pt-2.5">
+          <div className="flex gap-3 pt-2.5">
             <button
               type="button"
               onClick={handleClose}
               disabled={isLoading}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
             >
-              Cancel
+              ביטול
             </button>
             <button
               type="submit"
               disabled={isLoading}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 
                        bg-indigo-100/60 hover:bg-indigo-200/70 border-indigo-600 hover:border-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2"
+                       flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -368,10 +375,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Saving...</span>
+                  <span>שומר...</span>
                 </>
               ) : (
-                <span>Save Changes</span>
+                <span>שמור שינויים</span>
               )}
             </button>
           </div>
