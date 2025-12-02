@@ -57,19 +57,19 @@ export default function UserLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
+          fixed top-0 left-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="p-6">
-          <div className="mb-8">
+        <div className="h-full flex flex-col p-6 overflow-hidden">
+          <div className="mb-8 flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-800">
               Dashboard
             </h1>
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-2 flex-1 overflow-y-auto pr-2 min-h-0 scrollbar-hide">
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
@@ -89,7 +89,7 @@ export default function UserLayout() {
             ))}
           </nav>
 
-          <div className="absolute bottom-6 left-6 right-6">
+          <div className="mt-6 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"

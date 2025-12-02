@@ -160,12 +160,32 @@ export default function OrdersPage() {
 
   const handleCopyLink = async (orderId: string) => {
     try {
-      // For now, just copy the order ID (later will be full URL)
-      await navigator.clipboard.writeText(orderId);
+      // Get base URL from environment or use current origin
+      const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+      const fullLink = `${baseUrl}/store/order/${orderId}`;
+      
+      await navigator.clipboard.writeText(fullLink);
       setCopiedOrderId(orderId);
       setTimeout(() => setCopiedOrderId(null), 2000); // Clear after 2 seconds
     } catch (err) {
       console.error('Failed to copy:', err);
+      // Fallback: try using execCommand
+      try {
+        const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
+        const fullLink = `${baseUrl}/store/order/${orderId}`;
+        const textArea = document.createElement('textarea');
+        textArea.value = fullLink;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCopiedOrderId(orderId);
+        setTimeout(() => setCopiedOrderId(null), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy also failed:', fallbackErr);
+      }
     }
   };
 

@@ -7,7 +7,49 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const navigate = useNavigate();
+
+  const ADMIN_PHONE = '050-5566979';
+  const ADMIN_PHONE_TEL = '0505566979'; // Without dashes for tel: link
+
+  const handleContactAdmin = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    
+    // Detect if mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                    ('ontouchstart' in window) || 
+                    (navigator.maxTouchPoints > 0);
+
+    if (isMobile) {
+      // Open phone app on mobile
+      window.location.href = `tel:${ADMIN_PHONE_TEL}`;
+    } else {
+      // Copy to clipboard on desktop
+      try {
+        await navigator.clipboard.writeText(ADMIN_PHONE);
+        setShowCopiedMessage(true);
+        setTimeout(() => setShowCopiedMessage(false), 3000);
+      } catch (err) {
+        // Fallback if clipboard API fails
+        const textArea = document.createElement('textarea');
+        textArea.value = ADMIN_PHONE;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setShowCopiedMessage(true);
+          setTimeout(() => setShowCopiedMessage(false), 3000);
+        } catch (fallbackErr) {
+          // Show popup with phone number if copy fails
+          alert(`Admin Phone: ${ADMIN_PHONE}`);
+        }
+        document.body.removeChild(textArea);
+      }
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,11 +207,28 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 space-y-2 text-center text-sm text-gray-600">
-          <div>
+          <div className="relative">
             Need an account?{' '}
-            <a href="#" className="text-purple-600 hover:text-purple-700 font-medium">
+            <a 
+              href={`tel:${ADMIN_PHONE_TEL}`}
+              onClick={handleContactAdmin}
+              className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer"
+            >
               Contact Admin
             </a>
+            {showCopiedMessage && (
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 px-4 py-2.5 backdrop-blur-xl bg-green-500/90 border-2 border-green-700 text-white text-sm font-semibold rounded-xl shadow-2xl shadow-green-500/50 whitespace-nowrap z-20 animate-fade-in-right">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Phone number copied!</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             Are you an agent?{' '}

@@ -52,40 +52,40 @@ export default function AgentLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
+          fixed top-0 left-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className="p-6 h-full flex flex-col">
-          <div>
+        <div className="p-6 h-full flex flex-col overflow-hidden">
+          <div className="flex-shrink-0">
             <div className="mb-1">
               <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
             </div>
             <p className="text-sm text-gray-500 mb-8">Agent Console</p>
-
-            <nav className="space-y-2">
-              {menuItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
-                      isActive
-                        ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
-                        : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
-                    }`
-                  }
-                >
-                  <span className="text-xl" aria-hidden>{item.icon}</span>
-                  <span>{item.name}</span>
-                </NavLink>
-              ))}
-            </nav>
           </div>
 
-          <div className="mt-auto pt-8">
+          <nav className="space-y-2 flex-1 overflow-y-auto pr-2 min-h-0 scrollbar-hide">
+            {menuItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsSidebarOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
+                    isActive
+                      ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
+                      : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
+                  }`
+                }
+              >
+                <span className="text-xl" aria-hidden>{item.icon}</span>
+                <span>{item.name}</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="mt-6 flex-shrink-0">
             <button
               onClick={handleLogout}
               className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"

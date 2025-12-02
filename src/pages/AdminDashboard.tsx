@@ -124,7 +124,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 sm:p-6">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -133,14 +133,14 @@ export default function AdminDashboard() {
 
       {/* Header */}
       <div className="relative z-10 max-w-7xl mx-auto mb-8">
-        <div className="glass-card rounded-2xl p-6 flex items-center justify-between">
+        <div className="glass-card rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage your managers</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your managers</p>
           </div>
           <button
             onClick={handleLogout}
-            className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 flex items-center space-x-2"
+            className="glass-button px-4 sm:px-6 py-2 rounded-xl font-medium text-gray-800 flex items-center justify-center space-x-2 w-full sm:w-auto"
           >
             <svg
               className="w-5 h-5"
@@ -163,16 +163,16 @@ export default function AdminDashboard() {
       {/* Managers Table */}
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="glass-card rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">All Managers</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">All Managers</h2>
               <p className="text-gray-600 text-sm mt-1">
                 Total: {managers.length} manager{managers.length !== 1 ? 's' : ''}
               </p>
             </div>
             <button 
               onClick={() => setIsAddManagerModalOpen(true)}
-              className="glass-button px-4 py-2 rounded-xl font-medium text-gray-800 flex items-center space-x-2"
+              className="glass-button px-4 py-2 rounded-xl font-medium text-gray-800 flex items-center justify-center space-x-2 w-full sm:w-auto"
             >
               <svg
                 className="w-5 h-5"
