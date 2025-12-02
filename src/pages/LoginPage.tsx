@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
 
   const ADMIN_PHONE = '050-5566979';
@@ -29,7 +30,15 @@ export default function LoginPage() {
       try {
         await navigator.clipboard.writeText(ADMIN_PHONE);
         setShowCopiedMessage(true);
-        setTimeout(() => setShowCopiedMessage(false), 3000);
+        setIsFadingOut(false);
+        // Stay visible for 1.5 seconds, then fade out
+        setTimeout(() => {
+          setIsFadingOut(true);
+          setTimeout(() => {
+            setShowCopiedMessage(false);
+            setIsFadingOut(false);
+          }, 300); // Fade out duration
+        }, 1500);
       } catch (err) {
         // Fallback if clipboard API fails
         const textArea = document.createElement('textarea');
@@ -41,7 +50,15 @@ export default function LoginPage() {
         try {
           document.execCommand('copy');
           setShowCopiedMessage(true);
-          setTimeout(() => setShowCopiedMessage(false), 3000);
+          setIsFadingOut(false);
+          // Stay visible for 1.5 seconds, then fade out
+          setTimeout(() => {
+            setIsFadingOut(true);
+            setTimeout(() => {
+              setShowCopiedMessage(false);
+              setIsFadingOut(false);
+            }, 300); // Fade out duration
+          }, 1500);
         } catch (fallbackErr) {
           // Show popup with phone number if copy fails
           alert(`Admin Phone: ${ADMIN_PHONE}`);
@@ -104,9 +121,10 @@ export default function LoginPage() {
       {/* Login Card */}
       <div className="glass-card rounded-3xl p-8 w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-button mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-400 via-purple-500 to-purple-600 mb-6 shadow-xl shadow-purple-500/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
             <svg
-              className="w-8 h-8 text-purple-600"
+              className="w-10 h-10 text-white relative z-10"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -115,11 +133,11 @@ export default function LoginPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Manager Portal</h1>
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
@@ -207,7 +225,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 space-y-2 text-center text-sm text-gray-600">
-          <div className="relative">
+          <div>
             Need an account?{' '}
             <a 
               href={`tel:${ADMIN_PHONE_TEL}`}
@@ -216,19 +234,6 @@ export default function LoginPage() {
             >
               Contact Admin
             </a>
-            {showCopiedMessage && (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mb-2 px-4 py-2.5 backdrop-blur-xl bg-green-500/90 border-2 border-green-700 text-white text-sm font-semibold rounded-xl shadow-2xl shadow-green-500/50 whitespace-nowrap z-20 animate-fade-in-right">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Phone number copied!</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </div>
-              </div>
-            )}
           </div>
           <div>
             Are you an agent?{' '}
@@ -238,6 +243,21 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Fixed notification at bottom of page */}
+      {showCopiedMessage && (
+        <div className={`fixed bottom-8 left-1/2 px-4 py-2.5 backdrop-blur-xl bg-green-500/90 border-2 border-green-700 text-white text-sm font-semibold rounded-xl shadow-2xl shadow-green-500/50 z-50 ${isFadingOut ? 'animate-fade-out' : 'animate-slide-up-bottom'}`}>
+          <div className="flex items-center space-x-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Phone number copied!</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

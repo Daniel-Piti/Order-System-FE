@@ -58,9 +58,10 @@ export default function AgentLoginPage() {
       {/* Login Card */}
       <div className="glass-card rounded-3xl p-8 w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-button mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-sky-400 via-sky-500 to-sky-600 mb-6 shadow-xl shadow-sky-500/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
             <svg
-              className="w-8 h-8 text-sky-600"
+              className="w-10 h-10 text-white relative z-10"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -69,7 +70,7 @@ export default function AgentLoginPage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M9 12h6m-3-3v6m7-6a8 8 0 11-16 0 8 8 0 0116 0z"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
           </div>
@@ -150,13 +151,7 @@ export default function AgentLoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 space-y-2 text-center text-sm text-gray-600">
-          <div>
-            Need access?{' '}
-            <a href="#" className="text-sky-600 hover:text-sky-700 font-medium">
-              Contact your manager
-            </a>
-          </div>
+        <div className="mt-6 text-center text-sm text-gray-600">
           <div>
             Back to manager login?{' '}
             <Link to="/login/manager" className="text-sky-600 hover:text-sky-700 font-medium">
