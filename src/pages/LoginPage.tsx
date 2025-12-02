@@ -141,7 +141,7 @@ export default function LoginPage() {
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on">
           {error && (
             <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm">
               {error}
@@ -174,6 +174,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="••••••••"
+              autoComplete="current-password"
             />
           </div>
 

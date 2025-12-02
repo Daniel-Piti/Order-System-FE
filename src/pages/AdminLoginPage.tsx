@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
           <p className="text-gray-600">Sign in with administrator credentials</p>
         </div>
 
-        <form onSubmit={handleAdminLogin} className="space-y-5">
+        <form onSubmit={handleAdminLogin} className="space-y-5" method="post" autoComplete="on">
           {error && (
             <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm">
               {error}
@@ -106,6 +106,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setAdminUserName(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="admin"
+              autoComplete="username"
             />
           </div>
 
@@ -120,6 +121,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="••••••••"
+              autoComplete="current-password"
             />
           </div>
 
