@@ -389,7 +389,7 @@ export default function BrandsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600 font-medium">טוען מותגים...</p>
+          <p className="text-gray-600 font-medium">... טוען מותגים</p>
         </div>
       </div>
     );
@@ -465,7 +465,7 @@ export default function BrandsPage() {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(0); // Reset to first page when page size changes (0-based)
                     }}
-                    className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                    className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-18"
                     dir="ltr"
                   >
                     <option value={5}>5</option>
