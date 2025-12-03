@@ -183,7 +183,7 @@ export default function OverridesPage() {
 
   const getAgentLabel = (agentId: number | null) => {
     if (agentId == null) {
-      return 'Me';
+      return 'אני';
     }
     const agent = agentMap.get(agentId);
     if (!agent) {
@@ -227,14 +227,14 @@ export default function OverridesPage() {
     setShowErrors(true);
 
     const errors: Record<string, string> = {};
-    if (!formData.productId) errors.productId = 'Product is required';
-    if (!formData.customerId) errors.customerId = 'Customer is required';
+    if (!formData.productId) errors.productId = 'נדרש לבחור מוצר';
+    if (!formData.customerId) errors.customerId = 'נדרש לבחור לקוח';
     if (!formData.overridePrice.trim()) {
-      errors.overridePrice = 'Override price is required';
+      errors.overridePrice = 'נדרש להזין מחיר מותאם';
     } else if (isNaN(Number(formData.overridePrice)) || Number(formData.overridePrice) < 0) {
-      errors.overridePrice = 'Override price must be a valid positive number';
+      errors.overridePrice = 'מחיר מותאם חייב להיות מספר חיובי תקין';
     } else if (Number(formData.overridePrice) > MAX_PRICE) {
-      errors.overridePrice = 'Override price cannot exceed 1,000,000';
+      errors.overridePrice = 'מחיר מותאם לא יכול לעלות על 1,000,000';
     }
 
     setFieldErrors(errors);
@@ -301,11 +301,11 @@ export default function OverridesPage() {
 
     const errors: Record<string, string> = {};
     if (!editFormData.overridePrice.trim()) {
-      errors.overridePrice = 'Override price is required';
+      errors.overridePrice = 'נדרש להזין מחיר מותאם';
     } else if (isNaN(Number(editFormData.overridePrice)) || Number(editFormData.overridePrice) < 0) {
-      errors.overridePrice = 'Override price must be a valid positive number';
+      errors.overridePrice = 'מחיר מותאם חייב להיות מספר חיובי תקין';
     } else if (Number(editFormData.overridePrice) > MAX_PRICE) {
-      errors.overridePrice = 'Override price cannot exceed 1,000,000';
+      errors.overridePrice = 'מחיר מותאם לא יכול לעלות על 1,000,000';
     }
 
     setFieldErrors(errors);
@@ -405,7 +405,7 @@ export default function OverridesPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <p className="text-gray-600 font-medium">Loading overrides...</p>
+          <p className="text-gray-600 font-medium">... טוען מחירים מיוחדים</p>
         </div>
       </div>
     );
@@ -426,10 +426,6 @@ export default function OverridesPage() {
       {/* Header */}
       <div className="glass-card rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Product Overrides</h1>
-            <p className="text-gray-600 mt-1">Manage customer-specific pricing</p>
-          </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
@@ -437,84 +433,94 @@ export default function OverridesPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add Override
+            הוסף מחיר מיוחד
           </button>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">מחירים מיוחדים</h1>
+            <p className="text-gray-600 mt-1">נהל מחירים מותאמים אישית ללקוחות</p>
+          </div>
         </div>
       </div>
 
       {/* Filters & Controls */}
       {(overrides.length > 0 || productFilter || customerFilter || agentFilter !== 'all') && (
         <div className="glass-card rounded-3xl p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {/* Page Size */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Show:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-            </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {/* Product Filter */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={productFilter}
+                  onChange={(e) => handleProductFilterChange(e.target.value)}
+                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-48"
+                  dir="ltr"
+                >
+                  <option value="">הכל</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name} - {formatPrice(product.price)}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm font-medium text-gray-700">:מוצר</span>
+              </div>
 
-            {/* Product Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Product:</span>
-              <select
-                value={productFilter}
-                onChange={(e) => handleProductFilterChange(e.target.value)}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-48"
-              >
-                <option value="">All</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name} - {formatPrice(product.price)}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Customer Filter */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={customerFilter}
+                  onChange={(e) => handleCustomerFilterChange(e.target.value)}
+                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
+                  dir="ltr"
+                >
+                  <option value="">הכל</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm font-medium text-gray-700">:לקוח</span>
+              </div>
 
-            {/* Customer Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Customer:</span>
-              <select
-                value={customerFilter}
-                onChange={(e) => handleCustomerFilterChange(e.target.value)}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
-              >
-                <option value="">All</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {/* Agent Filter */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={agentFilter}
+                  onChange={(e) => {
+                    setAgentFilter(e.target.value);
+                    setCurrentPage(0);
+                  }}
+                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
+                  dir="ltr"
+                >
+                  <option value="all">הכל</option>
+                  <option value="manager">אני</option>
+                  {agents.map((agent) => (
+                    <option key={agent.id} value={agent.id.toString()}>
+                      {agent.firstName} {agent.lastName}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-sm font-medium text-gray-700">:סוכן</span>
+              </div>
 
-            {/* Agent Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Agent:</span>
-              <select
-                value={agentFilter}
-                onChange={(e) => {
-                  setAgentFilter(e.target.value);
-                  setCurrentPage(0);
-                }}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
-              >
-                <option value="all">All</option>
-                <option value="manager">Me</option>
-                {agents.map((agent) => (
-                  <option key={agent.id} value={agent.id.toString()}>
-                    {agent.firstName} {agent.lastName}
-                  </option>
-                ))}
-              </select>
+              {/* Page Size */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                  dir="ltr"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className="text-sm font-medium text-gray-700">:הצג</span>
+              </div>
             </div>
           </div>
         </div>
@@ -531,9 +537,9 @@ export default function OverridesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">No Overrides Match Filters</h2>
+                <h2 className="text-2xl font-bold text-gray-800">לא נמצאו מחירים מיוחדים תואמים</h2>
                 <p className="text-gray-600 max-w-md">
-                  No overrides found matching the selected filters.
+                  לא נמצאו מחירים מיוחדים התואמים למסננים שנבחרו.
                 </p>
                 <button
                   onClick={() => {
@@ -543,7 +549,7 @@ export default function OverridesPage() {
                   }}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
-                  Clear Filters
+                  נקה מסננים
                 </button>
               </>
             ) : (
@@ -553,15 +559,15 @@ export default function OverridesPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">No Overrides Yet</h2>
+                <h2 className="text-2xl font-bold text-gray-800">אין מחירים מיוחדים עדיין</h2>
                 <p className="text-gray-600 max-w-md">
-                  You haven't set any custom pricing for your customers yet. Click the button below to create your first override.
+                  עדיין לא הגדרת מחירים מותאמים אישית ללקוחות שלך. לחץ על הכפתור למטה כדי ליצור את המחיר המיוחד הראשון שלך.
                 </p>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
-                  Add Your First Override
+                  הוסף את המחיר המיוחד הראשון שלך
                 </button>
               </>
             )}
@@ -573,12 +579,12 @@ export default function OverridesPage() {
             <table className="w-full">
               <thead className="bg-white/30 border-b border-gray-200/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">Customer</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">Agent</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Product</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Minimum Price</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Override Price</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">לקוח</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">סוכן</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מוצר</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מינימלי</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מותאם</th>
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">פעולות</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200/50">
@@ -611,7 +617,7 @@ export default function OverridesPage() {
                         <button
                           onClick={() => handleEditOverride(override)}
                           className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
-                          title="Edit override"
+                          title="ערוך מחיר מיוחד"
                         >
                           <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -620,7 +626,7 @@ export default function OverridesPage() {
                         <button
                           onClick={() => setOverrideToDelete(override)}
                           className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                          title="Delete override"
+                          title="מחק מחיר מיוחד"
                         >
                           <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -650,7 +656,7 @@ export default function OverridesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Add Price Override</h2>
+              <h2 className="text-lg font-bold text-gray-800">הוסף מחיר מיוחד</h2>
               <button
                 onClick={handleCloseModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -671,7 +677,7 @@ export default function OverridesPage() {
               {/* Product */}
               <div>
                 <label htmlFor="productId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Product *
+                  מוצר *
                 </label>
                 <select
                   id="productId"
@@ -687,7 +693,7 @@ export default function OverridesPage() {
                     showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
                 >
-                  <option value="">Select a product</option>
+                  <option value="">בחר מוצר</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name} - {formatPrice(product.price)}
@@ -701,9 +707,9 @@ export default function OverridesPage() {
                   <div className="mt-3 p-3 bg-indigo-50/60 border border-indigo-200 rounded-xl text-sm text-indigo-800">
                     <p className="font-semibold">{selectedProductForAdd.name}</p>
                     <p className="mt-1 text-xs text-indigo-700">
-                      Minimum price: {formatPrice(selectedProductForAdd.minimumPrice)}
+                      מחיר מינימלי: {formatPrice(selectedProductForAdd.minimumPrice)}
                     </p>
-                    <p className="mt-1 text-xs text-indigo-700">Base price: {formatPrice(selectedProductForAdd.price)}</p>
+                    <p className="mt-1 text-xs text-indigo-700">מחיר בסיס: {formatPrice(selectedProductForAdd.price)}</p>
                   </div>
                 )}
               </div>
@@ -711,7 +717,7 @@ export default function OverridesPage() {
               {/* Customer */}
               <div>
                 <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer *
+                  לקוח *
                 </label>
                 <select
                   id="customerId"
@@ -727,7 +733,7 @@ export default function OverridesPage() {
                     showErrors && fieldErrors.customerId ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
                 >
-                  <option value="">Select a customer</option>
+                  <option value="">בחר לקוח</option>
                   {customers.map((customer) => (
                     <option key={customer.id} value={customer.id}>
                       {customer.name}
@@ -742,7 +748,7 @@ export default function OverridesPage() {
               {/* Override Price */}
               <div>
                 <label htmlFor="overridePrice" className="block text-sm font-medium text-gray-700 mb-2">
-                  Override Price *
+                  מחיר מותאם *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
@@ -777,21 +783,21 @@ export default function OverridesPage() {
                 )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Override'}
+                  {isSubmitting ? 'יוצר...' : 'צור מחיר מיוחד'}
                 </button>
               </div>
             </form>
@@ -804,7 +810,7 @@ export default function OverridesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Price Override</h2>
+              <h2 className="text-lg font-bold text-gray-800">ערוך מחיר מיוחד</h2>
               <button
                 onClick={handleCloseEditModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -818,10 +824,10 @@ export default function OverridesPage() {
             {/* Show product and customer info (read-only) */}
             <div className="mb-4 p-4 bg-gray-100/50 rounded-xl space-y-2">
               <p className="text-sm text-gray-600">
-                <span className="font-semibold">Product:</span> {getProductName(overrideToEdit.productId)}
+                <span className="font-semibold">מוצר:</span> {getProductName(overrideToEdit.productId)}
               </p>
               <p className="text-sm text-gray-600">
-                <span className="font-semibold">Customer:</span> {getCustomerName(overrideToEdit.customerId)}
+                <span className="font-semibold">לקוח:</span> {getCustomerName(overrideToEdit.customerId)}
               </p>
             </div>
 
@@ -835,7 +841,7 @@ export default function OverridesPage() {
               {/* Override Price */}
               <div>
                 <label htmlFor="edit-overridePrice" className="block text-sm font-medium text-gray-700 mb-2">
-                  Override Price *
+                  מחיר מותאם *
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
@@ -870,21 +876,21 @@ export default function OverridesPage() {
                 )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Updating...' : 'Update Override'}
+                  {isSubmitting ? 'מעדכן...' : 'עדכן מחיר מיוחד'}
                 </button>
               </div>
             </form>
@@ -897,7 +903,7 @@ export default function OverridesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Delete Override</h2>
+              <h2 className="text-lg font-bold text-gray-800">מחק מחיר מיוחד</h2>
               <button
                 onClick={() => setOverrideToDelete(null)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -910,20 +916,20 @@ export default function OverridesPage() {
 
             <div className="mb-6">
               <p className="text-gray-700 mb-4">
-                Are you sure you want to delete this price override?
+                האם אתה בטוח שברצונך למחוק את המחיר המיוחד הזה?
               </p>
               <div className="p-4 bg-gray-100/50 rounded-xl space-y-2">
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Customer:</span> {getCustomerName(overrideToDelete.customerId)}
+                  <span className="font-semibold">לקוח:</span> {getCustomerName(overrideToDelete.customerId)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Product:</span> {getProductName(overrideToDelete.productId)}
+                  <span className="font-semibold">מוצר:</span> {getProductName(overrideToDelete.productId)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Original Price:</span> {formatPrice(overrideToDelete.productPrice)}
+                  <span className="font-semibold">מחיר מקורי:</span> {formatPrice(overrideToDelete.productPrice)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">Override Price:</span> {formatPrice(overrideToDelete.overridePrice)}
+                  <span className="font-semibold">מחיר מותאם:</span> {formatPrice(overrideToDelete.overridePrice)}
                 </p>
               </div>
             </div>
@@ -934,14 +940,14 @@ export default function OverridesPage() {
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 onClick={handleDeleteOverride}
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 disabled:opacity-50"
               >
-                {isDeleting ? 'Deleting...' : 'Delete'}
+                {isDeleting ? 'מוחק...' : 'מחק'}
               </button>
             </div>
           </div>

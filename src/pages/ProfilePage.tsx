@@ -141,10 +141,10 @@ export default function ProfilePage() {
               onClick={() => setIsEditModalOpen(true)}
               className="glass-button w-full md:w-auto px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center justify-center gap-3"
             >
+              <span>ערוך פרטים אישיים</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              <span>ערוך פרטים אישיים</span>
             </button>
           </div>
         </div>
@@ -269,10 +269,10 @@ export default function ProfilePage() {
             onClick={() => setIsChangePasswordModalOpen(true)}
             className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center gap-3"
           >
+            <span>שנה סיסמה</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
-            <span>שנה סיסמה</span>
           </button>
         </div>
       </div>
