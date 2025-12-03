@@ -107,7 +107,7 @@ export default function BrandsPage() {
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to load brands';
+        'נכשל בטעינת המותגים';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -178,14 +178,14 @@ export default function BrandsPage() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setFormError('Invalid file type. Please select a JPEG, PNG, or WebP image.');
+      setFormError('סוג קובץ לא תקין. אנא בחר תמונה בפורמט JPEG, PNG או WebP.');
       return;
     }
 
     // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
-      setFormError('File size exceeds 5MB limit.');
+      setFormError('גודל הקובץ עולה על 5MB.');
       return;
     }
 
@@ -257,10 +257,10 @@ export default function BrandsPage() {
         let errorMessage = 'Failed to create brand';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to create brand';
+          errorMessage = errorData.userMessage || errorData.message || 'נכשל ביצירת המותג';
         } catch (parseError) {
           // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to create brand';
+          errorMessage = errorText || 'נכשל ביצירת המותג';
         }
         throw new Error(errorMessage);
       }
@@ -268,7 +268,7 @@ export default function BrandsPage() {
       await fetchBrands();
       handleCloseModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create brand');
+      setFormError(err.message || 'נכשל ביצירת המותג');
     } finally {
       setIsSubmitting(false);
     }
@@ -311,10 +311,10 @@ export default function BrandsPage() {
         let errorMessage = 'Failed to update brand';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to update brand';
+          errorMessage = errorData.userMessage || errorData.message || 'נכשל בעדכון המותג';
         } catch (parseError) {
           // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to update brand';
+          errorMessage = errorText || 'נכשל בעדכון המותג';
         }
         throw new Error(errorMessage);
       }
@@ -322,7 +322,7 @@ export default function BrandsPage() {
       await fetchBrands();
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to update brand');
+      setFormError(err.message || 'נכשל בעדכון המותג');
     } finally {
       setIsSubmitting(false);
     }
@@ -348,10 +348,10 @@ export default function BrandsPage() {
         let errorMessage = 'Failed to delete brand';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'Failed to delete brand';
+          errorMessage = errorData.userMessage || errorData.message || 'נכשל במחיקת המותג';
         } catch (parseError) {
           // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'Failed to delete brand';
+          errorMessage = errorText || 'נכשל במחיקת המותג';
         }
         throw new Error(errorMessage);
       }
@@ -359,7 +359,7 @@ export default function BrandsPage() {
       await fetchBrands();
       setBrandToDelete(null);
     } catch (err: any) {
-      setError(err.message || 'Failed to delete brand');
+      setError(err.message || 'נכשל במחיקת המותג');
     } finally {
       setIsDeleting(false);
     }
@@ -389,7 +389,7 @@ export default function BrandsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600 font-medium">Loading brands...</p>
+          <p className="text-gray-600 font-medium">טוען מותגים...</p>
         </div>
       </div>
     );
@@ -399,7 +399,7 @@ export default function BrandsPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="glass-card rounded-3xl p-8 bg-red-50/50 border-red-200">
-          <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Brands</h2>
+          <h2 className="text-xl font-bold text-red-800 mb-2">שגיאה בטעינת המותגים</h2>
           <p className="text-red-600">{error}</p>
         </div>
       </div>
@@ -407,24 +407,24 @@ export default function BrandsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 pb-32">
+    <div className="max-w-4xl mx-auto space-y-4 pb-32" dir="rtl">
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Brands</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">מותגים</h1>
             <p className="text-gray-600">
-              Manage your product brands ({brands.length} total)
+              נהל את מותגי המוצרים שלך ({brands.length} סה״כ)
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 border-0"
+            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add Brand</span>
+            <span>הוסף מותג</span>
           </button>
         </div>
       </div>
@@ -438,15 +438,15 @@ export default function BrandsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">No Brands Yet</h2>
+            <h2 className="text-2xl font-bold text-gray-800">אין מותגים עדיין</h2>
             <p className="text-gray-600 max-w-md">
-              You haven't created any brands yet. Brands help organize your products.
+              עדיין לא יצרת מותגים. מותגים עוזרים לארגן את המוצרים שלך.
             </p>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
             >
-              Add Your First Brand
+              הוסף את המותג הראשון שלך
             </button>
           </div>
         </div>
@@ -458,14 +458,15 @@ export default function BrandsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Show:</span>
+                  <span className="text-sm font-medium text-gray-700">הצג:</span>
                   <select
                     value={pageSize}
                     onChange={(e) => {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(0); // Reset to first page when page size changes (0-based)
                     }}
-                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                    className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                    dir="ltr"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -475,7 +476,7 @@ export default function BrandsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Sort:</span>
+                  <span className="text-sm font-medium text-gray-700">מיין:</span>
                   <button
                     type="button"
                     onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
@@ -492,14 +493,14 @@ export default function BrandsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                       </svg>
                     )}
-                    <span>{sortDirection === 'asc' ? 'A → Z' : 'Z → A'}</span>
+                    <span>{sortDirection === 'asc' ? 'א ← ת' : 'א → ת'}</span>
                   </button>
                 </div>
               </div>
 
-              <div className="relative w-full sm:w-80 sm:max-w-xs sm:ml-auto">
+              <div className="relative w-full sm:w-80 sm:max-w-xs">
                 <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -515,15 +516,16 @@ export default function BrandsPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search brands..."
-                  className="glass-input w-full pl-10 pr-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-2 border-gray-400/80 hover:border-gray-500 focus:border-gray-400 bg-white/50 focus:bg-white/60 shadow-lg hover:shadow-xl"
+                  placeholder="חפש מותגים..."
+                  maxLength={100}
+                  className="glass-input w-full pr-10 pl-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-2 border-gray-400/80 hover:border-gray-500 focus:border-gray-400 bg-white/50 focus:bg-white/60 shadow-lg hover:shadow-xl"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    aria-label="Clear search"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="נקה חיפוש"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -543,16 +545,16 @@ export default function BrandsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">No brands found</h2>
+                <h2 className="text-xl font-semibold text-gray-800">לא נמצאו מותגים</h2>
                 <p className="text-gray-600 max-w-sm">
-                  Try adjusting your search or clear the filters to see all brands.
+                  נסה לשנות את החיפוש או נקה את המסננים כדי לראות את כל המותגים.
                 </p>
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
                     className="glass-button px-6 py-2 rounded-xl font-semibold text-indigo-600 hover:shadow-md transition-all"
                   >
-                    Clear search
+                    נקה חיפוש
                   </button>
                 )}
               </div>
@@ -601,16 +603,16 @@ export default function BrandsPage() {
                     {/* Product Count */}
                     <div className="mb-3">
                       <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                        {productCountByBrand.get(brand.id) || 0} {productCountByBrand.get(brand.id) === 1 ? 'product' : 'products'}
+                        {productCountByBrand.get(brand.id) || 0} {productCountByBrand.get(brand.id) === 1 ? 'מוצר' : 'מוצרים'}
                       </span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex space-x-2 mt-auto">
+                    <div className="flex gap-2 mt-auto">
                       <button
                         onClick={() => handleEditBrand(brand)}
                         className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
-                        title="Edit brand"
+                        title="ערוך מותג"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -619,7 +621,7 @@ export default function BrandsPage() {
                       <button
                         onClick={() => setBrandToDelete(brand)}
                         className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                        title="Delete brand"
+                        title="מחק מותג"
                       >
                         <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -639,16 +641,17 @@ export default function BrandsPage() {
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+        rtl={true}
         maxWidth="max-w-4xl"
         showCondition={filteredCount > 0 && totalPages > 0}
       />
 
       {/* Add Brand Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ position: 'fixed' }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Add New Brand</h2>
+              <h2 className="text-lg font-bold text-gray-800">הוסף מותג חדש</h2>
               <button
                 onClick={handleCloseModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -678,7 +681,7 @@ export default function BrandsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="brandName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand Name *
+                  שם המותג *
                 </label>
                 <input
                   id="brandName"
@@ -687,15 +690,16 @@ export default function BrandsPage() {
                   value={brandName}
                   onChange={(e) => updateBrandName(e.target.value)}
                   maxLength={MAX_BRAND_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., Nike, Apple, Samsung"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  placeholder="לדוגמה: נייק, אפל, סמסונג"
                   autoFocus
+                  dir="ltr"
                 />
               </div>
 
               <div>
                 <label htmlFor="brandImage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand Image <span className="text-gray-500 text-xs">(optional)</span>
+                  תמונת המותג <span className="text-gray-500 text-xs">(אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
                   <div className="relative">
@@ -722,7 +726,7 @@ export default function BrandsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-sm font-medium">
-                        {isDragging ? 'Drop Image Here' : selectedImage ? 'Change Image' : 'Select Image or Drag & Drop'}
+                        {isDragging ? 'שחרר תמונה כאן' : selectedImage ? 'שנה תמונה' : 'בחר תמונה או גרור ושחרר'}
                       </span>
                     </label>
                   </div>
@@ -745,7 +749,7 @@ export default function BrandsPage() {
                             setPreviewImage(null);
                           }}
                           className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                          title="Remove image"
+                          title="הסר תמונה"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -756,24 +760,24 @@ export default function BrandsPage() {
                   )}
 
                   <p className="text-xs text-gray-500">
-                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB.
+                    פורמטים נתמכים: JPEG, PNG, WebP. גודל מקסימלי: 5MB.
                   </p>
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -797,10 +801,10 @@ export default function BrandsPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Creating...</span>
+                      <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>Create Brand</span>
+                    <span>צור מותג</span>
                   )}
                 </button>
               </div>
@@ -811,10 +815,10 @@ export default function BrandsPage() {
 
       {/* Edit Brand Modal */}
       {isEditModalOpen && brandToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ position: 'fixed' }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Brand</h2>
+              <h2 className="text-lg font-bold text-gray-800">ערוך מותג</h2>
               <button
                 onClick={handleCloseEditModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -844,7 +848,7 @@ export default function BrandsPage() {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <label htmlFor="editBrandName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand Name *
+                  שם המותג *
                 </label>
                 <input
                   id="editBrandName"
@@ -853,21 +857,22 @@ export default function BrandsPage() {
                   value={brandName}
                   onChange={(e) => updateBrandName(e.target.value)}
                   maxLength={MAX_BRAND_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., Nike, Apple, Samsung"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  placeholder="לדוגמה: נייק, אפל, סמסונג"
                   autoFocus
+                  dir="ltr"
                 />
               </div>
 
               <div>
                 <label htmlFor="editBrandImage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand Image <span className="text-gray-500 text-xs">(optional)</span>
+                  תמונת המותג <span className="text-gray-500 text-xs">(אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
                   {/* Current Image */}
                   {brandToEdit?.imageUrl && !previewImage && (
                     <div className="flex flex-col items-center">
-                      <p className="text-xs text-gray-500 mb-2">Current image:</p>
+                      <p className="text-xs text-gray-500 mb-2">תמונה נוכחית:</p>
                       <div className="relative group">
                         <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
                           <img
@@ -909,12 +914,12 @@ export default function BrandsPage() {
                       </svg>
                       <span className="text-sm font-medium">
                         {isDragging 
-                          ? 'Drop Image Here' 
+                          ? 'שחרר תמונה כאן' 
                           : previewImage 
-                            ? 'Change Image' 
+                            ? 'שנה תמונה' 
                             : brandToEdit?.imageUrl 
-                              ? 'Replace Image or Drag & Drop' 
-                              : 'Select Image or Drag & Drop'}
+                              ? 'החלף תמונה או גרור ושחרר' 
+                              : 'בחר תמונה או גרור ושחרר'}
                       </span>
                     </label>
                   </div>
@@ -922,7 +927,7 @@ export default function BrandsPage() {
                   {/* New Image Preview */}
                   {previewImage && (
                     <div className="flex flex-col items-center">
-                      <p className="text-xs text-gray-500 mb-2">New image preview:</p>
+                      <p className="text-xs text-gray-500 mb-2">תצוגה מקדימה של תמונה חדשה:</p>
                       <div className="relative group">
                         <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
                           <img
@@ -938,7 +943,7 @@ export default function BrandsPage() {
                             setPreviewImage(null);
                           }}
                           className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                          title="Remove image"
+                          title="הסר תמונה"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -949,24 +954,24 @@ export default function BrandsPage() {
                   )}
 
                   <p className="text-xs text-gray-500">
-                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB.
+                    פורמטים נתמכים: JPEG, PNG, WebP. גודל מקסימלי: 5MB.
                   </p>
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -990,10 +995,10 @@ export default function BrandsPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Updating...</span>
+                      <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>Update Brand</span>
+                    <span>עדכן מותג</span>
                   )}
                 </button>
               </div>
@@ -1004,10 +1009,10 @@ export default function BrandsPage() {
 
       {/* Delete Brand Modal */}
       {brandToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ position: 'fixed' }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Delete Brand</h2>
+              <h2 className="text-xl font-bold text-gray-800">מחק מותג</h2>
               <button
                 onClick={() => setBrandToDelete(null)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -1030,32 +1035,32 @@ export default function BrandsPage() {
 
             <div className="mb-6">
               <p className="text-gray-700 mb-4">
-                Are you sure you want to delete the brand <span className="font-semibold">{brandToDelete.name}</span>? This action cannot be undone.
+                האם אתה בטוח שברצונך למחוק את המותג <span className="font-semibold">{brandToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start gap-2">
                   <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="text-sm text-yellow-800">
-                    Products associated with this brand will become unbranded.
+                    מוצרים המשויכים למותג זה יהפכו ללא מותג.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setBrandToDelete(null)}
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 onClick={handleDeleteBrand}
                 disabled={isDeleting}
-                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <>
@@ -1079,10 +1084,10 @@ export default function BrandsPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Deleting...</span>
+                    <span>מוחק...</span>
                   </>
                 ) : (
-                  <span>Delete Brand</span>
+                  <span>מחק מותג</span>
                 )}
               </button>
             </div>

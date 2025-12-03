@@ -29,12 +29,20 @@ export default function ProfilePage() {
         navigate('/login/manager');
         return;
       }
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בטעינת הפרופיל'
-      );
+      const errorMessage = err.response?.data?.userMessage ||
+        err.response?.data?.message ||
+        err.message ||
+        'נכשל בטעינת הפרופיל';
+      
+      // Translate "Network Error" to Hebrew (check both message and axios error codes)
+      const isNetworkError = errorMessage === 'Network Error' || 
+        errorMessage?.includes('Network Error') ||
+        err.code === 'ERR_NETWORK' ||
+        err.code === 'ECONNABORTED';
+      
+      const translatedMessage = isNetworkError ? 'שגיאת רשת' : errorMessage;
+      
+      setError(translatedMessage);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +85,7 @@ export default function ProfilePage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600">טוען פרופיל...</p>
+          <p className="text-gray-600 font-medium">טוען פרופיל...</p>
         </div>
       </div>
     );

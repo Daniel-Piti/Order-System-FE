@@ -6,6 +6,7 @@ interface PaginationBarProps {
   showCondition?: boolean; // Condition to show/hide pagination
   sidebarOffset?: boolean; // Whether to add lg:left-64 offset for sidebar
   fixed?: boolean; // Whether to use fixed positioning (default: true)
+  rtl?: boolean; // Whether the layout is right-to-left (default: false)
 }
 
 export default function PaginationBar({
@@ -16,6 +17,7 @@ export default function PaginationBar({
   showCondition = true,
   sidebarOffset = true,
   fixed = true,
+  rtl = false,
 }: PaginationBarProps) {
   if (!showCondition || totalPages === 0) {
     return null;
@@ -78,7 +80,7 @@ export default function PaginationBar({
           )}
 
           {/* Page Navigation */}
-          <div className="flex items-center justify-center gap-1 flex-nowrap overflow-x-auto">
+          <div className="flex items-center justify-center gap-1 flex-nowrap overflow-x-auto" dir={rtl ? 'rtl' : 'ltr'}>
             {/* Previous button */}
             {totalPages > 1 && (
               <button
@@ -87,7 +89,7 @@ export default function PaginationBar({
                 className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={rtl ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"} />
                 </svg>
               </button>
             )}
@@ -125,7 +127,7 @@ export default function PaginationBar({
                 className="glass-button px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={rtl ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
                 </svg>
               </button>
             )}
