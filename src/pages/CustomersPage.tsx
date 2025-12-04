@@ -224,7 +224,7 @@ export default function CustomersPage() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!customerToDelete || deleteConfirmText !== 'I Understand') {
+    if (!customerToDelete || deleteConfirmText !== 'אני מבין') {
       return;
     }
 
@@ -284,7 +284,7 @@ export default function CustomersPage() {
     setShowErrors(true);
 
     const errors: Record<string, string> = {};
-    const nameError = validateRequiredWithMaxLength(formData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
+    const nameError = validateRequiredWithMaxLength(formData.name, 'שם הלקוח', MAX_CUSTOMER_NAME_LENGTH);
     if (nameError) {
       errors.name = nameError;
     }
@@ -292,7 +292,7 @@ export default function CustomersPage() {
     const phoneError = validatePhoneNumberDigitsOnly(
       formData.phoneNumber,
       MAX_CUSTOMER_PHONE_LENGTH,
-      'Phone number'
+      'מספר טלפון'
     );
     if (phoneError) {
       errors.phoneNumber = phoneError;
@@ -305,19 +305,19 @@ export default function CustomersPage() {
 
     const streetError = validateRequiredWithMaxLength(
       formData.streetAddress,
-      'Street address',
+      'כתובת',
       MAX_CUSTOMER_STREET_LENGTH
     );
     if (streetError) {
       errors.streetAddress = streetError;
     }
 
-    const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    const cityError = validateRequiredWithMaxLength(formData.city, 'עיר', MAX_CUSTOMER_CITY_LENGTH);
     if (cityError) {
       errors.city = cityError;
     }
 
-    const discountError = validateDiscountPercentage(formData.discountPercentage, 'Discount percentage');
+    const discountError = validateDiscountPercentage(formData.discountPercentage, 'אחוז הנחה');
     if (discountError) {
       errors.discountPercentage = discountError;
     }
@@ -353,7 +353,7 @@ export default function CustomersPage() {
     setShowErrors(true);
 
     const errors: Record<string, string> = {};
-    const nameError = validateRequiredWithMaxLength(editFormData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
+    const nameError = validateRequiredWithMaxLength(editFormData.name, 'שם הלקוח', MAX_CUSTOMER_NAME_LENGTH);
     if (nameError) {
       errors.name = nameError;
     }
@@ -361,7 +361,7 @@ export default function CustomersPage() {
     const phoneError = validatePhoneNumberDigitsOnly(
       editFormData.phoneNumber,
       MAX_CUSTOMER_PHONE_LENGTH,
-      'Phone number'
+      'מספר טלפון'
     );
     if (phoneError) {
       errors.phoneNumber = phoneError;
@@ -374,19 +374,19 @@ export default function CustomersPage() {
 
     const streetError = validateRequiredWithMaxLength(
       editFormData.streetAddress,
-      'Street address',
+      'כתובת',
       MAX_CUSTOMER_STREET_LENGTH
     );
     if (streetError) {
       errors.streetAddress = streetError;
     }
 
-    const cityError = validateRequiredWithMaxLength(editFormData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    const cityError = validateRequiredWithMaxLength(editFormData.city, 'עיר', MAX_CUSTOMER_CITY_LENGTH);
     if (cityError) {
       errors.city = cityError;
     }
 
-    const discountError = validateDiscountPercentage(editFormData.discountPercentage, 'Discount percentage');
+    const discountError = validateDiscountPercentage(editFormData.discountPercentage, 'אחוז הנחה');
     if (discountError) {
       errors.discountPercentage = discountError;
     }
@@ -457,7 +457,7 @@ export default function CustomersPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600 font-medium">Loading customers...</p>
+          <p className="text-gray-600 font-medium">... טוען לקוחות</p>
         </div>
       </div>
     );
@@ -465,9 +465,9 @@ export default function CustomersPage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto" dir="rtl">
         <div className="glass-card rounded-3xl p-8 bg-red-50/50 border-red-200">
-          <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Customers</h2>
+          <h2 className="text-xl font-bold text-red-800 mb-2">שגיאה בטעינת לקוחות</h2>
           <p className="text-red-600">{error}</p>
         </div>
       </div>
@@ -475,35 +475,36 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-28">
+    <div className="max-w-7xl mx-auto space-y-6 pb-28" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">Customers</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">לקוחות</h1>
             <p className="text-gray-600 text-sm mt-2">
-              Manage {customers.length} customers across your sales team.
+              נהל {customers.length} לקוחות ברחבי צוות המכירות שלך.
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="mt-2 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
           >
+            <span>הוסף לקוח</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add Customer</span>
           </button>
         </div>
       </div>
 
       <div className="glass-card rounded-3xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 justify-end">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Show:</span>
+            <span className="text-sm font-medium text-gray-700">הצג:</span>
             <select
               value={pageSize}
               onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+              className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+              dir="ltr"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -514,7 +515,7 @@ export default function CustomersPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Sort:</span>
+            <span className="text-sm font-medium text-gray-700">מיין:</span>
             <button
               onClick={toggleSortDirection}
               className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2 border-2 border-gray-400/80 hover:border-gray-500 transition-colors justify-center sm:justify-start whitespace-nowrap"
@@ -523,31 +524,32 @@ export default function CustomersPage() {
             >
               {sortDirection === 'ASC' ? (
                 <>
+                  <span>א ← ת</span>
                   <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                  <span>A → Z</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-4 h-4 text-indigo-600 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>א → ת</span>
+                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                   </svg>
-                  <span>Z → A</span>
                 </>
               )}
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Agent:</span>
+            <span className="text-sm font-medium text-gray-700">סוכן:</span>
             <select
               value={agentFilter}
               onChange={(e) => handleAgentFilterChange(e.target.value)}
-              className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer min-w-[12rem]"
+              className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer min-w-[12rem]"
+              dir="ltr"
             >
-              <option value="all">All Agents</option>
-              <option value="manager">Me</option>
+              <option value="all">הכל</option>
+              <option value="manager">אני</option>
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
                   {agent.firstName} {agent.lastName}
@@ -562,10 +564,12 @@ export default function CustomersPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search customers by name, email, phone, or agent…"
-            className="glass-input w-full pl-11 pr-10 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-300"
+            maxLength={100}
+            placeholder="חפש לקוחות לפי שם, אימייל, טלפון או סוכן..."
+            className="glass-input w-full pr-11 pl-10 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-300"
+            dir="rtl"
           />
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -574,7 +578,7 @@ export default function CustomersPage() {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Clear search"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -594,18 +598,18 @@ export default function CustomersPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-800">
-              {searchQuery || agentFilter !== 'all' ? 'No customers match your filters' : 'No customers yet'}
+              {searchQuery || agentFilter !== 'all' ? 'אין לקוחות התואמים למסננים שלך' : 'אין לקוחות עדיין'}
             </h2>
             <p className="text-gray-600 max-w-md">
               {searchQuery || agentFilter !== 'all'
-                ? 'Try adjusting your search keywords or reset the filters.'
-                : "You haven't added any customers yet. Start by creating your first customer."}
+                ? 'נסה להתאים את מילות החיפוש או לאפס את המסננים.'
+                : 'עדיין לא הוספת לקוחות. התחל ביצירת הלקוח הראשון שלך.'}
             </p>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
             >
-              Add Customer
+              הוסף לקוח
             </button>
           </div>
         </div>
@@ -616,40 +620,54 @@ export default function CustomersPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-indigo-50/70 backdrop-blur-sm">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Phone</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">City</th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Agent</th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-48 border-l border-gray-200">שם</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-64 border-l border-gray-200">אימייל</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">טלפון</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">עיר</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">סוכן</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-28 border-l border-gray-200">אחוז הנחה</th>
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">פעולות</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {paginatedCustomers.map((customer) => {
                     return (
                       <tr key={customer.id} className="hover:bg-indigo-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-semibold text-gray-900">
+                        <td className="px-6 py-4 text-right border-l border-gray-200">
+                          <span className="text-sm font-semibold text-gray-900 truncate block max-w-[12rem]" title={customer.name}>
                             {customer.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                          <span className="truncate block max-w-[16rem]" title={customer.email}>
+                            {customer.email}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right border-l border-gray-200">
                           {formatPhoneNumber(customer.phoneNumber)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.city}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          {customer.agentId != null
-                            ? agentNameMap.get(customer.agentId) ?? 'Unknown agent'
-                            : 'Me'}
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                          <span className="truncate block max-w-[10rem]" title={customer.city}>
+                            {customer.city}
+                          </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                          <span className="truncate block max-w-[10rem]" title={customer.agentId != null ? (agentNameMap.get(customer.agentId) ?? 'סוכן לא ידוע') : 'אני'}>
+                            {customer.agentId != null
+                              ? agentNameMap.get(customer.agentId) ?? 'סוכן לא ידוע'
+                              : 'אני'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium border-l border-gray-200">
+                          {customer.discountPercentage}%
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200">
                           <div className="inline-flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => handleEditCustomer(customer)}
                               className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                              title="Edit customer"
+                              title="ערוך לקוח"
                             >
                               <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -659,7 +677,7 @@ export default function CustomersPage() {
                               type="button"
                               onClick={() => handleDeleteCustomer(customer)}
                               className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                              title="Delete customer"
+                              title="מחק לקוח"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
@@ -684,14 +702,15 @@ export default function CustomersPage() {
         onPageChange={setCurrentPage}
         maxWidth="max-w-5xl"
         showCondition={filteredCustomers.length > pageSize}
+        rtl={true}
       />
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Add New Customer</h2>
+              <h2 className="text-lg font-bold text-gray-800">הוסף לקוח חדש</h2>
               <button
                 onClick={handleCloseModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -721,7 +740,7 @@ export default function CustomersPage() {
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer Name *
+                  שם הלקוח *
                 </label>
                 <input
                   id="name"
@@ -733,7 +752,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., John Doe"
+                  placeholder="לדוגמה: יוחנן כהן"
                   autoFocus
                 />
                 {showErrors && fieldErrors.name && (
@@ -743,7 +762,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
+                  מספר טלפון *
                 </label>
                 <input
                   id="phoneNumber"
@@ -757,7 +776,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., 0501234567"
+                  placeholder="לדוגמה: 0501234567"
                 />
                 {showErrors && fieldErrors.phoneNumber && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
@@ -766,7 +785,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
+                  כתובת אימייל *
                 </label>
                 <input
                   id="email"
@@ -778,7 +797,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., john.doe@example.com"
+                  placeholder="לדוגמה: yohanan@example.com"
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
@@ -787,7 +806,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address *
+                  כתובת *
                 </label>
                 <input
                   id="streetAddress"
@@ -799,7 +818,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., 123 Main Street"
+                  placeholder="לדוגמה: רחוב הרצל 123"
                 />
                 {showErrors && fieldErrors.streetAddress && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
@@ -808,7 +827,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
+                  עיר *
                 </label>
                 <input
                   id="city"
@@ -820,7 +839,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., Tel Aviv"
+                  placeholder="לדוגמה: תל אביב"
                 />
                 {showErrors && fieldErrors.city && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
@@ -829,24 +848,30 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Discount Percentage
+                  אחוז הנחה
                 </label>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-gray-500 w-6">0%</span>
-                    <input
-                      id="discountPercentage"
-                      name="discountPercentage"
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={formData.discountPercentage}
-                      onChange={handleInputChange}
-                      className="flex-1 h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
-                      style={{
-                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${formData.discountPercentage}%, #d1d5db ${formData.discountPercentage}%, #d1d5db 100%)`
-                      }}
-                    />
+                    <div className="flex-1 relative h-2.5">
+                      <div className="absolute top-0 left-0 w-full h-full rounded-lg bg-gray-200 -z-10" />
+                      <div 
+                        className="absolute top-0 right-0 h-full rounded-lg bg-indigo-600"
+                        style={{
+                          width: `${formData.discountPercentage}%`
+                        }}
+                      />
+                      <input
+                        id="discountPercentage"
+                        name="discountPercentage"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={formData.discountPercentage}
+                        onChange={handleInputChange}
+                        className="absolute top-0 left-0 w-full h-full bg-transparent appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
+                      />
+                    </div>
                     <span className="text-xs font-medium text-gray-500 w-8 text-right">100%</span>
                     <div className="flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 min-w-[4.5rem]">
                       <input
@@ -870,19 +895,19 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -906,10 +931,10 @@ export default function CustomersPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Creating...</span>
+                      <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>Create Customer</span>
+                    <span>צור לקוח</span>
                   )}
                 </button>
               </div>
@@ -921,9 +946,9 @@ export default function CustomersPage() {
       {/* Edit Customer Modal */}
       {isEditModalOpen && customerToEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Customer</h2>
+              <h2 className="text-lg font-bold text-gray-800">ערוך לקוח</h2>
               <button
                 onClick={handleCloseEditModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -953,7 +978,7 @@ export default function CustomersPage() {
             <form onSubmit={handleEditSubmit} noValidate className="space-y-4">
               <div>
                 <label htmlFor="editName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer Name *
+                  שם הלקוח *
                 </label>
                 <input
                   id="editName"
@@ -965,7 +990,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., John Doe"
+                  placeholder="לדוגמה: יוחנן כהן"
                   autoFocus
                 />
                 {showErrors && fieldErrors.name && (
@@ -975,7 +1000,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
+                  מספר טלפון *
                 </label>
                 <input
                   id="editPhoneNumber"
@@ -989,7 +1014,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., 0501234567"
+                  placeholder="לדוגמה: 0501234567"
                 />
                 {showErrors && fieldErrors.phoneNumber && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
@@ -998,7 +1023,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
+                  כתובת אימייל *
                 </label>
                 <input
                   id="editEmail"
@@ -1010,7 +1035,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., john.doe@example.com"
+                  placeholder="לדוגמה: yohanan@example.com"
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
@@ -1019,7 +1044,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="editStreetAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address *
+                  כתובת *
                 </label>
                 <input
                   id="editStreetAddress"
@@ -1031,7 +1056,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., 123 Main Street"
+                  placeholder="לדוגמה: רחוב הרצל 123"
                 />
                 {showErrors && fieldErrors.streetAddress && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
@@ -1040,7 +1065,7 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="editCity" className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
+                  עיר *
                 </label>
                 <input
                   id="editCity"
@@ -1052,7 +1077,7 @@ export default function CustomersPage() {
                   className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., Tel Aviv"
+                  placeholder="לדוגמה: תל אביב"
                 />
                 {showErrors && fieldErrors.city && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
@@ -1061,24 +1086,30 @@ export default function CustomersPage() {
 
               <div>
                 <label htmlFor="editDiscountPercentage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Discount Percentage
+                  אחוז הנחה
                 </label>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-gray-500 w-6">0%</span>
-                    <input
-                      id="editDiscountPercentage"
-                      name="discountPercentage"
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={editFormData.discountPercentage}
-                      onChange={handleEditInputChange}
-                      className="flex-1 h-2.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
-                      style={{
-                        background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${editFormData.discountPercentage}%, #d1d5db ${editFormData.discountPercentage}%, #d1d5db 100%)`
-                      }}
-                    />
+                    <div className="flex-1 relative h-2.5">
+                      <div className="absolute top-0 left-0 w-full h-full rounded-lg bg-gray-200 -z-10" />
+                      <div 
+                        className="absolute top-0 right-0 h-full rounded-lg bg-indigo-600"
+                        style={{
+                          width: `${editFormData.discountPercentage}%`
+                        }}
+                      />
+                      <input
+                        id="editDiscountPercentage"
+                        name="discountPercentage"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={editFormData.discountPercentage}
+                        onChange={handleEditInputChange}
+                        className="absolute top-0 left-0 w-full h-full bg-transparent appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&:hover::-webkit-slider-thumb]:w-6 [&:hover::-webkit-slider-thumb]:h-6 [&:active::-webkit-slider-thumb]:w-7 [&:active::-webkit-slider-thumb]:h-7 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-indigo-600 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 [&:hover::-moz-range-thumb]:w-6 [&:hover::-moz-range-thumb]:h-6 [&:active::-moz-range-thumb]:w-7 [&:active::-moz-range-thumb]:h-7"
+                      />
+                    </div>
                     <span className="text-xs font-medium text-gray-500 w-8 text-right">100%</span>
                     <div className="flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 min-w-[4.5rem]">
                       <input
@@ -1102,19 +1133,19 @@ export default function CustomersPage() {
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -1138,10 +1169,10 @@ export default function CustomersPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Updating...</span>
+                      <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>Update Customer</span>
+                    <span>עדכן לקוח</span>
                   )}
                 </button>
               </div>
@@ -1153,31 +1184,31 @@ export default function CustomersPage() {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && customerToDelete && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Delete Customer</h2>
+          <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20" dir="rtl">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">מחק לקוח</h2>
             
             <div className="space-y-4">
               <div className="glass-card rounded-xl p-4 bg-red-50/50 border-red-200">
                 <p className="text-sm text-gray-700 mb-2">
-                  You are about to delete customer:
+                  אתה עומד למחוק את הלקוח:
                 </p>
                 <p className="font-bold text-gray-900">{customerToDelete.name}</p>
                 <p className="text-sm text-gray-600">{customerToDelete.email}</p>
                 <p className="text-sm text-red-600 mt-3">
-                  ⚠️ This action cannot be undone. All orders and product overrides for this customer will be affected.
+                  ⚠️ פעולה זו לא ניתנת לביטול. כל ההזמנות ומחירים מיוחדים עבור לקוח זה יושפעו.
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Type "I Understand" to confirm deletion:
+                  הקלד "אני מבין" כדי לאשר מחיקה:
                 </label>
                 <input
                   type="text"
                   value={deleteConfirmText}
                   onChange={(e) => setDeleteConfirmText(e.target.value)}
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-indigo-500"
-                  placeholder="I Understand"
+                  placeholder="אני מבין"
                 />
               </div>
 
@@ -1187,20 +1218,20 @@ export default function CustomersPage() {
                 </div>
               )}
 
-              <div className="flex space-x-3 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleCloseDeleteModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-500 hover:border-gray-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmDelete}
-                  disabled={deleteConfirmText !== 'I Understand' || isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  disabled={deleteConfirmText !== 'אני מבין' || isSubmitting}
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -1224,10 +1255,10 @@ export default function CustomersPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Deleting...</span>
+                      <span>מוחק...</span>
                     </>
                   ) : (
-                    <span>Delete Customer</span>
+                    <span>מחק לקוח</span>
                   )}
                 </button>
               </div>

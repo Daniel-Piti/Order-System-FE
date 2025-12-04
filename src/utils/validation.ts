@@ -69,14 +69,14 @@ export function validatePhoneNumberDigitsOnly(
 export function validateEmail(email: string, maxLength: number = 100): string | null {
   const trimmed = email.trim();
   if (!trimmed) {
-    return 'Email is required';
+    return 'אימייל נדרש';
   }
   if (trimmed.length > maxLength) {
-    return `Email must be ${maxLength} characters or fewer`;
+    return `אימייל חייב להיות ${maxLength} תווים או פחות`;
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(trimmed)) {
-    return 'Please enter a valid email';
+    return 'אנא הזן אימייל תקין';
   }
   return null;
 }
@@ -84,15 +84,15 @@ export function validateEmail(email: string, maxLength: number = 100): string | 
 /**
  * Validates discount percentage (0-100)
  */
-export function validateDiscountPercentage(value: string | number, fieldName: string = 'Discount percentage'): string | null {
+export function validateDiscountPercentage(value: string | number, fieldName: string = 'אחוז הנחה'): string | null {
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   
   if (isNaN(numValue)) {
-    return `${fieldName} must be a valid number`;
+    return `${fieldName} חייב להיות מספר תקין`;
   }
   
   if (numValue < 0 || numValue > 100) {
-    return `${fieldName} must be between 0 and 100`;
+    return `${fieldName} חייב להיות בין 0 ל-100`;
   }
   
   return null;
