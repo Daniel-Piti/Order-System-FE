@@ -15,6 +15,8 @@ export default function CategoriesPage() {
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const MAX_CATEGORY_NAME_LENGTH = 50;
   const [currentPage, setCurrentPage] = useState(0);
@@ -146,6 +148,8 @@ export default function CategoriesPage() {
     setIsAddModalOpen(false);
     setCategoryName('');
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(false);
   };
 
   const handleCloseEditModal = () => {
@@ -153,6 +157,8 @@ export default function CategoriesPage() {
     setCategoryToEdit(null);
     setCategoryName('');
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(false);
   };
 
   const handleEditCategory = (category: Category) => {
@@ -164,9 +170,16 @@ export default function CategoriesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(true);
 
+    const errors: Record<string, string> = {};
     if (!categoryName.trim()) {
-      setFormError('Category name is required');
+      errors.name = 'שם הקטגוריה נדרש';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -182,7 +195,7 @@ export default function CategoriesPage() {
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to create category';
+        'נכשל ביצירת קטגוריה';
       setFormError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
@@ -196,9 +209,16 @@ export default function CategoriesPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(true);
 
+    const errors: Record<string, string> = {};
     if (!categoryName.trim()) {
-      setFormError('Category name is required');
+      errors.name = 'שם הקטגוריה נדרש';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -215,7 +235,7 @@ export default function CategoriesPage() {
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to update category';
+        'נכשל בעדכון קטגוריה';
       setFormError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
@@ -240,7 +260,7 @@ export default function CategoriesPage() {
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
-        'Failed to delete category';
+        'נכשל במחיקת קטגוריה';
       setError(message);
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
@@ -285,7 +305,7 @@ export default function CategoriesPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <div className="glass-card rounded-3xl p-8 bg-red-50/50 border-red-200">
-          <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Categories</h2>
+          <h2 className="text-xl font-bold text-red-800 mb-2">שגיאה בטעינת קטגוריות</h2>
           <p className="text-red-600">{error}</p>
         </div>
       </div>
@@ -459,7 +479,7 @@ export default function CategoriesPage() {
                           {category.category}
                         </h3>
                         <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
-                          {productCountByCategory.get(category.id) || 0} {productCountByCategory.get(category.id) === 1 ? 'product' : 'products'}
+                          {productCountByCategory.get(category.id) || 0} {productCountByCategory.get(category.id) === 1 ? 'מוצר' : 'מוצרים'}
                         </span>
                       </div>
                     </div>
@@ -467,7 +487,7 @@ export default function CategoriesPage() {
                       <button
                         onClick={() => handleEditCategory(category)}
                         className="glass-button p-2 rounded-xl hover:shadow-md transition-all"
-                        title="Edit category"
+                        title="ערוך קטגוריה"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -476,7 +496,7 @@ export default function CategoriesPage() {
                       <button
                         onClick={() => setCategoryToDelete(category)}
                         className="glass-button p-2 rounded-xl hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                        title="Delete category"
+                        title="מחק קטגוריה"
                       >
                         <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -503,10 +523,10 @@ export default function CategoriesPage() {
 
       {/* Add Category Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Add New Category</h2>
+              <h2 className="text-lg font-bold text-gray-800">הוסף קטגוריה חדשה</h2>
               <button
                 onClick={handleCloseModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -536,34 +556,45 @@ export default function CategoriesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Name *
+                  שם *
                 </label>
                 <input
                   id="categoryName"
                   name="categoryName"
                   type="text"
                   value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH))}
+                  onChange={(e) => {
+                    setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH));
+                    if (showErrors && fieldErrors.name) {
+                      setFieldErrors({ ...fieldErrors, name: '' });
+                    }
+                  }}
                   maxLength={MAX_CATEGORY_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., Beverages, Snacks, Electronics"
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  dir="ltr"
+                  placeholder="לדוגמה: משקאות, חטיפים, אלקטרוניקה"
                   autoFocus
                 />
+                {showErrors && fieldErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -587,10 +618,10 @@ export default function CategoriesPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Creating...</span>
+                      <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>Create Category</span>
+                    <span>צור קטגוריה</span>
                   )}
                 </button>
               </div>
@@ -601,10 +632,10 @@ export default function CategoriesPage() {
 
       {/* Edit Category Modal */}
       {isEditModalOpen && categoryToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Category</h2>
+              <h2 className="text-lg font-bold text-gray-800">ערוך קטגוריה</h2>
               <button
                 onClick={handleCloseEditModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -634,34 +665,45 @@ export default function CategoriesPage() {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <label htmlFor="editCategoryName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Name *
+                  שם *
                 </label>
                 <input
                   id="editCategoryName"
                   name="editCategoryName"
                   type="text"
                   value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH))}
+                  onChange={(e) => {
+                    setCategoryName(e.target.value.slice(0, MAX_CATEGORY_NAME_LENGTH));
+                    if (showErrors && fieldErrors.name) {
+                      setFieldErrors({ ...fieldErrors, name: '' });
+                    }
+                  }}
                   maxLength={MAX_CATEGORY_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., Beverages, Snacks, Electronics"
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
+                  dir="ltr"
+                  placeholder="לדוגמה: משקאות, חטיפים, אלקטרוניקה"
                   autoFocus
                 />
+                {showErrors && fieldErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -685,10 +727,10 @@ export default function CategoriesPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Updating...</span>
+                      <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>Update Category</span>
+                    <span>עדכן קטגוריה</span>
                   )}
                 </button>
               </div>
@@ -699,10 +741,10 @@ export default function CategoriesPage() {
 
       {/* Delete Category Modal */}
       {categoryToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Delete Category</h2>
+              <h2 className="text-xl font-bold text-gray-800">מחק קטגוריה</h2>
               <button
                 onClick={() => setCategoryToDelete(null)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -724,33 +766,33 @@ export default function CategoriesPage() {
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-700 mb-4">
-                Are you sure you want to delete the category <span className="font-semibold">{categoryToDelete.category}</span>? This action cannot be undone.
+              <p className="text-gray-700 mb-4 break-words">
+                האם אתה בטוח שברצונך למחוק את הקטגוריה <span className="font-semibold">{categoryToDelete.category}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start gap-2">
                   <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="text-sm text-yellow-800">
-                    Products associated with this category will become uncategorized.
+                    מוצרים המשויכים לקטגוריה זו יהפכו ללא קטגוריה.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setCategoryToDelete(null)}
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 onClick={handleDeleteCategory}
                 disabled={isDeleting}
-                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <>
@@ -774,10 +816,10 @@ export default function CategoriesPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Deleting...</span>
+                    <span>מוחק...</span>
                   </>
                 ) : (
-                  <span>Delete Category</span>
+                  <span>מחק קטגוריה</span>
                 )}
               </button>
             </div>

@@ -19,6 +19,8 @@ export default function BrandsPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
@@ -146,6 +148,8 @@ export default function BrandsPage() {
     setSelectedImage(null);
     setPreviewImage(null);
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(false);
     setIsDragging(false);
   };
 
@@ -156,6 +160,8 @@ export default function BrandsPage() {
     setSelectedImage(null);
     setPreviewImage(null);
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(false);
     setIsDragging(false);
   };
 
@@ -225,9 +231,16 @@ export default function BrandsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(true);
 
+    const errors: Record<string, string> = {};
     if (!brandName.trim()) {
-      setFormError('Brand name is required');
+      errors.name = 'שם המותג נדרש';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -277,9 +290,16 @@ export default function BrandsPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
+    setFieldErrors({});
+    setShowErrors(true);
 
+    const errors: Record<string, string> = {};
     if (!brandName.trim()) {
-      setFormError('Brand name is required');
+      errors.name = 'שם המותג נדרש';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -688,18 +708,28 @@ export default function BrandsPage() {
                   name="brandName"
                   type="text"
                   value={brandName}
-                  onChange={(e) => updateBrandName(e.target.value)}
+                  onChange={(e) => {
+                    updateBrandName(e.target.value);
+                    if (showErrors && fieldErrors.name) {
+                      setFieldErrors({ ...fieldErrors, name: '' });
+                    }
+                  }}
                   maxLength={MAX_BRAND_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
                   placeholder="לדוגמה: נייק, אפל, סמסונג"
                   autoFocus
                   dir="ltr"
                 />
+                {showErrors && fieldErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="brandImage" className="block text-sm font-medium text-gray-700 mb-2">
-                  תמונת המותג <span className="text-gray-500 text-xs">(אופציונלי)</span>
+                  תמונה <span className="text-gray-500 text-xs">(אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
                   <div className="relative">
@@ -759,8 +789,8 @@ export default function BrandsPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-500">
-                    פורמטים נתמכים: JPEG, PNG, WebP. גודל מקסימלי: 5MB.
+                  <p className="text-xs text-gray-500 text-center">
+                    JPEG, PNG, WebP. גודל מקסימלי: 5MB.
                   </p>
                 </div>
               </div>
@@ -855,18 +885,28 @@ export default function BrandsPage() {
                   name="editBrandName"
                   type="text"
                   value={brandName}
-                  onChange={(e) => updateBrandName(e.target.value)}
+                  onChange={(e) => {
+                    updateBrandName(e.target.value);
+                    if (showErrors && fieldErrors.name) {
+                      setFieldErrors({ ...fieldErrors, name: '' });
+                    }
+                  }}
                   maxLength={MAX_BRAND_NAME_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  }`}
                   placeholder="לדוגמה: נייק, אפל, סמסונג"
                   autoFocus
                   dir="ltr"
                 />
+                {showErrors && fieldErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="editBrandImage" className="block text-sm font-medium text-gray-700 mb-2">
-                  תמונת המותג <span className="text-gray-500 text-xs">(אופציונלי)</span>
+                  תמונה <span className="text-gray-500 text-xs">(אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
                   {/* Current Image */}
@@ -953,8 +993,8 @@ export default function BrandsPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-500">
-                    פורמטים נתמכים: JPEG, PNG, WebP. גודל מקסימלי: 5MB.
+                  <p className="text-xs text-gray-500 text-center">
+                    JPEG, PNG, WebP. גודל מקסימלי: 5MB.
                   </p>
                 </div>
               </div>

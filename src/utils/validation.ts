@@ -12,7 +12,7 @@ export interface ValidationResult {
  */
 export function validateRequired(value: string, fieldName: string): string | null {
   if (!value.trim()) {
-    return `${fieldName} is required`;
+    return `${fieldName} נדרש`;
   }
   return null;
 }
@@ -22,7 +22,7 @@ export function validateRequired(value: string, fieldName: string): string | nul
  */
 export function validateMaxLength(value: string, maxLength: number, fieldName: string): string | null {
   if (value.trim().length > maxLength) {
-    return `${fieldName} must be ${maxLength} characters or fewer`;
+    return `${fieldName} חייב להיות ${maxLength} תווים או פחות`;
   }
   return null;
 }
@@ -57,7 +57,7 @@ export function validatePhoneNumberDigitsOnly(
   }
 
   if (!/^\d+$/.test(trimmed)) {
-    return `${fieldName} must contain digits only`;
+    return `${fieldName} חייב להכיל ספרות בלבד`;
   }
 
   return validateMaxLength(trimmed, maxLength, fieldName);
@@ -307,23 +307,23 @@ export function validateLocationForm(formData: {
   return validateFields([
     {
       field: 'name',
-      error: validateRequiredWithMaxLength(formData.name, 'Location name', MAX_LOCATION_NAME_LENGTH),
+      error: validateRequiredWithMaxLength(formData.name, 'שם הסניף', MAX_LOCATION_NAME_LENGTH),
     },
     {
       field: 'streetAddress',
       error: validateRequiredWithMaxLength(
         formData.streetAddress,
-        'Street address',
+        'כתובת',
         MAX_LOCATION_STREET_LENGTH
       ),
     },
-    { field: 'city', error: validateRequiredWithMaxLength(formData.city, 'City', MAX_LOCATION_CITY_LENGTH) },
+    { field: 'city', error: validateRequiredWithMaxLength(formData.city, 'עיר', MAX_LOCATION_CITY_LENGTH) },
     {
       field: 'phoneNumber',
       error: validatePhoneNumberDigitsOnly(
         formData.phoneNumber,
         MAX_LOCATION_PHONE_LENGTH,
-        'Phone number'
+        'מספר טלפון'
       ),
     },
   ]);

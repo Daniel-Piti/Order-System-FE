@@ -75,7 +75,7 @@ export default function PaginationBar({
           {/* Page Info - Above */}
           {fixed && (
             <div className="text-xs text-gray-600 font-medium">
-              Page
+              דף
             </div>
           )}
 

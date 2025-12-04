@@ -599,23 +599,23 @@ export default function ProductsPage() {
     const errors: Record<string, string> = {};
     
     if (!editFormData.name.trim()) {
-      errors.name = 'Product name is required';
+      errors.name = 'שם המוצר נדרש';
     }
     if (!editFormData.minimumPrice) {
-      errors.minimumPrice = 'Minimum price is required';
+      errors.minimumPrice = 'מחיר מינימלי נדרש';
     } else if (isNaN(Number(editFormData.minimumPrice)) || Number(editFormData.minimumPrice) <= 0) {
-      errors.minimumPrice = 'Minimum price must be a positive number';
+      errors.minimumPrice = 'מחיר מינימלי חייב להיות מספר חיובי';
     } else if (Number(editFormData.minimumPrice) > MAX_PRICE) {
-      errors.minimumPrice = 'Minimum price cannot exceed 1,000,000';
+      errors.minimumPrice = 'מחיר מינימלי אינו יכול לעלות על 1,000,000';
     }
     if (!editFormData.price) {
-      errors.price = 'Price is required';
+      errors.price = 'מחיר נדרש';
     } else if (isNaN(Number(editFormData.price)) || Number(editFormData.price) <= 0) {
-      errors.price = 'Price must be a positive number';
+      errors.price = 'מחיר חייב להיות מספר חיובי';
     } else if (Number(editFormData.price) > MAX_PRICE) {
-      errors.price = 'Price cannot exceed 1,000,000';
+      errors.price = 'מחיר אינו יכול לעלות על 1,000,000';
     } else if (Number(editFormData.price) < Number(editFormData.minimumPrice || 0)) {
-      errors.price = 'Price cannot be lower than minimum price';
+      errors.price = 'מחיר אינו יכול להיות נמוך ממחיר מינימלי';
     }
 
     // Validate image count (existing visible + new to add)
@@ -767,23 +767,23 @@ export default function ProductsPage() {
     const errors: Record<string, string> = {};
     
     if (!formData.name.trim()) {
-      errors.name = 'Product name is required';
+      errors.name = 'שם המוצר נדרש';
     }
     if (!formData.minimumPrice) {
-      errors.minimumPrice = 'Minimum price is required';
+      errors.minimumPrice = 'מחיר מינימלי נדרש';
     } else if (isNaN(Number(formData.minimumPrice)) || Number(formData.minimumPrice) <= 0) {
-      errors.minimumPrice = 'Minimum price must be a positive number';
+      errors.minimumPrice = 'מחיר מינימלי חייב להיות מספר חיובי';
     } else if (Number(formData.minimumPrice) > MAX_PRICE) {
-      errors.minimumPrice = 'Minimum price cannot exceed 1,000,000';
+      errors.minimumPrice = 'מחיר מינימלי אינו יכול לעלות על 1,000,000';
     }
     if (!formData.price) {
-      errors.price = 'Price is required';
+      errors.price = 'מחיר נדרש';
     } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-      errors.price = 'Price must be a positive number';
+      errors.price = 'מחיר חייב להיות מספר חיובי';
     } else if (Number(formData.price) > MAX_PRICE) {
-      errors.price = 'Price cannot exceed 1,000,000';
+      errors.price = 'מחיר אינו יכול לעלות על 1,000,000';
     } else if (Number(formData.price) < Number(formData.minimumPrice || 0)) {
-      errors.price = 'Price cannot be lower than minimum price';
+      errors.price = 'מחיר אינו יכול להיות נמוך ממחיר מינימלי';
     }
 
     // Validate image count
@@ -873,7 +873,7 @@ export default function ProductsPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <p className="text-gray-600 font-medium">Loading products...</p>
+          <p className="text-gray-600 font-medium">... טוען מוצרים</p>
         </div>
       </div>
     );
@@ -881,9 +881,9 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto" dir="rtl">
         <div className="glass-card rounded-3xl p-8 bg-red-50/50 border-red-200">
-          <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Products</h2>
+          <h2 className="text-xl font-bold text-red-800 mb-2">שגיאה בטעינת מוצרים</h2>
           <p className="text-red-600">{error}</p>
         </div>
       </div>
@@ -891,22 +891,22 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4 pb-32">
+    <div className="max-w-6xl mx-auto space-y-4 pb-32" dir="rtl">
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Products</h1>
-            <p className="text-gray-600">Your product catalog ({products.length} products)</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">מוצרים</h1>
+            <p className="text-gray-600">קטלוג המוצרים שלך ({products.length} מוצרים)</p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 border-0"
+            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
           >
+            <span>הוסף מוצר</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add Product</span>
           </button>
         </div>
       </div>
@@ -914,20 +914,18 @@ export default function ProductsPage() {
       {/* Sort Controls & Pagination Info */}
       {(products.length > 0 || categoryFilter || brandFilter) && (
         <div className="glass-card rounded-3xl p-6">
-          <div className="flex flex-col gap-4">
-            {/* Row 1: All controls on one line */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              {/* Left side: Category Filter, Sort Controls and Page Size */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 ml-auto">
                 {/* Category Filter */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Category:</span>
+                  <span className="text-sm font-medium text-gray-700">קטגוריה:</span>
                   <select
                     value={categoryFilter}
                     onChange={(e) => handleCategoryFilterChange(e.target.value)}
-                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                    className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                    dir="ltr"
                   >
-                    <option value="">All</option>
+                    <option value="">הכל</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.category}
@@ -938,13 +936,14 @@ export default function ProductsPage() {
 
                 {/* Brand Filter */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Brand:</span>
+                  <span className="text-sm font-medium text-gray-700">מותג:</span>
                   <select
                     value={brandFilter}
                     onChange={(e) => handleBrandFilterChange(e.target.value)}
-                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                    className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-32"
+                    dir="ltr"
                   >
-                    <option value="">All</option>
+                    <option value="">הכל</option>
                     {brands.map((brand) => (
                       <option key={brand.id} value={brand.id}>
                         {brand.name}
@@ -955,66 +954,55 @@ export default function ProductsPage() {
 
                 {/* Sort Controls */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700 mr-1">Sort by:</span>
+                  <span className="text-sm font-medium text-gray-700">מיין לפי:</span>
                   <button
                     onClick={() => handleSortChange('name')}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
                       sortBy === 'name'
                         ? 'bg-indigo-600 text-white shadow-md'
                         : 'glass-button text-gray-800 hover:shadow-md'
                     }`}
                   >
-                    <span>Name</span>
+                    <span>שם</span>
                     {sortBy === 'name' && (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {sortDirection === 'ASC' ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        ) : (
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                         )}
                       </svg>
                     )}
                   </button>
                   <button
                     onClick={() => handleSortChange('price')}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-1 ${
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
                       sortBy === 'price'
                         ? 'bg-indigo-600 text-white shadow-md'
                         : 'glass-button text-gray-800 hover:shadow-md'
                     }`}
                   >
-                    <span>Price</span>
+                    <span>מחיר</span>
                     {sortBy === 'price' && (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         {sortDirection === 'ASC' ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        ) : (
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                         )}
                       </svg>
                     )}
                   </button>
-                  {sortBy !== 'name' && (
-                    <button
-                      onClick={() => {
-                        setSortBy('name');
-                        setSortDirection('ASC');
-                        setCurrentPage(0);
-                      }}
-                      className="text-sm text-gray-500 hover:text-gray-700 underline ml-1"
-                    >
-                      Reset
-                    </button>
-                  )}
                 </div>
 
                 {/* Page Size Dropdown */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Show:</span>
+                  <span className="text-sm font-medium text-gray-700">הצג:</span>
                   <select
                     value={pageSize}
                     onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                    className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                    className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                    dir="ltr"
                   >
                     <option value={1}>1</option>
                     <option value={2}>2</option>
@@ -1023,7 +1011,6 @@ export default function ProductsPage() {
                     <option value={100}>100</option>
                   </select>
                 </div>
-              </div>
             </div>
           </div>
         </div>
@@ -1032,7 +1019,7 @@ export default function ProductsPage() {
       {/* Products List */}
       {products.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center gap-4">
             {/* Show different message based on whether it's a filter or no products at all */}
             {(categoryFilter || brandFilter) ? (
               // Filter with 0 results
@@ -1043,10 +1030,10 @@ export default function ProductsPage() {
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800">
-                  No Products Match Filters
+                  אין מוצרים התואמים את המסננים
                 </h2>
                 <p className="text-gray-600 max-w-md">
-                  There are no products matching the selected filters.
+                  אין מוצרים התואמים את המסננים שנבחרו.
                 </p>
                 <button
                   onClick={() => {
@@ -1055,7 +1042,7 @@ export default function ProductsPage() {
                   }}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
-                  Show All Products
+                  הצג את כל המוצרים
                 </button>
               </>
             ) : (
@@ -1066,15 +1053,15 @@ export default function ProductsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">No Products Yet</h2>
+                <h2 className="text-2xl font-bold text-gray-800">אין מוצרים עדיין</h2>
                 <p className="text-gray-600 max-w-md">
-                  You haven't added any products to your catalog yet.
+                  עדיין לא הוספת מוצרים לקטלוג שלך.
                 </p>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
-                  Add Your First Product
+                  הוסף את המוצר הראשון שלך
                 </button>
               </>
             )}
@@ -1174,14 +1161,14 @@ export default function ProductsPage() {
                   )}
                   
                   {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditProduct(product);
                       }}
                       className="p-1.5 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-md backdrop-blur-sm"
-                      title="Edit product"
+                      title="ערוך מוצר"
                     >
                       <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -1193,7 +1180,7 @@ export default function ProductsPage() {
                         setProductToDelete(product);
                       }}
                       className="p-1.5 rounded-lg bg-white/90 hover:bg-red-50 transition-colors shadow-md backdrop-blur-sm"
-                      title="Delete product"
+                      title="מחק מוצר"
                     >
                       <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1241,14 +1228,15 @@ export default function ProductsPage() {
         onPageChange={setCurrentPage}
         maxWidth="max-w-6xl"
         showCondition={!isLoading && products.length > 0 && totalPages > 0}
+        rtl={true}
       />
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Add New Product</h2>
+              <h2 className="text-lg font-bold text-gray-800">הוסף מוצר חדש</h2>
               <button
                 onClick={handleCloseModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -1278,7 +1266,7 @@ export default function ProductsPage() {
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Name *
+                  שם המוצר *
                 </label>
                 <input
                   id="name"
@@ -1287,10 +1275,11 @@ export default function ProductsPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   maxLength={MAX_PRODUCT_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., Premium Coffee Beans"
+                  dir="ltr"
+                  placeholder="לדוגמה: פולי קפה פרמיום"
                 />
                 {showErrors && fieldErrors.name && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
@@ -1299,16 +1288,17 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
+                  קטגוריה
                 </label>
                 <select
                   id="categoryId"
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  dir="ltr"
                 >
-                  <option value="">None</option>
+                  <option value="">ללא</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.category}
@@ -1319,16 +1309,17 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand
+                  מותג
                 </label>
                 <select
                   id="brandId"
                   name="brandId"
                   value={formData.brandId}
                   onChange={handleInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  dir="ltr"
                 >
-                  <option value="">None</option>
+                  <option value="">ללא</option>
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
                       {brand.name}
@@ -1340,10 +1331,10 @@ export default function ProductsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Minimum Price *
+                    מחיר מינימלי *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="minimumPrice"
                       name="minimumPrice"
@@ -1353,9 +1344,10 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={formData.minimumPrice}
                       onChange={handleInputChange}
-                      className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                         showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
+                      dir="ltr"
                       placeholder="0.00"
                     />
                   </div>
@@ -1366,10 +1358,10 @@ export default function ProductsPage() {
 
                 <div>
                   <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
+                    מחיר *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="price"
                       name="price"
@@ -1379,9 +1371,10 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={formData.price}
                       onChange={handleInputChange}
-                      className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                         showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
+                      dir="ltr"
                       placeholder="0.00"
                     />
                   </div>
@@ -1393,7 +1386,7 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
+                  תיאור
                 </label>
                 <textarea
                   id="description"
@@ -1402,7 +1395,7 @@ export default function ProductsPage() {
                   onChange={handleInputChange}
                   maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  placeholder="Product description (optional)"
+                  placeholder="תיאור המוצר (אופציונלי)"
                   rows={3}
                 />
               </div>
@@ -1410,7 +1403,7 @@ export default function ProductsPage() {
               {/* Image Upload Section */}
               <div>
                 <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Images <span className="text-gray-500 text-xs">(up to 5, optional)</span>
+                  תמונות <span className="text-gray-500 text-xs">(עד 5, אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
                   <div className="relative">
@@ -1428,7 +1421,7 @@ export default function ProductsPage() {
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
-                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center gap-2 border-2 border-dashed transition-all ${
                         selectedImages.length >= 5
                           ? 'opacity-50 cursor-not-allowed border-gray-300'
                           : isDragging
@@ -1436,15 +1429,15 @@ export default function ProductsPage() {
                             : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
                       }`}
                     >
-                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-sm font-medium">
                         {selectedImages.length >= 5
-                          ? 'Maximum 5 images reached'
+                          ? 'הושג מקסימום 5 תמונות'
                           : isDragging
-                            ? 'Drop Images Here'
-                            : `Select Images or Drag & Drop (${selectedImages.length}/5)`}
+                            ? 'שחרר תמונות כאן'
+                            : `בחר תמונות או גרור ושחרר (${selectedImages.length}/5)`}
                       </span>
                     </label>
                   </div>
@@ -1479,28 +1472,28 @@ export default function ProductsPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-500">
-                    Images will be ordered by their file names
+                  <p className="text-xs text-gray-500 text-center">
+                    סדר התמונות לפי השמות שלהם
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
+                  <p className="text-xs text-gray-500 text-center">
+                    JPEG, PNG, WebP. גודל מקסימלי: 5MB לכל תמונה.
                   </p>
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -1524,10 +1517,10 @@ export default function ProductsPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Creating...</span>
+                      <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>Create Product</span>
+                    <span>צור מוצר</span>
                   )}
                 </button>
               </div>
@@ -1538,10 +1531,10 @@ export default function ProductsPage() {
 
       {/* Edit Product Modal */}
       {isEditModalOpen && productToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Product</h2>
+              <h2 className="text-lg font-bold text-gray-800">ערוך מוצר</h2>
               <button
                 onClick={handleCloseEditModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -1571,7 +1564,7 @@ export default function ProductsPage() {
             <form onSubmit={handleEditSubmit} noValidate className="space-y-4">
               <div>
                 <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Name *
+                  שם המוצר *
                 </label>
                 <input
                   id="edit-name"
@@ -1580,10 +1573,11 @@ export default function ProductsPage() {
                   value={editFormData.name}
                   onChange={handleEditInputChange}
                   maxLength={MAX_PRODUCT_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                     showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
                   }`}
-                  placeholder="e.g., Premium Coffee Beans"
+                  dir="ltr"
+                  placeholder="לדוגמה: פולי קפה פרמיום"
                 />
                 {showErrors && fieldErrors.name && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
@@ -1592,16 +1586,17 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="edit-categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
+                  קטגוריה
                 </label>
                 <select
                   id="edit-categoryId"
                   name="categoryId"
                   value={editFormData.categoryId}
                   onChange={handleEditInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  dir="ltr"
                 >
-                  <option value="">None</option>
+                  <option value="">ללא</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.category}
@@ -1612,16 +1607,17 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="edit-brandId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Brand
+                  מותג
                 </label>
                 <select
                   id="edit-brandId"
                   name="brandId"
                   value={editFormData.brandId}
                   onChange={handleEditInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  dir="ltr"
                 >
-                  <option value="">None</option>
+                  <option value="">ללא</option>
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
                       {brand.name}
@@ -1633,10 +1629,10 @@ export default function ProductsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="edit-minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
-                    Minimum Price *
+                    מחיר מינימלי *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-minimumPrice"
                       name="minimumPrice"
@@ -1646,9 +1642,10 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={editFormData.minimumPrice}
                       onChange={handleEditInputChange}
-                      className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                         showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
+                      dir="ltr"
                       placeholder="0.00"
                     />
                   </div>
@@ -1659,10 +1656,10 @@ export default function ProductsPage() {
 
                 <div>
                   <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700 mb-2">
-                    Price *
+                    מחיר *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-price"
                       name="price"
@@ -1672,9 +1669,10 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={editFormData.price}
                       onChange={handleEditInputChange}
-                      className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
                         showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
                       }`}
+                      dir="ltr"
                       placeholder="0.00"
                     />
                   </div>
@@ -1686,7 +1684,7 @@ export default function ProductsPage() {
 
               <div>
                 <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
+                  תיאור
                 </label>
                 <textarea
                   id="edit-description"
@@ -1695,7 +1693,7 @@ export default function ProductsPage() {
                   onChange={handleEditInputChange}
                   maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
                   className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  placeholder="Product description (optional)"
+                  placeholder="תיאור המוצר (אופציונלי)"
                   rows={3}
                 />
               </div>
@@ -1703,7 +1701,7 @@ export default function ProductsPage() {
               {/* Image Management Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Images <span className="text-gray-500 text-xs">(up to 5 total)</span>
+                  תמונות <span className="text-gray-500 text-xs">(עד 5 סה״כ)</span>
                 </label>
                 <div className="space-y-3">
                   {/* Loading State */}
@@ -1713,14 +1711,14 @@ export default function ProductsPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <p className="text-xs text-gray-500 mt-2">Loading images...</p>
+                      <p className="text-xs text-gray-500 mt-2">טוען תמונות...</p>
                     </div>
                   )}
 
                   {/* Existing Images */}
                   {!isLoadingImages && existingImages.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-gray-600 mb-2">Existing Images:</p>
+                      <p className="text-xs font-medium text-gray-600 mb-2">תמונות קיימות:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {[...existingImages].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' })).map((image) => (
                           <div key={image.id} className="flex flex-col">
@@ -1734,7 +1732,7 @@ export default function ProductsPage() {
                                 type="button"
                                 onClick={() => handleDeleteExistingImage(image.id)}
                                 className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                title="Delete image"
+                                title="מחק תמונה"
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1753,7 +1751,7 @@ export default function ProductsPage() {
                   {/* Images Marked for Deletion */}
                   {imagesToDelete.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-red-600 mb-2">Images to be deleted ({imagesToDelete.length}):</p>
+                      <p className="text-xs font-medium text-red-600 mb-2">תמונות למחיקה ({imagesToDelete.length}):</p>
                       <div className="flex flex-wrap gap-2">
                         {imagesToDelete.map((imageId) => {
                           const deletedImage = originalImages.find(img => img.id === imageId);
@@ -1769,7 +1767,7 @@ export default function ProductsPage() {
                                 type="button"
                                 onClick={() => handleUndoDeleteImage(imageId)}
                                 className="absolute -top-1 -right-1 p-1 bg-green-500 text-white rounded-full shadow-lg"
-                                title="Undo delete"
+                                title="בטל מחיקה"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -1785,7 +1783,7 @@ export default function ProductsPage() {
                   {/* New Images to Add */}
                   {newImagesToAdd.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-green-600 mb-2">New Images to Add:</p>
+                      <p className="text-xs font-medium text-green-600 mb-2">תמונות חדשות להוספה:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {[...newImagesToAdd].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })).map((image, index) => (
                           <div key={index} className="flex flex-col">
@@ -1831,7 +1829,7 @@ export default function ProductsPage() {
                       onDragOver={handleEditDragOver}
                       onDragLeave={handleEditDragLeave}
                       onDrop={handleEditDrop}
-                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center border-2 border-dashed transition-all ${
+                      className={`glass-input w-full px-3 py-4 rounded-xl text-sm text-gray-800 cursor-pointer flex items-center justify-center gap-2 border-2 border-dashed transition-all ${
                         (existingImages.length + newImagesToAdd.length) >= 5
                           ? 'opacity-50 cursor-not-allowed border-gray-300'
                           : isDraggingEdit
@@ -1839,41 +1837,41 @@ export default function ProductsPage() {
                             : 'border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50/30'
                       }`}
                     >
-                      <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-sm font-medium">
                         {(existingImages.length + newImagesToAdd.length) >= 5
-                          ? 'Maximum 5 images reached'
+                          ? 'הושג מקסימום 5 תמונות'
                           : isDraggingEdit
-                            ? 'Drop Images Here'
-                            : `Add More Images or Drag & Drop (${existingImages.length + newImagesToAdd.length}/5)`}
+                            ? 'שחרר תמונות כאן'
+                            : `הוסף עוד תמונות או גרור ושחרר (${existingImages.length + newImagesToAdd.length}/5)`}
                       </span>
                     </label>
                   </div>
 
-                  <p className="text-xs text-gray-500">
-                    Images will be ordered by their file names
+                  <p className="text-xs text-gray-500 text-center">
+                    סדר התמונות לפי השמות שלהם
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Accepted formats: JPEG, PNG, WebP. Maximum size: 5MB per image.
+                  <p className="text-xs text-gray-500 text-center">
+                    JPEG, PNG, WebP. גודל מקסימלי: 5MB לכל תמונה.
                   </p>
                 </div>
               </div>
 
-              <div className="flex space-x-3 pt-4">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
                   className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
                 >
-                  Cancel
+                  ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -1897,10 +1895,10 @@ export default function ProductsPage() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      <span>Updating...</span>
+                      <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>Update Product</span>
+                    <span>עדכן מוצר</span>
                   )}
                 </button>
               </div>
@@ -1911,10 +1909,10 @@ export default function ProductsPage() {
 
       {/* Delete Confirmation Modal */}
       {productToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">Delete Product</h2>
+              <h2 className="text-xl font-bold text-gray-800">מחק מוצר</h2>
               <button
                 onClick={() => setProductToDelete(null)}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -1936,33 +1934,33 @@ export default function ProductsPage() {
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-700 mb-4">
-                Are you sure you want to delete <span className="font-semibold">{productToDelete.name}</span>? This action cannot be undone.
+              <p className="text-gray-700 mb-4 break-words">
+                האם אתה בטוח שברצונך למחוק את <span className="font-semibold">{productToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start gap-2">
                   <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                   <p className="text-sm text-yellow-800">
-                    This product will be removed from your catalog. Historical data will be preserved in the system.
+                    מוצר זה יוסר מהקטלוג שלך. נתונים היסטוריים יישמרו במערכת.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setProductToDelete(null)}
                 disabled={isDeleting}
                 className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 onClick={handleDeleteProduct}
                 disabled={isDeleting}
-                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="glass-button flex-1 py-2.5 px-4 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 hover:border-red-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isDeleting ? (
                   <>
@@ -1986,10 +1984,10 @@ export default function ProductsPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Deleting...</span>
+                    <span>מוחק...</span>
                   </>
                 ) : (
-                  <span>Delete Product</span>
+                  <span>מחק מוצר</span>
                 )}
               </button>
             </div>
