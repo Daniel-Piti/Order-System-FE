@@ -51,7 +51,7 @@ export default function AgentProductsPage() {
           localStorage.removeItem('userRole');
           navigate('/login/agent');
         } else {
-          setError(err?.response?.data?.userMessage || err?.message || 'Failed to load agent details');
+          setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת פרטי הסוכן');
         }
       }
     };
@@ -112,7 +112,7 @@ export default function AgentProductsPage() {
       await fetchProductImagesForAll(pageResponse.content);
     } catch (err: any) {
       console.error('Failed to load products for agent view:', err);
-      setError(err?.response?.data?.userMessage || err?.message || 'Failed to load products');
+      setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת מוצרים');
     } finally {
       setIsLoading(false);
     }
@@ -207,13 +207,13 @@ export default function AgentProductsPage() {
   }, [products, searchQuery]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">Manager Products</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">מוצרים</h1>
             <p className="text-gray-600 text-sm mt-2">
-              Viewing {filteredProducts.length} of {totalElements} products available to you.
+              מציג {filteredProducts.length} מתוך {totalElements} מוצרים זמינים עבורך.
             </p>
           </div>
         </div>
@@ -223,11 +223,12 @@ export default function AgentProductsPage() {
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Show</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">הצג:</span>
               <select
                 value={pageSize}
                 onChange={handlePageSizeChange}
-                className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+                className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                dir="ltr"
               >
                 {PAGE_SIZE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -238,16 +239,17 @@ export default function AgentProductsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Sort</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">מיין:</span>
               <button
                 type="button"
                 onClick={handleSortToggle}
                 className="glass-select bg-none pl-4 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center justify-center gap-2 min-w-[88px]"
                 style={{ backgroundImage: 'none' }}
+                dir="ltr"
               >
-                <span>{sortDirection === 'ASC' ? 'A–Z' : 'Z–A'}</span>
+                <span>{sortDirection === 'ASC' ? 'א ← ת' : 'א → ת'}</span>
                 <svg
-                  className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'ASC' ? '' : 'rotate-180'}`}
+                  className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'ASC' ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -258,13 +260,14 @@ export default function AgentProductsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Category</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">קטגוריה:</span>
               <select
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
-                className="glass-select px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer w-36"
+                className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm text-gray-800 cursor-pointer w-36"
+                dir="ltr"
               >
-                <option value="">All</option>
+                <option value="">הכל</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.category}
@@ -274,13 +277,14 @@ export default function AgentProductsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Brand</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">מותג:</span>
               <select
                 value={selectedBrand}
                 onChange={(event) => setSelectedBrand(event.target.value)}
-                className="glass-select px-3 py-2 rounded-xl text-sm text-gray-800 cursor-pointer w-36"
+                className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm text-gray-800 cursor-pointer w-36"
+                dir="ltr"
               >
-                <option value="">All</option>
+                <option value="">הכל</option>
                 {brands.map((brand) => (
                   <option key={brand.id} value={brand.id}>
                     {brand.name}
@@ -291,17 +295,19 @@ export default function AgentProductsPage() {
           </div>
 
           <div className="relative w-full xl:w-80">
-            <label className="sr-only" htmlFor="agent-products-search">Search products</label>
+            <label className="sr-only" htmlFor="agent-products-search">חפש מוצרים</label>
             <input
               id="agent-products-search"
               type="search"
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="Search by name, description, or brand..."
-              className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              placeholder="חפש לפי שם, תיאור או מותג..."
+              maxLength={100}
+              className="glass-input w-full pr-10 pl-4 py-2.5 rounded-xl text-sm text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              dir="rtl"
             />
             <svg
-              className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+              className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -320,14 +326,14 @@ export default function AgentProductsPage() {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Failed to load products</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">נכשל בטעינת מוצרים</h2>
             <p className="text-gray-600">{error}</p>
           </div>
           <button
             onClick={() => fetchProducts(currentPage)}
             className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 border border-sky-200 hover:border-sky-300 transition-colors"
           >
-            Retry
+            נסה שוב
           </button>
         </div>
       ) : isLoading ? (
@@ -336,7 +342,7 @@ export default function AgentProductsPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          <p className="text-gray-600">Loading products...</p>
+          <p className="text-gray-600 font-medium">... טוען מוצרים</p>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 flex flex-col items-center justify-center text-center space-y-4">
@@ -345,9 +351,9 @@ export default function AgentProductsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">No products match your filters</h2>
+          <h2 className="text-2xl font-bold text-gray-800">אין מוצרים התואמים למסננים שלך</h2>
           <p className="text-gray-600 max-w-md">
-            Try adjusting your filters or clearing the search to see more products.
+            נסה להתאים את המסננים שלך או לנקות את החיפוש כדי לראות עוד מוצרים.
           </p>
           <div className="flex flex-wrap gap-3">
             <button
@@ -358,7 +364,7 @@ export default function AgentProductsPage() {
               }}
               className="glass-button px-6 py-2 rounded-xl font-semibold text-gray-800 hover:bg-white/40 border border-sky-200 hover:border-sky-300 transition-colors"
             >
-              Reset Filters
+              נקה מסננים
             </button>
           </div>
         </div>
@@ -417,7 +423,7 @@ export default function AgentProductsPage() {
                               handlePrevProductImage(product.id, images);
                             }}
                             className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
-                            title="Previous image"
+                            title="תמונה קודמת"
                             type="button"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -430,7 +436,7 @@ export default function AgentProductsPage() {
                               handleNextProductImage(product.id, images);
                             }}
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
-                            title="Next image"
+                            title="תמונה הבאה"
                             type="button"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -468,7 +474,7 @@ export default function AgentProductsPage() {
                       </span>
                       {product.price > product.minimumPrice && (
                         <span className="text-xs text-gray-400">
-                          Min {formatPrice(product.minimumPrice)}
+                          מינימום {formatPrice(product.minimumPrice)}
                         </span>
                       )}
                     </div>
@@ -486,6 +492,7 @@ export default function AgentProductsPage() {
         onPageChange={setCurrentPage}
         maxWidth="max-w-6xl"
         showCondition={!isLoading && totalPages > 1}
+        rtl={true}
       />
     </div>
   );
