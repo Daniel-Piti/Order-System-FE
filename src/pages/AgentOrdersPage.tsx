@@ -53,7 +53,7 @@ export default function AgentOrdersPage() {
       setOrders(fetchedOrders);
       setTotalPages(pageResponse?.totalPages || 0);
     } catch (err: any) {
-      setError('Failed to load orders');
+      setError('נכשל בטעינת הזמנות');
       setOrders([]); // Reset to empty array on error
       setTotalPages(0);
       console.error('Error fetching orders:', err);
@@ -130,7 +130,7 @@ export default function AgentOrdersPage() {
       setCurrentPage(0); // Reset to first page
       await fetchOrders(0);
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to create order');
+      setError(err.response?.data?.userMessage || 'נכשל ביצירת הזמנה');
     } finally {
       setIsCreating(false);
     }
@@ -172,7 +172,7 @@ export default function AgentOrdersPage() {
         return prev;
       });
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to cancel order');
+      setError(err.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
     } finally {
       setCancellingOrderId(null);
       setOrderIdPendingCancel(null);
@@ -185,7 +185,7 @@ export default function AgentOrdersPage() {
       const orderDetails = await agentAPI.getOrderById(order.id);
       setViewingOrder(orderDetails);
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to load order details');
+      setError(err.response?.data?.userMessage || 'נכשל בטעינת פרטי ההזמנה');
       console.error('Error fetching order details:', err);
     }
   };
@@ -252,7 +252,7 @@ export default function AgentOrdersPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('he-IL', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -284,63 +284,69 @@ export default function AgentOrdersPage() {
 }
 
   return (
-    <div className="max-w-7xl mx-auto pb-32">
+    <div className="max-w-7xl mx-auto pb-32" dir="rtl">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Orders</h1>
-          <p className="text-gray-600">Manage your orders and share links with customers</p>
+      <div className="glass-card rounded-3xl p-6 md:p-8 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">הזמנות</h1>
+            <p className="text-gray-600 text-sm mt-2">
+              נהל את ההזמנות שלך ושתף קישורים עם לקוחות
+            </p>
+          </div>
+          <button
+            onClick={openCreateModal}
+            className="mt-2 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+          >
+            <span>צור הזמנה חדשה</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 border-0"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Create New Order</span>
-        </button>
       </div>
 
       {/* Filters and Sorting */}
       <div className="glass-card rounded-2xl p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          {/* Left side: Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          {/* Right side: Filters */}
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto md:ml-auto">
             {/* Status Filter */}
             <div className="w-[140px]">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">סטטוס:</label>
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setCurrentPage(0);
                 }}
-                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                dir="ltr"
               >
-                <option value="">All Statuses</option>
-                <option value="EMPTY">Empty</option>
-                <option value="PLACED">Placed</option>
-                <option value="DONE">Done</option>
-                <option value="EXPIRED">Expired</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="">הכל</option>
+                <option value="EMPTY">ריק</option>
+                <option value="PLACED">הוזמן</option>
+                <option value="DONE">הושלם</option>
+                <option value="EXPIRED">פג תוקף</option>
+                <option value="CANCELLED">בוטל</option>
               </select>
             </div>
 
             {/* Sort By */}
             <div className="w-[140px]">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Sort By</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">מיין לפי:</label>
               <select
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value);
                   setCurrentPage(0);
                 }}
-                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                dir="ltr"
               >
-                <option value="createdAt">Creation Date</option>
-                <option value="status">Status</option>
-                <option value="totalPrice">Total Price</option>
+                <option value="createdAt">תאריך יצירה</option>
+                <option value="status">סטטוס</option>
+                <option value="totalPrice">מחיר כולל</option>
               </select>
             </div>
 
@@ -351,14 +357,14 @@ export default function AgentOrdersPage() {
                 onClick={toggleSortDirection}
                 className="glass-button w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all flex items-center justify-between"
               >
-                <span>Order</span>
+                <span>{sortDirection === 'ASC' ? 'א ← ת' : 'א → ת'}</span>
                 {sortDirection === 'ASC' ? (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 ) : (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                   </svg>
                 )}
               </button>
@@ -366,14 +372,15 @@ export default function AgentOrdersPage() {
 
             {/* Page Size */}
             <div className="w-[90px]">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Per Page</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">הצג:</label>
               <select
                 value={pageSize}
                 onChange={(e) => {
                   setPageSize(Number(e.target.value));
                   setCurrentPage(0);
                 }}
-                className="glass-select w-full px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                dir="ltr"
               >
                 <option value="2">2</option>
                 <option value="10">10</option>
@@ -402,13 +409,13 @@ export default function AgentOrdersPage() {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">No orders yet</h3>
-          <p className="text-gray-600 mb-6">Create your first order to get started</p>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">אין הזמנות עדיין</h3>
+          <p className="text-gray-600 mb-6">צור את ההזמנה הראשונה שלך כדי להתחיל</p>
           <button
             onClick={openCreateModal}
             className="glass-button px-6 py-3 rounded-xl font-semibold text-indigo-600 hover:shadow-md transition-all"
           >
-            Create Order
+            צור הזמנה
           </button>
         </div>
       ) : (
@@ -433,7 +440,7 @@ export default function AgentOrdersPage() {
               {/* Order Header - Status & ID */}
               <div className="flex items-center justify-between mb-3 mt-1">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
-                  {order.status}
+                  {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
                 </span>
                 <p className="text-xs font-mono text-gray-500/70 font-medium">#{order.id.slice(0, 8)}</p>
               </div>
@@ -455,12 +462,12 @@ export default function AgentOrdersPage() {
                 ) : order.status === 'EMPTY' ? (
                   <div className="w-full flex items-center justify-center h-full">
                     <div className="text-center space-y-1">
-                      <p className="text-sm font-medium text-gray-400">No customer info yet</p>
-                      <p className="text-xs text-gray-400">Waiting for order details</p>
+                      <p className="text-sm font-medium text-gray-400">אין פרטי לקוח עדיין</p>
+                      <p className="text-xs text-gray-400">ממתין לפרטי ההזמנה</p>
                     </div>
                   </div>
                 ) : (
-                  !linkedCustomer && <p className="text-sm text-gray-400 italic font-medium text-center">No customer info</p>
+                  !linkedCustomer && <p className="text-sm text-gray-400 italic font-medium text-center">אין פרטי לקוח</p>
                 )}
 
               </div>
@@ -475,23 +482,23 @@ export default function AgentOrdersPage() {
                         navigate('/agent/dashboard/customers');
                       }}
                       className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 max-w-full overflow-hidden"
-                      title="View linked customer"
+                      title="צפה בלקוח מקושר"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
-                      <span className="truncate max-w-[160px]">{linkedCustomer?.name ?? 'View customer'}</span>
+                      <span className="truncate max-w-[160px]">{linkedCustomer?.name ?? 'צפה בלקוח'}</span>
                     </button>
                   </div>
                 ) : (
-                  <p className="mt-1 pt-1 pb-1 text-sm text-gray-500 italic text-center">No customer linked</p>
+                  <p className="mt-1 pt-1 pb-1 text-sm text-gray-500 italic text-center">אין לקוח מקושר</p>
                 )}
               </div>
 
               {/* Total Price - Prominent */}
               <div className="mt-3 pb-2 border-t border-gray-200/50 border-b border-gray-200/30 pt-3">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Total</span>
+                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">סה״כ</span>
                   <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     {formatPrice(order.totalPrice)}
                   </span>
@@ -515,7 +522,7 @@ export default function AgentOrdersPage() {
                         ? 'bg-indigo-200 text-indigo-700 border-indigo-700'
                         : 'bg-indigo-50 text-indigo-600 border-indigo-500 hover:shadow-md'
                     }`}
-                    title={copiedOrderId === order.id ? 'Link copied' : 'Copy order link'}
+                    title={copiedOrderId === order.id ? 'קישור הועתק' : 'העתק קישור הזמנה'}
                   >
                     <span
                       className={`absolute inset-0 flex items-center justify-center transition-all duration-200 transform ${
@@ -543,12 +550,12 @@ export default function AgentOrdersPage() {
                       navigate(`/store/edit/${order.id}`);
                     }}
                     className="px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
-                    title="Edit order"
+                    title="ערוך הזמנה"
                   >
                     <svg className="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    <span className="text-xs font-semibold text-blue-700">Edit</span>
+                    <span className="text-xs font-semibold text-blue-700">ערוך</span>
                   </button>
                 ) : null}
               </div>
@@ -565,14 +572,15 @@ export default function AgentOrdersPage() {
         onPageChange={setCurrentPage}
         maxWidth="max-w-7xl"
         showCondition={orders && orders.length > 0 && totalPages > 0}
+        rtl={true}
       />
 
       {/* Create Order Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85">
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Create New Order</h2>
+              <h2 className="text-lg font-bold text-gray-800">צור הזמנה חדשה</h2>
               <button
                 onClick={closeCreateModal}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -601,13 +609,13 @@ export default function AgentOrdersPage() {
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Customer Selection
+                בחירת לקוח
               </label>
 
               {/* Standalone Order Option */}
               <button
                 onClick={() => setSelectedCustomerId(null)}
-                className={`w-full text-left px-4 py-2.5 rounded-xl transition-all mb-3 flex items-center gap-3 ${
+                className={`w-full text-right px-4 py-2.5 rounded-xl transition-all mb-3 flex items-center gap-3 ${
                   selectedCustomerId === null
                     ? 'glass-button shadow-md border-2 border-indigo-500 bg-indigo-50/30'
                     : 'glass-input hover:shadow-sm'
@@ -623,20 +631,20 @@ export default function AgentOrdersPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium text-gray-800 text-sm">No Customer</div>
-                  <div className="text-xs text-gray-600">Customer will provide their details via link</div>
+                  <div className="font-medium text-gray-800 text-sm">ללא לקוח</div>
+                  <div className="text-xs text-gray-600">הלקוח יספק את הפרטים שלו דרך הקישור</div>
                 </div>
               </button>
 
               {/* Link to Customer Section */}
               {customers.length > 0 && (
                 <>
-                  <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Or link to existing customer</div>
+                  <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">או קשר ללקוח קיים</div>
                   
                   {/* Customer Search */}
                   <div className="relative mb-2">
                     <svg
-                      className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -650,15 +658,16 @@ export default function AgentOrdersPage() {
                     </svg>
                     <input
                       type="text"
-                      placeholder="Search customers..."
+                      placeholder="חפש לקוחות..."
                       value={customerSearchQuery}
                       onChange={(e) => setCustomerSearchQuery(e.target.value)}
-                      className="glass-input w-full pl-10 pr-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="glass-input w-full pr-10 pl-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      dir="rtl"
                     />
                     {customerSearchQuery && (
                       <button
                         onClick={() => setCustomerSearchQuery('')}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -674,12 +683,12 @@ export default function AgentOrdersPage() {
                         <svg className="w-10 h-10 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        <p className="text-xs">No customers found</p>
+                        <p className="text-xs">לא נמצאו לקוחות</p>
                         <button
                           onClick={() => setCustomerSearchQuery('')}
                           className="text-xs text-indigo-600 hover:text-indigo-700 mt-1"
                         >
-                          Clear search
+                          נקה חיפוש
                         </button>
                       </div>
                     ) : (
@@ -687,7 +696,7 @@ export default function AgentOrdersPage() {
                         <button
                           key={customer.id}
                           onClick={() => setSelectedCustomerId(customer.id)}
-                          className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center gap-2.5 ${
+                          className={`w-full text-right px-3 py-2 rounded-lg transition-all flex items-center gap-2.5 ${
                             selectedCustomerId === customer.id
                               ? 'glass-button shadow-md border-2 border-indigo-500 bg-indigo-50/30'
                               : 'glass-input hover:shadow-sm'
@@ -714,20 +723,20 @@ export default function AgentOrdersPage() {
               )}
             </div>
 
-            <div className="flex space-x-3 pt-4">
+            <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={closeCreateModal}
                 disabled={isCreating}
                 className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
               >
-                Cancel
+                ביטול
               </button>
               <button
                 type="button"
                 onClick={handleCreateOrder}
                 disabled={isCreating}
-                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isCreating ? (
                   <>
@@ -751,10 +760,10 @@ export default function AgentOrdersPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Creating...</span>
+                    <span>יוצר...</span>
                   </>
                 ) : (
-                  <span>Create Order</span>
+                  <span>צור הזמנה</span>
                 )}
               </button>
             </div>
@@ -771,11 +780,12 @@ export default function AgentOrdersPage() {
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white/85"
             onClick={(e) => e.stopPropagation()}
+            dir="rtl"
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-gray-800">Order Details</h2>
-                <p className="text-sm text-gray-600">Order #{viewingOrder.id.slice(0, 8)}</p>
+                <h2 className="text-lg font-bold text-gray-800">פרטי הזמנה</h2>
+                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.id.slice(0, 8)}</p>
               </div>
               <button
                 onClick={closeViewModal}
@@ -801,103 +811,103 @@ export default function AgentOrdersPage() {
             <div className="mb-6">
               <div className="flex items-center gap-3">
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(viewingOrder.status)}`}>
-                  {viewingOrder.status}
+                  {viewingOrder.status === 'EMPTY' ? 'ריק' : viewingOrder.status === 'PLACED' ? 'הוזמן' : viewingOrder.status === 'DONE' ? 'הושלם' : viewingOrder.status === 'EXPIRED' ? 'פג תוקף' : viewingOrder.status === 'CANCELLED' ? 'בוטל' : viewingOrder.status}
                 </span>
                 <span className="text-sm text-gray-600">
-                  {viewingOrder.placedAt ? 'Placed' : 'Created'} {formatDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
+                  {viewingOrder.placedAt ? 'הוזמן' : 'נוצר'} {formatDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
                 </span>
               </div>
             </div>
 
             {/* Customer Information */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Customer Information</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">פרטי לקוח</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 {viewingOrder.customerName ? (
                   <>
                     <div className="flex items-start justify-between gap-3">
-                      <span className="text-sm text-gray-600">Name</span>
-                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerName}</span>
+                      <span className="text-sm text-gray-600">שם</span>
+                      <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerName}</span>
                     </div>
                     {viewingOrder.customerPhone && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">Phone</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerPhone}</span>
+                        <span className="text-sm text-gray-600">טלפון</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerPhone}</span>
                       </div>
                     )}
                     {viewingOrder.customerEmail && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">Email</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerEmail}</span>
+                        <span className="text-sm text-gray-600">אימייל</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerEmail}</span>
                       </div>
                     )}
                     {viewingOrder.customerStreetAddress && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">Address</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerStreetAddress}</span>
+                        <span className="text-sm text-gray-600">כתובת</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerStreetAddress}</span>
                       </div>
                     )}
                     {viewingOrder.customerCity && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">City</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.customerCity}</span>
+                        <span className="text-sm text-gray-600">עיר</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerCity}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No customer information provided yet</p>
+                  <p className="text-sm text-gray-500 italic">אין פרטי לקוח עדיין</p>
                 )}
               </div>
             </div>
 
             {/* Pickup Location */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Pickup Location</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">מיקום איסוף</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 {viewingOrder.storeStreetAddress ? (
                   <>
                     <div className="flex items-start justify-between gap-3">
-                      <span className="text-sm text-gray-600">Address</span>
-                      <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storeStreetAddress}</span>
+                      <span className="text-sm text-gray-600">כתובת</span>
+                      <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeStreetAddress}</span>
                     </div>
                     {viewingOrder.storeCity && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">City</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storeCity}</span>
+                        <span className="text-sm text-gray-600">עיר</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeCity}</span>
                       </div>
                     )}
                     {viewingOrder.storePhoneNumber && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">Phone</span>
-                        <span className="text-sm font-medium text-gray-800 text-right break-words break-all">{viewingOrder.storePhoneNumber}</span>
+                        <span className="text-sm text-gray-600">טלפון</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storePhoneNumber}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">Pickup location not selected yet</p>
+                  <p className="text-sm text-gray-500 italic">מיקום איסוף לא נבחר עדיין</p>
                 )}
               </div>
             </div>
 
             {/* Products */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Products</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">מוצרים</h3>
               <div className="glass-card rounded-xl overflow-hidden">
                 {viewingOrder.products.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic p-4">No products added yet</p>
+                  <p className="text-sm text-gray-500 italic p-4">אין מוצרים עדיין</p>
                 ) : (
                   <div className="divide-y divide-gray-200/50">
                     {viewingOrder.products.map((product, index) => (
                       <div key={index} className="p-3 flex items-start justify-between gap-3 hover:bg-white/20 transition-colors">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-800 break-words break-all">{product.productName}</p>
-                          <p className="text-xs text-gray-600 break-words break-all">Quantity: {product.quantity}</p>
+                          <p className="text-xs text-gray-600 break-words break-all">כמות: {product.quantity}</p>
                         </div>
-                        <div className="text-right break-words break-all">
+                        <div className="text-left break-words break-all">
                           <p className="text-sm font-semibold text-gray-800 break-words break-all">
                             {formatPrice(product.pricePerUnit * product.quantity)}
                           </p>
-                          <p className="text-xs text-gray-600 break-words break-all">{formatPrice(product.pricePerUnit)} each</p>
+                          <p className="text-xs text-gray-600 break-words break-all">{formatPrice(product.pricePerUnit)} לכל יחידה</p>
                         </div>
                       </div>
                     ))}
@@ -908,26 +918,26 @@ export default function AgentOrdersPage() {
 
             {/* Order Summary */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Order Summary</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">סיכום הזמנה</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total Items</span>
+                  <span className="text-sm text-gray-600">סה״כ פריטים</span>
                   <span className="text-sm font-medium text-gray-800">{viewingOrder.products.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total Quantity</span>
+                  <span className="text-sm text-gray-600">סה״כ כמות</span>
                   <span className="text-sm font-medium text-gray-800">
                     {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
                   </span>
                 </div>
                 {viewingOrder.doneAt && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Done</span>
+                    <span className="text-sm text-gray-600">הושלם</span>
                     <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.doneAt)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                  <span className="text-base font-semibold text-gray-800">Total Price</span>
+                  <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
                   <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
                 </div>
               </div>
@@ -935,14 +945,14 @@ export default function AgentOrdersPage() {
 
             {/* Link Info */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Link Information</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע על קישור</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Link Expires</span>
+                  <span className="text-sm text-gray-600">תאריך תפוגה</span>
                   <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.linkExpiresAt)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Order ID</span>
+                  <span className="text-sm text-gray-600">מספר הזמנה</span>
                   <span className="text-xs font-mono text-gray-800">{viewingOrder.id}</span>
                 </div>
               </div>
@@ -963,7 +973,7 @@ export default function AgentOrdersPage() {
                       : 'text-red-600 border-red-600 bg-red-50 hover:shadow-lg'
                   }`}
                 >
-                  {cancellingOrderId === viewingOrder.id ? 'Cancelling...' : 'Cancel Order'}
+                  {cancellingOrderId === viewingOrder.id ? 'מבטל...' : 'בטל הזמנה'}
                 </button>
               )}
               {viewingOrder.status === 'PLACED' && (
@@ -977,14 +987,14 @@ export default function AgentOrdersPage() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  <span>Edit Order</span>
+                  <span>ערוך הזמנה</span>
                 </button>
               )}
               <button
                 onClick={closeViewModal}
                 className="glass-button px-6 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
               >
-                Close
+                סגור
               </button>
             </div>
           </div>
@@ -999,10 +1009,11 @@ export default function AgentOrdersPage() {
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-red-100"
             onClick={(e) => e.stopPropagation()}
+            dir="rtl"
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Cancel order?</h2>
+                <h2 className="text-lg font-semibold text-gray-900">בטל הזמנה?</h2>
               </div>
               <button
                 onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
@@ -1015,7 +1026,7 @@ export default function AgentOrdersPage() {
             </div>
 
             <p className="text-sm text-gray-600 mb-6 leading-relaxed font-medium">
-              Cancelling will remove this order from the active queue. You can always create a new order later if you change your mind.
+              ביטול יסיר את ההזמנה מהתור הפעיל. תמיד תוכל ליצור הזמנה חדשה מאוחר יותר אם תשנה את דעתך.
             </p>
 
             <div className="border-t border-gray-200/70 -mx-6 md:-mx-8 mb-4"></div>
@@ -1025,7 +1036,7 @@ export default function AgentOrdersPage() {
                 onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
                 className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:shadow-md transition-all"
               >
-                Keep Order
+                שמור הזמנה
               </button>
               <button
                 onClick={() => handleCancelOrder(orderIdPendingCancel)}
@@ -1036,7 +1047,7 @@ export default function AgentOrdersPage() {
                     : 'text-red-600 border-red-600 bg-red-50 hover:shadow-lg'
                 }`}
               >
-                {cancellingOrderId ? 'Cancelling...' : 'Cancel Order'}
+                {cancellingOrderId ? 'מבטל...' : 'בטל הזמנה'}
               </button>
             </div>
           </div>
