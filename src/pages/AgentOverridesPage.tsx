@@ -374,7 +374,7 @@ export default function AgentOverridesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">המחירים המיוחדים שלי</h1>
-            <p className="text-gray-600 mt-1">התאם מחירים ללקוחות שהוקצו לך</p>
+            <p className="text-gray-600 mt-1">התאם מחירים ללקוחות שלך</p>
           </div>
           <button
             onClick={handleOpenModal}

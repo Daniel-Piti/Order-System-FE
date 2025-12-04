@@ -38,7 +38,7 @@ export default function AgentCustomersPage() {
         navigate('/login/agent');
         return;
       }
-      setError(err?.response?.data?.userMessage || err?.message || 'Failed to load customers');
+      setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת לקוחות');
     } finally {
       setIsLoading(false);
     }
@@ -139,23 +139,23 @@ export default function AgentCustomersPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-24">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">Your Customers</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">הלקוחות שלך</h1>
             <p className="text-gray-600 text-sm mt-2">
-              Manage the {customers.length} customers currently assigned to you.
+              נהל את {customers.length} הלקוחות שלך.
             </p>
           </div>
           <button
             onClick={handleOpenModal}
             className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 flex items-center gap-2 border border-sky-200 hover:border-sky-300 transition-colors"
           >
+            <span>הוסף לקוח</span>
             <svg className="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add Customer</span>
           </button>
         </div>
       </div>
@@ -163,11 +163,12 @@ export default function AgentCustomersPage() {
       <div className="glass-card rounded-3xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-gray-600 uppercase tracking-wide">Show</label>
+            <span className="text-xs font-medium text-gray-600 uppercase tracking-wide" dir="rtl">הצג:</span>
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="glass-select px-3 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
+              className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+              dir="ltr"
             >
               {PAGE_SIZE_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -178,16 +179,17 @@ export default function AgentCustomersPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-600">Sort</span>
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">מיין:</span>
             <button
               type="button"
               onClick={handleSortToggle}
               className="glass-select bg-none pl-4 pr-3 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center justify-center gap-2 min-w-[88px]"
               style={{ backgroundImage: 'none' }}
+              dir="ltr"
             >
-              <span>{sortDirection === 'asc' ? 'A–Z' : 'Z–A'}</span>
+              <span>{sortDirection === 'asc' ? 'א ← ת' : 'א → ת'}</span>
               <svg
-                className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'asc' ? '' : 'rotate-180'}`}
+                className={`w-4 h-4 text-sky-600 transition-transform duration-200 ${sortDirection === 'asc' ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -203,10 +205,12 @@ export default function AgentCustomersPage() {
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search customers by name, email, phone, or city…"
-            className="glass-input w-full pl-11 pr-10 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300"
+            placeholder="חפש לקוחות לפי שם, אימייל, טלפון או עיר..."
+            maxLength={100}
+            className="glass-input w-full pr-11 pl-10 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300"
+            dir="rtl"
           />
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -215,8 +219,8 @@ export default function AgentCustomersPage() {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Clear search"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="נקה חיפוש"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -228,7 +232,7 @@ export default function AgentCustomersPage() {
 
       {isLoading ? (
         <div className="glass-card rounded-3xl p-12 flex items-center justify-center">
-          <div className="flex items-center space-x-3 text-gray-600">
+          <div className="flex items-center gap-3 text-gray-600">
             <svg
               className="animate-spin h-6 w-6 text-sky-600"
               xmlns="http://www.w3.org/2000/svg"
@@ -242,18 +246,18 @@ export default function AgentCustomersPage() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <span className="font-medium">Loading customers…</span>
+            <span className="font-medium">... טוען לקוחות</span>
           </div>
         </div>
       ) : error ? (
         <div className="glass-card rounded-3xl p-8 bg-red-50/60 border border-red-200">
-          <h2 className="text-xl font-semibold text-red-800 mb-2">Unable to load customers</h2>
+          <h2 className="text-xl font-semibold text-red-800 mb-2">לא ניתן לטעון לקוחות</h2>
           <p className="text-red-600 text-sm">{error}</p>
           <button
             onClick={handleRetry}
             className="glass-button mt-4 px-6 py-2 rounded-xl font-medium text-gray-800 bg-white/70 hover:bg-white transition-colors"
           >
-            Try Again
+            נסה שוב
           </button>
         </div>
       ) : filteredAndSortedCustomers.length === 0 ? (
@@ -269,82 +273,96 @@ export default function AgentCustomersPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">No Customers Found</h2>
+            <h2 className="text-2xl font-bold text-gray-800">לא נמצאו לקוחות</h2>
             <p className="text-gray-600 max-w-md">
               {searchQuery
-                ? 'No customers match your search. Try refining your keywords.'
-                : 'You have not added any customers yet. Create your first customer to get started.'}
+                ? 'אין לקוחות התואמים לחיפוש שלך. נסה לשנות את מילות המפתח.'
+                : 'עדיין לא הוספת לקוחות. צור את הלקוח הראשון שלך כדי להתחיל.'}
             </p>
             <button
               onClick={handleOpenModal}
               className="glass-button px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
             >
-              Add Customer
+              הוסף לקוח
             </button>
           </div>
         </div>
       ) : (
         <div className="glass-card rounded-3xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-sky-50/70 backdrop-blur-sm">
+            <table className="w-full">
+              <thead className="bg-white/30 border-b border-gray-200/50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Name
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                    שם
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Email
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700 border-l border-gray-200">
+                    אימייל
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Phone
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700 border-l border-gray-200">
+                    טלפון
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    City
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700 border-l border-gray-200">
+                    עיר
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Address
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700 border-l border-gray-200">
+                    כתובת
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Actions
+                  <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-700 border-l border-gray-200 w-24">
+                    פעולות
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-200/50">
                 {paginatedCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-sky-50/60 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-semibold text-gray-900">{customer.name}</span>
+                  <tr key={customer.id} className="hover:bg-white/20 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-800 font-medium">
+                      <span className="inline-block max-w-[200px] truncate" title={customer.name}>
+                        {customer.name}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm text-gray-800 border-l border-gray-200">
+                      <span className="inline-block max-w-[200px] truncate" title={customer.email}>
+                        {customer.email}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-800 border-l border-gray-200">
                       {formatPhoneNumber(customer.phoneNumber)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.city}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.streetAddress}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="inline-flex items-center gap-2">
+                    <td className="px-6 py-4 text-sm text-gray-800 border-l border-gray-200">
+                      <span className="inline-block max-w-[150px] truncate" title={customer.city}>
+                        {customer.city}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-800 border-l border-gray-200">
+                      <span className="inline-block max-w-[200px] truncate" title={customer.streetAddress}>
+                        {customer.streetAddress}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center border-l border-gray-200">
+                      <div className="flex items-center justify-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleStartEdit(customer)}
-                          className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-sky-200 hover:border-sky-300 transition-colors inline-flex items-center justify-center"
-                          aria-label={`Edit ${customer.name}`}
-                          title="Edit customer"
+                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
+                          aria-label={`ערוך ${customer.name}`}
+                          title="ערוך לקוח"
                         >
-                          <svg className="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                             />
                           </svg>
                         </button>
                         <button
                           type="button"
                           onClick={() => handleStartDelete(customer)}
-                          className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                          aria-label={`Delete ${customer.name}`}
-                          title="Delete customer"
+                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                          aria-label={`מחק ${customer.name}`}
+                          title="מחק לקוח"
                         >
                           <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
@@ -371,6 +389,7 @@ export default function AgentCustomersPage() {
         onPageChange={setCurrentPage}
         maxWidth="max-w-5xl"
         showCondition={filteredAndSortedCustomers.length > pageSize}
+        rtl={true}
       />
 
       <AgentCustomerAddModal isOpen={isAddModalOpen} onClose={handleCloseModal} onSuccess={handleAddSuccess} />
