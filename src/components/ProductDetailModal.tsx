@@ -166,7 +166,7 @@ export default function ProductDetailModal({
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none" dir="rtl">
         <div
           className="backdrop-blur-3xl bg-white/90 rounded-3xl shadow-2xl border-2 border-white/70 max-w-4xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto transform transition-all duration-300"
           style={{
@@ -178,7 +178,7 @@ export default function ProductDetailModal({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md hover:bg-white transition-all shadow-lg flex items-center justify-center z-10 border border-white/60"
+            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md hover:bg-white transition-all shadow-lg flex items-center justify-center z-10 border border-white/60"
             style={{
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             }}
@@ -212,18 +212,20 @@ export default function ProductDetailModal({
                         <>
                           <button
                             onClick={handlePrevImage}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center transition-all shadow-lg"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center transition-all shadow-lg"
+                            title="תמונה קודמת"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </button>
                           <button
                             onClick={handleNextImage}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center transition-all shadow-lg"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md text-white flex items-center justify-center transition-all shadow-lg"
+                            title="תמונה הבאה"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                           </button>
                           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
@@ -267,7 +269,7 @@ export default function ProductDetailModal({
 
               {/* Right Side - Details */}
               <div className="flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto pr-1 space-y-5">
+                <div className="flex-1 overflow-y-auto pl-1 space-y-5">
                   {/* Category & Brand Badges */}
                   <div className="flex flex-wrap gap-2">
                     {category && (
@@ -296,7 +298,7 @@ export default function ProductDetailModal({
 
                   {/* Description */}
                   {product.description && (
-                    <div className="max-h-48 overflow-y-auto pr-1">
+                    <div className="max-h-48 overflow-y-auto pl-1">
                       <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                         {product.description}
                       </p>
@@ -309,7 +311,7 @@ export default function ProductDetailModal({
                   <div className="mt-0 space-y-2 pt-1 border-t border-gray-200/40">
                     <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-700">Quantity:</span>
+                        <span className="text-xs font-semibold text-gray-700">כמות:</span>
                         <div className="flex items-center glass-button rounded-lg overflow-hidden border border-gray-300">
                           <button
                             onClick={() => handleQuantityChange(-1)}
@@ -326,6 +328,7 @@ export default function ProductDetailModal({
                             inputMode="numeric"
                             pattern="[1-9][0-9]*"
                             maxLength={4}
+                            dir="ltr"
                           />
                           <button
                             onClick={() => handleQuantityChange(1)}
@@ -336,12 +339,12 @@ export default function ProductDetailModal({
                         </div>
                       </div>
                       {inCart && currentQuantity > 0 && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100/80 backdrop-blur-sm border border-green-200/50 ml-auto">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100/80 backdrop-blur-sm border border-green-200/50 mr-auto">
                           <svg className="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           <span className="text-xs font-bold text-green-700 whitespace-nowrap">
-                            {currentQuantity} in cart
+                            {currentQuantity} בעגלה
                           </span>
                         </div>
                       )}
@@ -354,7 +357,7 @@ export default function ProductDetailModal({
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      <span>Add</span>
+                      <span>הוסף</span>
                     </button>
                   </div>
                 )}

@@ -136,7 +136,7 @@ export default function StorePage() {
           setIsLoading(true);
           const token = localStorage.getItem('authToken');
           if (!token) {
-            setError('Please login to edit orders');
+            setError('אנא התחבר כדי לערוך הזמנות');
             navigate('/login/manager');
             setIsLoading(false);
             return;
@@ -151,7 +151,7 @@ export default function StorePage() {
           } else if (userRole === 'manager') {
             fetchedOrder = await orderAPI.getOrderById(orderId);
           } else {
-            setError('Unauthorized to edit orders');
+            setError('אין הרשאה לערוך הזמנות');
             navigate('/login/manager');
             setIsLoading(false);
             return;
@@ -159,7 +159,7 @@ export default function StorePage() {
           
           // Validate order is PLACED
           if (fetchedOrder.status !== 'PLACED') {
-            setError('Only placed orders can be edited');
+            setError('ניתן לערוך רק הזמנות שהוזמנו');
             setIsLoading(false);
             return;
           }
@@ -192,14 +192,14 @@ export default function StorePage() {
         } catch (err: any) {
           console.error('Error fetching order for edit:', err);
           if (err.response?.status === 401 || err.response?.status === 403) {
-            setError('Unauthorized to edit this order');
+            setError('אין הרשאה לערוך את ההזמנה הזו');
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRole');
             navigate('/login/manager');
           } else if (err.response?.status === 404) {
-            setError('Order not found');
+            setError('הזמנה לא נמצאה');
           } else {
-            setError(err.response?.data?.userMessage || 'Failed to load order');
+            setError(err.response?.data?.userMessage || 'נכשל בטעינת ההזמנה');
           }
           setIsLoading(false);
         }
@@ -215,12 +215,12 @@ export default function StorePage() {
           // Don't set loading to false here - fetchProducts will handle loading state
         } catch (err: any) {
           console.error('Error fetching order:', err);
-          setError('Failed to load order');
+          setError('נכשל בטעינת ההזמנה');
           setIsLoading(false);
         }
       } else {
         // No managerId or orderId in URL - invalid route
-        setError('Invalid store URL');
+        setError('כתובת חנות לא תקינה');
         setIsLoading(false);
       }
     };
@@ -568,12 +568,12 @@ export default function StorePage() {
 
   if (isLinkExpired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4" dir="rtl">
         <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
           <div className="text-6xl mb-6">⏰</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Link Expired</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">קישור פג תוקף</h1>
           <p className="text-lg text-gray-600">
-            This order link has expired. Please contact the seller for a new link or check your order status.
+            קישור ההזמנה הזה פג תוקף. אנא צור קשר עם המוכר לקבלת קישור חדש או בדוק את סטטוס ההזמנה שלך.
           </p>
         </div>
       </div>
@@ -582,12 +582,12 @@ export default function StorePage() {
 
   if (isLinkCancelled) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4" dir="rtl">
         <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
           <div className="text-6xl mb-6">🚫</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Cancelled</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">הזמנה בוטלה</h1>
           <p className="text-lg text-gray-600">
-            This order has been cancelled. Please contact the seller if you have any questions or need assistance.
+            ההזמנה הזו בוטלה. אנא צור קשר עם המוכר אם יש לך שאלות או שאתה צריך עזרה.
           </p>
         </div>
       </div>
@@ -596,12 +596,12 @@ export default function StorePage() {
 
   if (isOrderDone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4" dir="rtl">
         <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
           <div className="text-6xl mb-6">✅</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Already Done</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">הזמנה הושלמה</h1>
           <p className="text-lg text-gray-600">
-            This order has already been completed.
+            ההזמנה הזו כבר הושלמה.
           </p>
         </div>
       </div>
@@ -610,13 +610,10 @@ export default function StorePage() {
 
   if (isOrderPlaced) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4" dir="rtl">
         <div className="glass-card rounded-3xl p-8 md:p-12 max-w-2xl w-full text-center">
           <div className="text-6xl mb-6">📋</div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Order Already Placed</h1>
-          <p className="text-lg text-gray-600">
-            This order has already been placed.
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">ההזמנה הזו כבר הוזמנה</h1>
         </div>
       </div>
     );
@@ -624,7 +621,7 @@ export default function StorePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50" dir="rtl">
         <div className="glass-card p-8 rounded-3xl">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600"></div>
         </div>
@@ -634,25 +631,25 @@ export default function StorePage() {
 
   if (error) {
     let emoji = '😕';
-    let title = 'Oops!';
-    let message = 'Something went wrong';
+    let title = 'אופס!';
+    let message = 'משהו השתבש';
     
     if (error === 'STORE_NOT_FOUND') {
       emoji = '🏪';
-      title = 'Store Not Found';
-      message = 'This store doesn\'t exist or has been removed. Please check the link and try again.';
+      title = 'חנות לא נמצאה';
+      message = 'החנות הזו לא קיימת או הוסרה. אנא בדוק את הקישור ונסה שוב.';
     } else if (error === 'STORE_NOT_ACCESSIBLE') {
       emoji = '🔒';
-      title = 'Store Not Accessible';
-      message = 'This store is currently not accessible. Please contact the store owner.';
+      title = 'חנות לא נגישה';
+      message = 'החנות הזו כרגע לא נגישה. אנא צור קשר עם בעל החנות.';
     } else if (error === 'STORE_ERROR') {
       emoji = '😕';
-      title = 'Unable to Load Store';
-      message = 'We\'re having trouble loading this store. Please try again later.';
+      title = 'לא ניתן לטעון את החנות';
+      message = 'יש לנו בעיה בטעינת החנות הזו. אנא נסה שוב מאוחר יותר.';
     }
     
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 px-4" dir="rtl">
         <div className="glass-card p-12 rounded-3xl max-w-lg text-center">
           <div className="text-8xl mb-6">{emoji}</div>
           <h2 className="text-3xl font-bold text-gray-800 mb-4">{title}</h2>
@@ -661,7 +658,7 @@ export default function StorePage() {
             onClick={() => window.location.reload()}
             className="glass-button px-6 py-3 rounded-xl font-semibold text-gray-800"
           >
-            Try Again
+            נסה שוב
           </button>
         </div>
       </div>
@@ -669,7 +666,7 @@ export default function StorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-24" dir="rtl">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/40 border-b-2 border-white/40 shadow-lg">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
@@ -678,19 +675,19 @@ export default function StorePage() {
               <div className="text-4xl">🛍️</div>
               <div>
                 <h1 className="text-2xl font-bold text-purple-600">
-                  Our Store
+                  החנות שלנו
                 </h1>
-                <p className="text-sm text-gray-600">Browse our products</p>
+                <p className="text-sm text-gray-600">עיין במוצרים שלנו</p>
               </div>
             </div>
 
             {/* Cart Button */}
             <button
               onClick={() => setIsCartOpen(!isCartOpen)}
-              className="glass-button px-6 py-3 rounded-2xl font-semibold text-gray-800 flex items-center space-x-2"
+              className="glass-button px-6 py-3 rounded-2xl font-semibold text-gray-800 flex items-center gap-2"
             >
               <span className="text-2xl">🛒</span>
-              <span>Cart</span>
+              <span>עגלה</span>
               {getTotalItems() > 0 && (
                           <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg">
                   {getTotalItems()}
@@ -704,12 +701,12 @@ export default function StorePage() {
             {/* Mobile Filter Button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center space-x-2 absolute left-0"
+              className="lg:hidden glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2 absolute right-0"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              <span>Filters</span>
+              <span>מסננים</span>
               {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
                 <span className="bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {selectedCategories.length + selectedBrands.length}
@@ -719,41 +716,41 @@ export default function StorePage() {
 
             {/* Sort */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Sort:</span>
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">מיין:</span>
               <button
                 onClick={() => handleSortChange('name')}
-                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1 ${
+                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
                   sortBy === 'name'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'glass-button text-gray-800 hover:shadow-md'
                 }`}
               >
-                <span>Name</span>
+                <span>שם</span>
                 {sortBy === 'name' && (
                   <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {sortDirection === 'ASC' ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    ) : (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     )}
                   </svg>
                 )}
               </button>
               <button
                 onClick={() => handleSortChange('price')}
-                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center space-x-1 ${
+                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
                   sortBy === 'price'
                     ? 'bg-indigo-600 text-white shadow-md'
                     : 'glass-button text-gray-800 hover:shadow-md'
                 }`}
               >
-                <span>Price</span>
+                <span>מחיר</span>
                 {sortBy === 'price' && (
                   <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {sortDirection === 'ASC' ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    ) : (
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                     )}
                   </svg>
                 )}
@@ -762,11 +759,12 @@ export default function StorePage() {
 
             {/* Show */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">Show:</span>
+              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">הצג:</span>
               <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="glass-select px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer w-16 sm:w-20"
+                className="glass-select pl-3 pr-8 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer w-16 sm:w-20"
+                dir="ltr"
               >
                 <option value={2}>2</option>
                 <option value={10}>10</option>
@@ -780,20 +778,20 @@ export default function StorePage() {
       </header>
 
       {/* Desktop Sidebar - Hidden on mobile */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 fixed left-0 top-[144px] bottom-[80px] z-30">
-          <div className="h-full bg-purple-50/40 backdrop-blur-xl border-2 border-gray-300/60 border-t-0 border-l-0 pl-4 sm:pl-6 lg:pl-8 pr-6 overflow-y-auto pt-8 pb-6">
+      <aside className="hidden lg:block w-64 flex-shrink-0 fixed right-0 top-[144px] bottom-[80px] z-30">
+          <div className="h-full bg-purple-50/40 backdrop-blur-xl border-2 border-gray-300/60 border-t-0 border-r-0 pr-4 sm:pr-6 lg:pr-8 pl-6 overflow-y-auto pt-8 pb-6">
             {/* Clear Filters Button */}
             {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
               <button
                 onClick={clearAllFilters}
                 className="w-full mb-4 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg transition-colors"
               >
-                Clear All Filters
+                נקה כל המסננים
               </button>
             )}
 
             {/* Filter Title */}
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Filters</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">מסננים</h2>
 
             {/* Divider */}
             <div className="mb-4 border-t border-gray-300/40"></div>
@@ -804,7 +802,7 @@ export default function StorePage() {
                 onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
                 className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
               >
-                <span>Categories</span>
+                <span>קטגוריות</span>
                 <svg
                   className={`w-5 h-5 transition-transform ${isCategoriesExpanded ? 'rotate-180' : ''}`}
                   fill="none"
@@ -837,7 +835,7 @@ export default function StorePage() {
                       onClick={() => setShowAllCategories(!showAllCategories)}
                       className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
                     >
-                      {showAllCategories ? 'Show Less' : `Show All (${categories.length})`}
+                      {showAllCategories ? 'הצג פחות' : `הצג הכל (${categories.length})`}
                     </button>
                   )}
                 </div>
@@ -853,7 +851,7 @@ export default function StorePage() {
                 onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
                 className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
               >
-                <span>Brands</span>
+                <span>מותגים</span>
                 <svg
                   className={`w-5 h-5 transition-transform ${isBrandsExpanded ? 'rotate-180' : ''}`}
                   fill="none"
@@ -886,7 +884,7 @@ export default function StorePage() {
                       onClick={() => setShowAllBrands(!showAllBrands)}
                       className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
                     >
-                      {showAllBrands ? 'Show Less' : `Show All (${brands.length})`}
+                      {showAllBrands ? 'הצג פחות' : `הצג הכל (${brands.length})`}
                     </button>
                   )}
                 </div>
@@ -896,17 +894,17 @@ export default function StorePage() {
         </aside>
 
       {/* Main Content */}
-      <div className="w-full py-8 pb-32 lg:pl-64">
+      <div className="w-full py-8 pb-32 lg:pr-64">
         {/* Main Content Area */}
-        <main className="w-full pl-4 sm:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8">
+        <main className="w-full pr-4 sm:pr-6 lg:pr-8 pl-4 sm:pl-6 lg:pl-8">
         {filteredProducts.length === 0 ? (
           <div className="glass-card p-12 rounded-3xl text-center">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No Products Found</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">לא נמצאו מוצרים</h3>
             <p className="text-gray-600">
               {selectedCategories.length > 0 || selectedBrands.length > 0
-                ? 'Try adjusting your filters'
-                : 'Check back later for new products!'}
+                ? 'נסה להתאים את המסננים שלך'
+                : 'בדוק מאוחר יותר למוצרים חדשים!'}
             </p>
           </div>
         ) : (
@@ -949,14 +947,14 @@ export default function StorePage() {
                                 const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
                                 setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                               }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
-                              title="Previous image"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              title="תמונה קודמת"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </button>
-                            {/* Right Arrow */}
+                            {/* Left Arrow */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -964,8 +962,8 @@ export default function StorePage() {
                                 const newIndex = (currentIndex + 1) % productImages[product.id].length;
                                 setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                               }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
-                              title="Next image"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              title="תמונה הבאה"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1104,12 +1102,12 @@ export default function StorePage() {
                             <span className={`block transition-opacity duration-300 ${
                               showSuccess ? 'opacity-0' : 'opacity-100'
                             }`}>
-                              Add
+                              הוסף
                             </span>
                             <span className={`absolute top-0 left-0 right-0 transition-opacity duration-300 ${
                               showSuccess ? 'opacity-100' : 'opacity-0'
                             }`}>
-                              Added!
+                              נוסף!
                             </span>
                           </div>
                         </div>
@@ -1130,6 +1128,7 @@ export default function StorePage() {
           maxWidth="max-w-full"
           sidebarOffset={false}
           showCondition={totalPages > 0}
+          rtl={true}
         />
         </main>
       </div>
@@ -1144,12 +1143,12 @@ export default function StorePage() {
           ></div>
 
           {/* Drawer */}
-          <div className="fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col lg:hidden">
+          <div className="fixed left-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-r-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col lg:hidden" dir="rtl">
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Filters</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">מסננים</h2>
                   <button
                     onClick={() => setIsSidebarOpen(false)}
                     className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
@@ -1167,12 +1166,12 @@ export default function StorePage() {
                     onClick={clearAllFilters}
                     className="w-full mb-4 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50/50 rounded-lg transition-colors"
                   >
-                    Clear All Filters
+                    נקה כל המסננים
                   </button>
                 )}
 
                 {/* Filter Title */}
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Filters</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">מסננים</h2>
 
                 {/* Divider */}
                 <div className="mb-4 border-t border-gray-300/40"></div>
@@ -1183,7 +1182,7 @@ export default function StorePage() {
                     onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
                     className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
                   >
-                    <span>Categories</span>
+                    <span>קטגוריות</span>
                     <svg
                       className={`w-5 h-5 transition-transform ${isCategoriesExpanded ? 'rotate-180' : ''}`}
                       fill="none"
@@ -1216,7 +1215,7 @@ export default function StorePage() {
                           onClick={() => setShowAllCategories(!showAllCategories)}
                           className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
                         >
-                          {showAllCategories ? 'Show Less' : `Show All (${categories.length})`}
+                          {showAllCategories ? 'הצג פחות' : `הצג הכל (${categories.length})`}
                         </button>
                       )}
                     </div>
@@ -1229,7 +1228,7 @@ export default function StorePage() {
                     onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
                     className="w-full flex items-center justify-between mb-2 text-base font-semibold text-gray-800"
                   >
-                    <span>Brands</span>
+                    <span>מותגים</span>
                     <svg
                       className={`w-5 h-5 transition-transform ${isBrandsExpanded ? 'rotate-180' : ''}`}
                       fill="none"
@@ -1262,7 +1261,7 @@ export default function StorePage() {
                           onClick={() => setShowAllBrands(!showAllBrands)}
                           className="w-full text-sm text-purple-600 hover:text-purple-700 font-medium mt-2 py-1"
                         >
-                          {showAllBrands ? 'Show Less' : `Show All (${brands.length})`}
+                          {showAllBrands ? 'הצג פחות' : `הצג הכל (${brands.length})`}
                         </button>
                       )}
                     </div>
@@ -1285,14 +1284,14 @@ export default function StorePage() {
         )}
 
         {/* Cart Sidebar */}
-        <div className={`fixed right-0 top-0 h-full w-full sm:w-[480px] md:w-[520px] backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
-          isCartOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}>
+        <div className={`fixed left-0 top-0 h-full w-full sm:w-[480px] md:w-[520px] backdrop-blur-xl bg-white/95 border-r-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col ${
+          isCartOpen ? 'translate-x-0' : '-translate-x-full'
+        }`} dir="rtl">
             <div className="flex flex-col h-full">
               {/* Cart Header - Fixed */}
               <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-gray-800">Your Cart</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">העגלה שלך</h2>
                   <button
                     onClick={() => setIsCartOpen(false)}
                     className="text-gray-600 hover:text-gray-800 text-3xl leading-none"
@@ -1307,7 +1306,7 @@ export default function StorePage() {
                 {cart.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="text-6xl mb-4">🛒</div>
-                    <p className="text-gray-600">Your cart is empty</p>
+                    <p className="text-gray-600">העגלה שלך ריקה</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5 flex flex-col items-center">
@@ -1323,7 +1322,7 @@ export default function StorePage() {
                           <button
                             onClick={() => removeFromCart(item.product.id)}
                             className="w-8 h-8 rounded-full bg-red-500/90 hover:bg-red-600 text-white flex items-center justify-center flex-shrink-0 transition-all shadow"
-                            title="Remove item"
+                            title="הסר פריט"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -1394,13 +1393,13 @@ export default function StorePage() {
                   <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2.5 mb-4 border-2 border-purple-400/60 shadow-md">
                     <div className="flex items-center">
                       <span className="text-base font-semibold text-gray-800">
-                        Total: <span className="text-2xl font-bold text-purple-600">{formatPrice(getTotalPrice())}</span>
+                        סה״כ: <span className="text-2xl font-bold text-purple-600">{formatPrice(getTotalPrice())}</span>
                       </span>
                       <div className="flex-1 flex justify-center">
                         <div className="w-px h-6 bg-purple-300/40"></div>
                       </div>
                       <span className="text-sm font-medium text-gray-700">
-                        Items: <span className="font-bold">{getTotalItems()}</span>
+                        פריטים: <span className="font-bold">{getTotalItems()}</span>
                       </span>
                     </div>
                   </div>
@@ -1410,7 +1409,7 @@ export default function StorePage() {
                     onClick={() => {
                       // Allow checkout if we have managerId (public store) or orderId (order link)
                       if (!managerId && !orderId) {
-                        alert('Unable to proceed to checkout');
+                        alert('לא ניתן להמשיך לתשלום');
                         return;
                       }
                       setIsCheckoutOpen(true);
@@ -1418,7 +1417,7 @@ export default function StorePage() {
                     }}
                     className="w-full bg-purple-600 text-white font-bold py-4 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 shadow-lg"
                   >
-                    Proceed to Checkout
+                    המשך לתשלום
                   </button>
                 </div>
               )}

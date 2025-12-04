@@ -97,7 +97,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
         }
       } catch (err) {
         console.error('Failed to fetch locations:', err);
-        setError('Failed to load pickup locations');
+        setError('נכשל בטעינת מיקומי איסוף');
       } finally {
         setIsLoadingLocations(false);
       }
@@ -107,19 +107,19 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
   const validateStep1 = (): boolean => {
     if (!customerName.trim()) {
-      setError('Customer name is required');
+      setError('שם הלקוח נדרש');
       return false;
     }
     if (!customerPhone.trim()) {
-      setError('Customer phone is required');
+      setError('מספר טלפון נדרש');
       return false;
     }
     if (!customerStreetAddress.trim()) {
-      setError('Street address is required');
+      setError('כתובת רחוב נדרשת');
       return false;
     }
     if (!customerCity.trim()) {
-      setError('City is required');
+      setError('עיר נדרשת');
       return false;
     }
     setError('');
@@ -128,7 +128,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
   const validateStep2 = (): boolean => {
     if (selectedLocationId === null) {
-      setError('Please select a pickup location');
+      setError('אנא בחר מיקום איסוף');
       return false;
     }
     setError('');
@@ -164,7 +164,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
   const handleSubmit = async () => {
     if (!selectedLocationId) {
-      setError('Please select a pickup location');
+      setError('אנא בחר מיקום איסוף');
       return;
     }
 
@@ -193,7 +193,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
         } else if (userRole === 'manager') {
           await orderAPI.updateOrder(orderId, updateRequest);
         } else {
-          throw new Error('Unauthorized to update orders');
+          throw new Error('אין הרשאה לעדכן הזמנות');
         }
 
         setStep('success');
@@ -233,7 +233,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
       onSuccess();
     } catch (err: any) {
       console.error('Failed to place/update order:', err);
-      setError(err.response?.data?.userMessage || err.message || `Failed to ${isEditMode ? 'update' : 'place'} order`);
+      setError(err.response?.data?.userMessage || err.message || `נכשל ב${isEditMode ? 'עדכון' : 'יצירת'} ההזמנה`);
     } finally {
       setIsSubmitting(false);
     }
@@ -243,16 +243,16 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
   if (step === 'success') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" dir="rtl">
         <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-8 md:p-12 max-w-xl w-full text-center shadow-2xl border border-white/40">
           <div className="text-6xl mb-6">✅</div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            {isEditMode ? 'Order Updated!' : 'Order Placed!'}
+            {isEditMode ? 'ההזמנה עודכנה!' : 'ההזמנה הושלמה!'}
           </h1>
           <p className="text-lg text-gray-600">
             {isEditMode
-              ? 'Your order has been successfully updated.'
-              : 'Thank you for your order. We have received your order and will process it shortly.'}
+              ? 'ההזמנה שלך עודכנה בהצלחה.'
+              : 'תודה על ההזמנה שלך. קיבלנו את ההזמנה שלך ונעדכן אותך בקרוב.'}
           </p>
         </div>
       </div>
@@ -260,14 +260,14 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" dir="rtl">
       <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40">
         {/* Header */}
         <div className="flex items-center justify-center mb-6 relative">
-          <h2 className="text-2xl font-bold text-gray-800">Checkout</h2>
+          <h2 className="text-2xl font-bold text-gray-800">תשלום</h2>
           <button
             onClick={onClose}
-            className="absolute right-0 text-gray-600 hover:text-gray-800 text-3xl leading-none"
+            className="absolute left-0 text-gray-600 hover:text-gray-800 text-3xl leading-none"
           >
             ×
           </button>
@@ -278,13 +278,13 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
           <div className="flex w-[65%] items-start">
             {(isEditMode || isCustomerLinked
               ? [
-                  { key: 'pickup-location', label: 'Location', step: 1 },
-                  { key: 'review', label: 'Review', step: 2 },
+                  { key: 'pickup-location', label: 'מיקום', step: 1 },
+                  { key: 'review', label: 'סקירה', step: 2 },
                 ]
               : [
-                  { key: 'customer-info', label: 'Info', step: 1 },
-                  { key: 'pickup-location', label: 'Location', step: 2 },
-                  { key: 'review', label: 'Review', step: 3 },
+                  { key: 'customer-info', label: 'פרטים', step: 1 },
+                  { key: 'pickup-location', label: 'מיקום', step: 2 },
+                  { key: 'review', label: 'סקירה', step: 3 },
                 ]
             ).map(({ key, label, step: stepNum }, index, array) => {
               const isActive = step === key;
@@ -345,7 +345,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                         className={`absolute h-1 rounded-full ${lineColor}`}
                         style={{
                           top: '1.25rem', // Center of circle
-                          left: 'calc(50% + 1.25rem + 0.375rem)', // Start after right edge of circle + padding
+                          right: 'calc(50% + 1.25rem + 0.375rem)', // Start after left edge of circle + padding (RTL)
                           width: 'calc(100% - 2.5rem - 0.75rem)', // Span to next circle minus circle width and padding on both sides
                           transform: 'translateY(-50%)',
                         }}
@@ -370,69 +370,74 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
           <div className={`space-y-4 ${
             stepDirection === 'forward' ? 'animate-fade-in-left' : 'animate-fade-in-right'
           }`}>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Customer Information</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">פרטי לקוח</h3>
             
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Name *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">שם *</label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => handleCustomerNameChange(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Enter your name"
+                placeholder="הזן את שמך"
                 maxLength={MAX_CHECKOUT_NAME_LENGTH}
+                dir="rtl"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Phone *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">טלפון *</label>
                 <input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => handleCustomerPhoneChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                  placeholder="Enter your phone number"
+                  placeholder="הזן את מספר הטלפון שלך"
                   maxLength={MAX_CHECKOUT_PHONE_LENGTH}
                   inputMode="numeric"
                   pattern="[0-9]*"
+                  dir="ltr"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Email (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">אימייל (אופציונלי)</label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => handleCustomerEmailChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                  placeholder="Enter your email"
+                  placeholder="הזן את האימייל שלך"
                   maxLength={MAX_CHECKOUT_EMAIL_LENGTH}
+                  dir="ltr"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Street Address *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">כתובת רחוב *</label>
                 <input
                   type="text"
                   value={customerStreetAddress}
                   onChange={(e) => handleCustomerStreetAddressChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                  placeholder="Enter street address"
+                  placeholder="הזן כתובת רחוב"
                   maxLength={MAX_CHECKOUT_STREET_LENGTH}
+                  dir="rtl"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">City *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">עיר *</label>
                 <input
                   type="text"
                   value={customerCity}
                   onChange={(e) => handleCustomerCityChange(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
-                  placeholder="Enter city"
+                  placeholder="הזן עיר"
                   maxLength={MAX_CHECKOUT_CITY_LENGTH}
+                  dir="rtl"
                 />
               </div>
             </div>
@@ -442,7 +447,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                 onClick={handleNext}
                 className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 border-2 border-purple-400/50 backdrop-blur-sm shadow-lg shadow-purple-500/30"
               >
-                Continue
+                המשך
               </button>
             </div>
           </div>
@@ -453,7 +458,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
           <div className={`space-y-4 ${
             stepDirection === 'forward' ? 'animate-fade-in-left' : 'animate-fade-in-right'
           }`}>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Select Pickup Location</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">בחר מיקום איסוף</h3>
             
             {isLoadingLocations ? (
               <div className="text-center py-8">
@@ -461,7 +466,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
               </div>
             ) : locations.length === 0 ? (
               <div className="text-center py-8 text-gray-600">
-                No pickup locations available
+                אין מיקומי איסוף זמינים
               </div>
             ) : (
               <div className="space-y-3">
@@ -469,16 +474,16 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                   <button
                     key={location.id}
                     onClick={() => setSelectedLocationId(location.id)}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    className={`w-full p-4 rounded-xl border-2 text-right transition-all ${
                       selectedLocationId === location.id
                         ? 'border-purple-600 bg-purple-50'
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
                   >
                     <div className="font-semibold text-gray-800 mb-1">{location.name}</div>
-                    <div className="text-sm text-gray-600 break-words">Street: {location.streetAddress}</div>
-                    <div className="text-sm text-gray-600 break-words">City: {location.city}</div>
-                    <div className="text-sm text-gray-600 break-words">Phone: {location.phoneNumber}</div>
+                    <div className="text-sm text-gray-600 break-words">רחוב: {location.streetAddress}</div>
+                    <div className="text-sm text-gray-600 break-words">עיר: {location.city}</div>
+                    <div className="text-sm text-gray-600 break-words">טלפון: {location.phoneNumber}</div>
                   </button>
                 ))}
               </div>
@@ -489,14 +494,14 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                 onClick={handleBack}
                 className="flex-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 font-semibold py-3 rounded-xl text-gray-800 transition-all border-2 border-gray-300/50 shadow-lg shadow-gray-300/30 hover:scale-105"
               >
-                Back
+                חזור
               </button>
               <button
                 onClick={handleNext}
                 disabled={selectedLocationId === null}
                 className="flex-1 bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-purple-400/50 backdrop-blur-sm shadow-lg shadow-purple-500/30"
               >
-                Continue
+                המשך
               </button>
             </div>
           </div>
@@ -507,17 +512,17 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
           <div className={`space-y-4 ${
             stepDirection === 'forward' ? 'animate-fade-in-left' : 'animate-fade-in-right'
           }`}>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">{isEditMode ? 'Review Order Changes' : 'Review Your Order'}</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">{isEditMode ? 'סקור שינויי הזמנה' : 'סקור את ההזמנה שלך'}</h3>
             
             {/* Customer Info Summary - Only show if not linked to customer and not in edit mode */}
             {!isEditMode && !isCustomerLinked && (
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">פרטי לקוח</h4>
                 <div className="text-sm text-gray-600 space-y-1 break-words">
-                  <div>Name: {customerName}</div>
-                  <div>Phone: {customerPhone}</div>
-                  {customerEmail && <div>Email: {customerEmail}</div>}
-                  <div>Address: {customerStreetAddress}, {customerCity}</div>
+                  <div>שם: {customerName}</div>
+                  <div>טלפון: {customerPhone}</div>
+                  {customerEmail && <div>אימייל: {customerEmail}</div>}
+                  <div>כתובת: {customerStreetAddress}, {customerCity}</div>
                 </div>
               </div>
             )}
@@ -525,21 +530,21 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
             {/* In edit mode, show customer info from order (read-only) */}
             {isEditMode && editOrder && (
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <h4 className="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">פרטי לקוח</h4>
                 <div className="text-sm text-gray-600 space-y-1 break-words">
-                  <div>Name: {editOrder.customerName || 'N/A'}</div>
-                  <div>Phone: {editOrder.customerPhone || 'N/A'}</div>
-                  {editOrder.customerEmail && <div>Email: {editOrder.customerEmail}</div>}
-                  <div>Address: {editOrder.customerStreetAddress || 'N/A'}, {editOrder.customerCity || 'N/A'}</div>
+                  <div>שם: {editOrder.customerName || 'לא זמין'}</div>
+                  <div>טלפון: {editOrder.customerPhone || 'לא זמין'}</div>
+                  {editOrder.customerEmail && <div>אימייל: {editOrder.customerEmail}</div>}
+                  <div>כתובת: {editOrder.customerStreetAddress || 'לא זמין'}, {editOrder.customerCity || 'לא זמין'}</div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 italic">Customer information cannot be edited</p>
+                <p className="text-xs text-gray-500 mt-2 italic">פרטי הלקוח לא ניתנים לעריכה</p>
               </div>
             )}
 
             {/* Pickup Location Summary */}
             {selectedLocationId && (
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 break-words">
-                <h4 className="font-semibold text-gray-800 mb-2">Pickup Location</h4>
+                <h4 className="font-semibold text-gray-800 mb-2">מיקום איסוף</h4>
                 <div className="text-sm text-gray-600 space-y-1 break-words">
                   {locations.find(l => l.id === selectedLocationId)?.name}
                   <div>{locations.find(l => l.id === selectedLocationId)?.streetAddress}</div>
@@ -550,21 +555,21 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
             {/* Products Summary */}
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <h4 className="font-semibold text-gray-800 mb-2">Order Items</h4>
+              <h4 className="font-semibold text-gray-800 mb-2">פריטי הזמנה</h4>
               <div className="space-y-2">
                 {cart.map((item) => (
                   <div key={item.product.id} className="flex justify-between text-sm gap-3 items-start">
-                    <span className="text-gray-600 flex-1 min-w-0 break-words break-all pr-2">
+                    <span className="text-gray-600 flex-1 min-w-0 break-words break-all pl-2">
                       {item.product.name} × {item.quantity}
                     </span>
-                    <span className="font-semibold text-gray-800 text-right break-words break-all">
+                    <span className="font-semibold text-gray-800 text-left break-words break-all">
                       {formatPrice(item.product.price * item.quantity)}
                     </span>
                   </div>
                 ))}
               </div>
               <div className="mt-3 pt-3 border-t-2 border-gray-300 flex justify-between items-center">
-                <span className="font-bold text-gray-800">Total</span>
+                <span className="font-bold text-gray-800">סה״כ</span>
                 <span className="text-xl font-bold text-purple-600">
                   {formatPrice(totalPrice)}
                 </span>
@@ -573,14 +578,15 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Notes (Optional)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">הערות (אופציונלי)</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value.slice(0, 1000))}
                 rows={3}
                 maxLength={1000}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none resize-none"
-                placeholder="Any special instructions or notes..."
+                placeholder="הוראות מיוחדות או הערות..."
+                dir="rtl"
               />
             </div>
 
@@ -589,7 +595,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                 onClick={handleBack}
                 className="flex-1 bg-white/80 backdrop-blur-sm hover:bg-white/90 font-semibold py-3 rounded-xl text-gray-800 transition-all border-2 border-gray-300/50 shadow-lg shadow-gray-300/30 hover:scale-105"
               >
-                Back
+                חזור
               </button>
               <button
                 onClick={handleSubmit}
@@ -597,8 +603,8 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                 className="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 hover:shadow-2xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-400/50 backdrop-blur-sm shadow-lg shadow-green-500/30"
               >
                 {isSubmitting 
-                  ? (isEditMode ? 'Updating Order...' : 'Placing Order...')
-                  : (isEditMode ? 'Update Order' : 'Place Order')}
+                  ? (isEditMode ? 'מעדכן הזמנה...' : 'מזמין הזמנה...')
+                  : (isEditMode ? 'עדכן הזמנה' : 'הזמן הזמנה')}
               </button>
             </div>
           </div>
