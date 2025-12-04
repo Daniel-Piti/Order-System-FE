@@ -115,9 +115,9 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/85">
+      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/85" dir="rtl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Add New Agent</h2>
+          <h2 className="text-lg font-bold text-gray-800">הוסף סוכן חדש</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -138,7 +138,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
         <form onSubmit={handleSubmit} className="space-y-3" noValidate>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">First Name *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">שם פרטי *</label>
               <input
                 name="firstName"
                 type="text"
@@ -147,14 +147,14 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="John"
+                placeholder="לדוגמה: יוחנן"
               />
               {showErrors && fieldErrors.firstName && (
                 <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Last Name *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">שם משפחה *</label>
               <input
                 name="lastName"
                 type="text"
@@ -163,7 +163,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="Doe"
+                placeholder="לדוגמה: כהן"
               />
               {showErrors && fieldErrors.lastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>}
             </div>
@@ -171,7 +171,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Email *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">אימייל *</label>
               <input
                 name="email"
                 type="email"
@@ -180,13 +180,13 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="agent@example.com"
+                placeholder="לדוגמה: agent@example.com"
                 autoComplete="email"
               />
               {showErrors && fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Temporary Password *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">סיסמה זמנית *</label>
               <input
                 name="password"
                 type="text"
@@ -195,7 +195,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.password ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="Initial access password"
+                placeholder="סיסמה ראשונית לגישה"
               />
               {showErrors && fieldErrors.password && <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>}
             </div>
@@ -203,7 +203,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">מספר טלפון *</label>
               <input
                 name="phoneNumber"
                 type="tel"
@@ -212,14 +212,14 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="5551234567"
+                placeholder="לדוגמה: 0501234567"
               />
               {showErrors && fieldErrors.phoneNumber && (
                 <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">עיר *</label>
               <input
                 name="city"
                 type="text"
@@ -228,14 +228,14 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                 className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="New York"
+                placeholder="לדוגמה: תל אביב"
               />
               {showErrors && fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Street Address *</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">כתובת *</label>
             <input
               name="streetAddress"
               type="text"
@@ -244,28 +244,28 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
               className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St"
+              placeholder="לדוגמה: רחוב הרצל 123"
             />
             {showErrors && fieldErrors.streetAddress && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.streetAddress}</p>
             )}
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
               className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/70 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
             >
-              Cancel
+              ביטול
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 
                        bg-indigo-100/80 hover:bg-indigo-200/80 border border-indigo-400 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2 transition-colors"
+                       flex items-center justify-center gap-2 transition-colors"
             >
               {isSubmitting ? (
                 <>
@@ -277,10 +277,10 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Adding…</span>
+                  <span>מוסיף...</span>
                 </>
               ) : (
-                <span>Add Agent</span>
+                <span>הוסף סוכן</span>
               )}
             </button>
           </div>

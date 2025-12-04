@@ -103,10 +103,10 @@ export function validateDiscountPercentage(value: string | number, fieldName: st
  */
 export function validatePassword(password: string, minLength: number = 8): string | null {
   if (!password.trim()) {
-    return 'Password is required';
+    return 'סיסמה נדרשת';
   }
   if (password.length < minLength) {
-    return `Password must be at least ${minLength} characters`;
+    return `סיסמה חייבת להיות לפחות ${minLength} תווים`;
   }
   return null;
 }
@@ -178,15 +178,15 @@ export const AGENT_FIELD_LIMITS = {
 } as const;
 
 export const userFormValidations = {
-  firstName: (value: string) => validateRequiredWithMaxLength(value, 'First name', MAX_NAME_LENGTH),
-  lastName: (value: string) => validateRequiredWithMaxLength(value, 'Last name', MAX_NAME_LENGTH),
+  firstName: (value: string) => validateRequiredWithMaxLength(value, 'שם פרטי', MAX_NAME_LENGTH),
+  lastName: (value: string) => validateRequiredWithMaxLength(value, 'שם משפחה', MAX_NAME_LENGTH),
   businessName: (value: string) => validateRequiredWithMaxLength(value, 'Business name', MAX_NAME_LENGTH),
   email: (value: string) => validateEmail(value, MAX_EMAIL_LENGTH),
   password: (value: string) => validatePassword(value),
-  phoneNumber: (value: string) => validatePhoneNumberDigitsOnly(value, MAX_PHONE_LENGTH),
+  phoneNumber: (value: string) => validatePhoneNumberDigitsOnly(value, MAX_PHONE_LENGTH, 'מספר טלפון'),
   dateOfBirth: (value: string) => validateDate(value, 'Date of birth'),
-  streetAddress: (value: string) => validateRequiredWithMaxLength(value, 'Street address', MAX_STREET_ADDRESS_LENGTH),
-  city: (value: string) => validateRequiredWithMaxLength(value, 'City', MAX_CITY_LENGTH),
+  streetAddress: (value: string) => validateRequiredWithMaxLength(value, 'כתובת', MAX_STREET_ADDRESS_LENGTH),
+  city: (value: string) => validateRequiredWithMaxLength(value, 'עיר', MAX_CITY_LENGTH),
 };
 
 /**

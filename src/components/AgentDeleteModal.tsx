@@ -49,9 +49,9 @@ export default function AgentDeleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/90">
+      <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/90" dir="rtl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Delete Agent</h2>
+          <h2 className="text-lg font-bold text-gray-800">מחק סוכן</h2>
           <button
             onClick={handleCancel}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -77,13 +77,13 @@ export default function AgentDeleteModal({
             </svg>
           </div>
           <div>
-            <p className="text-sm text-gray-600 uppercase tracking-[0.25em] font-semibold mb-1">Confirmation</p>
+            <p className="text-sm text-gray-600 uppercase tracking-[0.25em] font-semibold mb-1">אישור</p>
             <p className="text-gray-800 text-base font-medium">
-              Are you sure you want to delete{' '}
-              <span className="font-semibold text-gray-900">{agentName ?? 'this agent'}</span>?
+              האם אתה בטוח שברצונך למחוק את{' '}
+              <span className="font-semibold text-gray-900">{agentName ?? 'הסוכן הזה'}</span>?
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              This action cannot be undone. Their data and any related customers will be permanently removed.
+              פעולה זו לא ניתנת לביטול. הנתונים שלו וכל הלקוחות הקשורים יוסרו לצמיתות.
             </p>
           </div>
         </div>
@@ -101,13 +101,13 @@ export default function AgentDeleteModal({
             disabled={isSubmitting}
             className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-700 bg-gray-100/80 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
           >
-            Cancel
+            ביטול
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-red-500/90 hover:bg-red-500 border border-red-500/60 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transition-colors"
+            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-red-500/90 hover:bg-red-500 border border-red-500/60 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
           >
             {isSubmitting ? (
               <>
@@ -119,7 +119,7 @@ export default function AgentDeleteModal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <span>Deleting…</span>
+                <span>מוחק...</span>
               </>
             ) : (
               <>
@@ -131,7 +131,7 @@ export default function AgentDeleteModal({
                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3"
                   />
                 </svg>
-                <span>Delete</span>
+                <span>מחק</span>
               </>
             )}
           </button>

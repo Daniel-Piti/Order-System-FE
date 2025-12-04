@@ -94,12 +94,12 @@ export default function AgentsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Your Agents</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">הסוכנים שלך</h1>
           <p className="text-gray-600 mt-2">
-            Keep track of your active agents and make sure their contact information stays current.
+            עקוב אחר הסוכנים הפעילים שלך ודאג שפרטי הקשר שלהם מעודכנים.
           </p>
         </div>
         <button
@@ -107,22 +107,23 @@ export default function AgentsPage() {
           onClick={() => setIsAddModalOpen(true)}
           className="mt-2 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
         >
+          <span>הוסף סוכן</span>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span>Add Agent</span>
         </button>
       </div>
 
       <div className="glass-card rounded-3xl p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-end">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Show:</span>
+              <span className="text-sm font-medium text-gray-700">הצג:</span>
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className="glass-select px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
+                dir="ltr"
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -131,7 +132,7 @@ export default function AgentsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Sort:</span>
+              <span className="text-sm font-medium text-gray-700">מיין:</span>
               <button
                 onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
                 className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2 justify-center sm:justify-start whitespace-nowrap"
@@ -139,22 +140,27 @@ export default function AgentsPage() {
                 aria-label={`Sort agents ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
               >
                 {sortDirection === 'asc' ? (
-                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
+                  <>
+                    <span>א ← ת</span>
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
                 ) : (
-                  <svg className="w-4 h-4 text-indigo-600 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
+                  <>
+                    <span>א → ת</span>
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </>
                 )}
-                <span>{sortDirection === 'asc' ? 'A → Z' : 'Z → A'}</span>
               </button>
             </div>
           </div>
 
-          <div className="relative w-full sm:w-80 sm:max-w-xs sm:ml-auto">
+          <div className="relative w-full sm:w-80 sm:max-w-xs">
             <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -170,14 +176,16 @@ export default function AgentsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search agents..."
-              className="glass-input w-full pl-10 pr-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-2 border-gray-400/80 hover:border-gray-500 focus:border-gray-400 bg-white/50 focus:bg-white/60 shadow-lg hover:shadow-xl"
+              maxLength={100}
+              placeholder="חפש סוכנים..."
+              className="glass-input w-full pr-10 pl-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-2 border-gray-400/80 hover:border-gray-500 focus:border-gray-400 bg-white/50 focus:bg-white/60 shadow-lg hover:shadow-xl"
+              dir="rtl"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Clear search"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -191,7 +199,7 @@ export default function AgentsPage() {
 
       {isLoading ? (
         <div className="glass-card rounded-3xl p-8 flex items-center justify-center">
-          <div className="flex items-center space-x-3 text-gray-700">
+          <div className="flex items-center gap-3 text-gray-700">
             <svg
               className="animate-spin h-6 w-6 text-indigo-600"
               xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +213,7 @@ export default function AgentsPage() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            <span className="font-medium">Loading agents…</span>
+            <span className="font-medium">... טוען סוכנים</span>
           </div>
         </div>
       ) : error ? (
@@ -218,23 +226,23 @@ export default function AgentsPage() {
             <table className="min-w-full divide-y divide-indigo-100/70">
               <thead className="bg-purple-200/95 text-gray-700">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Name
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                    שם
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Email
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                    אימייל
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Phone
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                    טלפון
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Location
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                    מיקום
                   </th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Added
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                    נוסף
                   </th>
-                  <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                    Actions
+                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200 w-24">
+                    פעולות
                   </th>
                 </tr>
               </thead>
@@ -242,7 +250,7 @@ export default function AgentsPage() {
                 {displayAgents.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                      No agents match your current filters.
+                      אין סוכנים התואמים למסננים הנוכחיים שלך.
                     </td>
                   </tr>
                 ) : (
@@ -251,31 +259,31 @@ export default function AgentsPage() {
                       key={agent.id}
                       className="transition-colors bg-white hover:bg-indigo-50/50"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 text-right border-l border-gray-200">
                         <p className="text-sm font-semibold text-gray-800">
                           {agent.firstName} {agent.lastName}
                         </p>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <p className="text-sm text-gray-800 break-words">{agent.email}</p>
+                      <td className="px-6 py-4 text-right border-l border-gray-200">
+                        <p className="text-sm text-gray-800 break-words truncate max-w-[16rem]" title={agent.email}>{agent.email}</p>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <p className="text-sm text-gray-800">{agent.phoneNumber}</p>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right border-l border-gray-200">
+                        {agent.phoneNumber}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <p className="text-sm text-gray-800 break-words">{agent.streetAddress}</p>
+                      <td className="px-6 py-4 text-right border-l border-gray-200">
+                        <p className="text-sm text-gray-800 break-words truncate max-w-[12rem]" title={agent.streetAddress}>{agent.streetAddress}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{agent.city}</p>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {new Date(agent.createdAt).toLocaleDateString()}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center border-l border-gray-200">
+                        {new Date(agent.createdAt).toLocaleDateString('he-IL')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200">
                         <div className="inline-flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleEditAgent(agent)}
                             className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                            title="Edit agent"
+                            title="ערוך סוכן"
                           >
                             <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -285,7 +293,7 @@ export default function AgentsPage() {
                             type="button"
                             onClick={() => handleDeleteAgent(agent)}
                             className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                            title="Delete agent"
+                            title="מחק סוכן"
                           >
                             <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
