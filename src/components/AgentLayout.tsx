@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { name: 'Profile', path: '/agent/dashboard/profile', icon: '👤' },
-  { name: 'Orders', path: '/agent/dashboard/orders', icon: '📦' },
-  { name: 'Customers', path: '/agent/dashboard/customers', icon: '🗂️' },
-  { name: 'Products', path: '/agent/dashboard/products', icon: '🛍️' },
-  { name: 'Overrides', path: '/agent/dashboard/overrides', icon: '💰' },
+  { name: 'פרופיל', path: '/agent/dashboard/profile', icon: '👤' },
+  { name: 'הזמנות', path: '/agent/dashboard/orders', icon: '📦' },
+  { name: 'לקוחות', path: '/agent/dashboard/customers', icon: '🗂️' },
+  { name: 'מוצרים', path: '/agent/dashboard/products', icon: '🛍️' },
+  { name: 'מחירים מיוחדים', path: '/agent/dashboard/overrides', icon: '💰' },
 ];
 
 export default function AgentLayout() {
@@ -20,9 +20,9 @@ export default function AgentLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-indigo-100" dir="rtl">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 glass-card border-b border-white/20 p-4">
+      <div className="lg:hidden fixed top-0 right-0 left-0 z-40 glass-card border-b border-white/20 p-4">
         <div className="flex items-center justify-between gap-3">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -37,7 +37,7 @@ export default function AgentLayout() {
               )}
             </svg>
           </button>
-          <h1 className="text-xl font-bold text-gray-800 flex-1">Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-800 flex-1">תפריט</h1>
         </div>
       </div>
 
@@ -52,27 +52,27 @@ export default function AgentLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-r-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
+          fixed top-0 right-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-l-2 border-white/40 shadow-2xl z-50 transition-transform duration-300 overflow-hidden
           lg:translate-x-0
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
+        style={{ maxHeight: '100vh', height: '100vh' }}
       >
-        <div className="p-6 h-full flex flex-col overflow-hidden">
-          <div className="flex-shrink-0">
-            <div className="mb-1">
-              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            </div>
-            <p className="text-sm text-gray-500 mb-8">Agent Console</p>
+        <div className="h-full flex flex-col p-6 pb-6 overflow-hidden" style={{ maxHeight: '100%' }}>
+          <div className="mb-8 flex-shrink-0">
+            <h1 className="text-2xl font-bold text-gray-800">
+              תפריט
+            </h1>
           </div>
 
-          <nav className="space-y-2 flex-1 overflow-y-auto pr-2 min-h-0 scrollbar-hide">
+          <nav className="space-y-2 flex-1 overflow-y-auto pl-2 min-h-0 scrollbar-hide mb-4">
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
                     isActive
                       ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
                       : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
@@ -85,10 +85,10 @@ export default function AgentLayout() {
             ))}
           </nav>
 
-          <div className="mt-6 flex-shrink-0">
+          <div className="mt-auto pt-4 pb-2 flex-shrink-0 border-t border-gray-200/50">
             <button
               onClick={handleLogout}
-              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center space-x-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"
+              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center gap-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -98,14 +98,14 @@ export default function AgentLayout() {
                   d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
-              <span>Sign Out</span>
+              <span>התנתק</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen pt-20 lg:pt-6 p-6">
+      <main className="lg:mr-64 min-h-screen pt-20 lg:pt-6 p-6">
         <Outlet />
       </main>
     </div>

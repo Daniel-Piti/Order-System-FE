@@ -42,7 +42,7 @@ export default function UserLayout() {
               )}
             </svg>
           </button>
-          <h1 className="text-xl font-bold text-gray-800 flex-1">לוח בקרה</h1>
+          <h1 className="text-xl font-bold text-gray-800 flex-1">תפריט</h1>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function UserLayout() {
         <div className="h-full flex flex-col p-6 pb-6 overflow-hidden" style={{ maxHeight: '100%' }}>
           <div className="mb-8 flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-800">
-              לוח בקרה
+              תפריט
             </h1>
           </div>
 

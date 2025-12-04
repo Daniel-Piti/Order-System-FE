@@ -235,6 +235,12 @@ export default function OverridesPage() {
       errors.overridePrice = 'מחיר מותאם חייב להיות מספר חיובי תקין';
     } else if (Number(formData.overridePrice) > MAX_PRICE) {
       errors.overridePrice = 'מחיר מותאם לא יכול לעלות על 1,000,000';
+    } else {
+      // Check decimal places
+      const decimalParts = formData.overridePrice.split('.');
+      if (decimalParts.length > 1 && decimalParts[1].length > 2) {
+        errors.overridePrice = 'מחיר מותאם יכול לכלול עד 2 ספרות אחרי הנקודה';
+      }
     }
 
     setFieldErrors(errors);
@@ -306,6 +312,12 @@ export default function OverridesPage() {
       errors.overridePrice = 'מחיר מותאם חייב להיות מספר חיובי תקין';
     } else if (Number(editFormData.overridePrice) > MAX_PRICE) {
       errors.overridePrice = 'מחיר מותאם לא יכול לעלות על 1,000,000';
+    } else {
+      // Check decimal places
+      const decimalParts = editFormData.overridePrice.split('.');
+      if (decimalParts.length > 1 && decimalParts[1].length > 2) {
+        errors.overridePrice = 'מחיר מותאם יכול לכלול עד 2 ספרות אחרי הנקודה';
+      }
     }
 
     setFieldErrors(errors);
@@ -426,6 +438,10 @@ export default function OverridesPage() {
       {/* Header */}
       <div className="glass-card rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">מחירים מיוחדים</h1>
+            <p className="text-gray-600 mt-1">נהל מחירים מותאמים אישית ללקוחות</p>
+          </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
@@ -435,20 +451,17 @@ export default function OverridesPage() {
             </svg>
             הוסף מחיר מיוחד
           </button>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">מחירים מיוחדים</h1>
-            <p className="text-gray-600 mt-1">נהל מחירים מותאמים אישית ללקוחות</p>
-          </div>
         </div>
       </div>
 
       {/* Filters & Controls */}
       {(overrides.length > 0 || productFilter || customerFilter || agentFilter !== 'all') && (
         <div className="glass-card rounded-3xl p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               {/* Product Filter */}
               <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700" dir="rtl">מוצר:</span>
                 <select
                   value={productFilter}
                   onChange={(e) => handleProductFilterChange(e.target.value)}
@@ -462,11 +475,11 @@ export default function OverridesPage() {
                     </option>
                   ))}
                 </select>
-                <span className="text-sm font-medium text-gray-700">:מוצר</span>
               </div>
 
               {/* Customer Filter */}
               <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700" dir="rtl">לקוח:</span>
                 <select
                   value={customerFilter}
                   onChange={(e) => handleCustomerFilterChange(e.target.value)}
@@ -480,11 +493,11 @@ export default function OverridesPage() {
                     </option>
                   ))}
                 </select>
-                <span className="text-sm font-medium text-gray-700">:לקוח</span>
               </div>
 
               {/* Agent Filter */}
               <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700" dir="rtl">סוכן:</span>
                 <select
                   value={agentFilter}
                   onChange={(e) => {
@@ -502,11 +515,11 @@ export default function OverridesPage() {
                     </option>
                   ))}
                 </select>
-                <span className="text-sm font-medium text-gray-700">:סוכן</span>
               </div>
 
               {/* Page Size */}
               <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700" dir="rtl">הצג:</span>
                 <select
                   value={pageSize}
                   onChange={(e) => handlePageSizeChange(Number(e.target.value))}
@@ -519,7 +532,6 @@ export default function OverridesPage() {
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <span className="text-sm font-medium text-gray-700">:הצג</span>
               </div>
             </div>
           </div>
@@ -763,8 +775,15 @@ export default function OverridesPage() {
                     onChange={(e) => {
                       const { value } = e.target;
                       let nextValue = value;
-                      const numericValue = Number(value);
-                      if (value !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                      // Limit to 2 decimal places
+                      if (nextValue.includes('.')) {
+                        const parts = nextValue.split('.');
+                        if (parts[1] && parts[1].length > 2) {
+                          nextValue = parts[0] + '.' + parts[1].substring(0, 2);
+                        }
+                      }
+                      const numericValue = Number(nextValue);
+                      if (nextValue !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
                         nextValue = MAX_PRICE.toString();
                       }
                       setFormData({ ...formData, overridePrice: nextValue });
@@ -856,8 +875,15 @@ export default function OverridesPage() {
                     onChange={(e) => {
                       const { value } = e.target;
                       let nextValue = value;
-                      const numericValue = Number(value);
-                      if (value !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                      // Limit to 2 decimal places
+                      if (nextValue.includes('.')) {
+                        const parts = nextValue.split('.');
+                        if (parts[1] && parts[1].length > 2) {
+                          nextValue = parts[0] + '.' + parts[1].substring(0, 2);
+                        }
+                      }
+                      const numericValue = Number(nextValue);
+                      if (nextValue !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
                         nextValue = MAX_PRICE.toString();
                       }
                       setEditFormData({ overridePrice: nextValue });
