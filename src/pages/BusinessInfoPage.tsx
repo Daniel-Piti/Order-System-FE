@@ -84,7 +84,7 @@ export default function BusinessInfoPage() {
       const data = await orderAPI.getLinksCreatedStats(selectedYear, selectedMonth);
       setLinksCreated(data);
     } catch (err: any) {
-      setErrorLinks('Failed to load links created');
+      setErrorLinks('נכשל בטעינת קישורים שנוצרו');
       console.error('Error fetching links created:', err);
     } finally {
       setLoadingLinks(false);
@@ -98,7 +98,7 @@ export default function BusinessInfoPage() {
       const data = await orderAPI.getOrdersByStatus(selectedYear, selectedMonth);
       setOrdersByStatus(data);
     } catch (err: any) {
-      setErrorOrders('Failed to load orders by status');
+      setErrorOrders('נכשל בטעינת הזמנות לפי סטטוס');
       console.error('Error fetching orders by status:', err);
     } finally {
       setLoadingOrders(false);
@@ -112,7 +112,7 @@ export default function BusinessInfoPage() {
       const data = await orderAPI.getMonthlyIncome(selectedYear, selectedMonth);
       setMonthlyIncome(data);
     } catch (err: any) {
-      setErrorIncome('Failed to load monthly income');
+      setErrorIncome('נכשל בטעינת הכנסה חודשית');
       console.error('Error fetching monthly income:', err);
     } finally {
       setLoadingIncome(false);
@@ -126,7 +126,7 @@ export default function BusinessInfoPage() {
       const data = await orderAPI.getYearlyData(selectedYear);
       setYearlyData(data);
     } catch (err: any) {
-      setErrorYearly('Failed to load yearly data');
+      setErrorYearly('נכשל בטעינת נתונים שנתיים');
       console.error('Error fetching yearly data:', err);
     } finally {
       setLoadingYearly(false);
@@ -135,7 +135,7 @@ export default function BusinessInfoPage() {
 
   const getSelectedMonthName = () => {
     const date = new Date(selectedYear, selectedMonth - 1, 1);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    return date.toLocaleString('he-IL', { month: 'long', year: 'numeric' });
   };
 
   const getMonthOptions = () => {
@@ -149,7 +149,7 @@ export default function BusinessInfoPage() {
         break;
       }
       const date = new Date(selectedYear, i - 1, 1);
-      months.push({ value: i, label: date.toLocaleString('default', { month: 'long' }) });
+      months.push({ value: i, label: date.toLocaleString('he-IL', { month: 'long' }) });
     }
     return months;
   };
@@ -188,11 +188,11 @@ export default function BusinessInfoPage() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      EMPTY: 'Empty',
-      PLACED: 'Placed',
-      DONE: 'Done',
-      EXPIRED: 'Expired',
-      CANCELLED: 'Cancelled',
+      EMPTY: 'ריק',
+      PLACED: 'הוזמן',
+      DONE: 'הושלם',
+      EXPIRED: 'פג תוקף',
+      CANCELLED: 'בוטל',
     };
     return labels[status] || status;
   };
@@ -241,20 +241,21 @@ export default function BusinessInfoPage() {
   const ordersPath = ordersPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" dir="rtl">
       {/* Header */}
       <div className="backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">Business Information</h1>
-            <p className="text-gray-600 text-sm">Statistics for {getSelectedMonthName()}</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">מידע עסקי</h1>
+            <p className="text-gray-600 text-sm">סטטיסטיקות עבור {getSelectedMonthName()}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                className="backdrop-blur-xl bg-white/90 border border-gray-300/70 rounded-xl pl-3 pr-8 py-2 text-sm font-medium text-gray-800 shadow-lg hover:bg-white/95 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                className="backdrop-blur-xl bg-white/90 border border-gray-300/70 rounded-xl pl-8 pr-3 py-2 text-sm font-medium text-gray-800 shadow-lg hover:bg-white/95 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                dir="ltr"
               >
                 {getMonthOptions().map((month) => (
                   <option key={month.value} value={month.value}>
@@ -262,7 +263,7 @@ export default function BusinessInfoPage() {
                   </option>
                 ))}
               </select>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -272,7 +273,8 @@ export default function BusinessInfoPage() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="backdrop-blur-xl bg-white/90 border border-gray-300/70 rounded-xl pl-3 pr-8 py-2 text-sm font-medium text-gray-800 shadow-lg hover:bg-white/95 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                className="backdrop-blur-xl bg-white/90 border border-gray-300/70 rounded-xl pl-8 pr-3 py-2 text-sm font-medium text-gray-800 shadow-lg hover:bg-white/95 focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer"
+                dir="ltr"
               >
                 {getYearOptions().map((year) => (
                   <option key={year} value={year}>
@@ -280,7 +282,7 @@ export default function BusinessInfoPage() {
                   </option>
                 ))}
               </select>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -297,20 +299,20 @@ export default function BusinessInfoPage() {
           {/* Links Created */}
           <div className="backdrop-blur-2xl bg-gradient-to-br from-indigo-400/30 to-purple-400/30 border border-white/40 rounded-2xl shadow-xl p-4 hover:shadow-2xl transition-all duration-300 flex flex-col">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-gray-800">Links Created</h2>
+              <h2 className="text-base font-bold text-gray-800">הזמנות לסוכן</h2>
               <div className="text-xl">🔗</div>
             </div>
             
             <div className="flex flex-col space-y-2.5 flex-1 min-h-0 overflow-hidden">
               {/* Manager Row */}
               <div className="flex justify-between items-center py-2 px-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <span className="text-sm font-medium text-gray-800">Manager</span>
+                <span className="text-sm font-medium text-gray-800">מנהל</span>
                 <span className="text-lg font-bold text-indigo-700">{linksCreated?.managerLinks ?? 0}</span>
               </div>
 
               {/* Agents List - Scrollable */}
               {linksCreated && Object.keys(linksCreated.linksPerAgent).length > 0 && (
-                <div className="flex-1 overflow-y-auto min-h-0 space-y-1.5 pr-1">
+                <div className="flex-1 overflow-y-auto min-h-0 space-y-1.5 pl-1">
                   {Object.values(linksCreated.linksPerAgent)
                     .sort((a, b) => b.linkCount - a.linkCount)
                     .map((agentInfo) => (
@@ -318,7 +320,7 @@ export default function BusinessInfoPage() {
                         key={agentInfo.agentId} 
                         className="flex justify-between items-center py-1.5 px-2.5 bg-white/20 rounded-lg backdrop-blur-sm hover:bg-white/30 transition-colors"
                       >
-                        <span className={`text-xs font-medium truncate pr-1.5 flex-1 ${agentInfo.linkCount === 0 ? 'text-gray-900' : 'text-gray-800'}`} title={agentInfo.agentName}>
+                        <span className={`text-xs font-medium truncate pl-1.5 flex-1 ${agentInfo.linkCount === 0 ? 'text-gray-900' : 'text-gray-800'}`} title={agentInfo.agentName}>
                           {agentInfo.agentName}
                         </span>
                         <span className={`text-sm font-bold whitespace-nowrap ${agentInfo.linkCount === 0 ? 'text-gray-600' : 'text-purple-700'}`}>
@@ -331,7 +333,7 @@ export default function BusinessInfoPage() {
 
               {/* Total Row */}
               <div className="flex justify-between items-center py-2 px-3 bg-white/30 rounded-lg backdrop-blur-sm border border-white/40 mt-auto">
-                <span className="text-sm font-bold text-gray-900">Total</span>
+                <span className="text-sm font-bold text-gray-900">סה״כ</span>
                 <span className="text-lg font-bold text-gray-900">{linksCreated?.total ?? 0}</span>
               </div>
             </div>
@@ -345,7 +347,7 @@ export default function BusinessInfoPage() {
             {/* Monthly Income - Small Cube */}
             <div className="backdrop-blur-2xl bg-gradient-to-br from-green-400/30 to-emerald-400/30 border border-white/40 rounded-xl shadow-lg p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-center items-center w-44 h-40 flex-shrink-0">
               <div className="text-4xl mb-2 text-center">💰</div>
-              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">Monthly Income</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">הכנסות</h2>
               <div className="text-2xl font-bold text-green-700 text-center">
                 {loadingIncome ? '...' : formatPrice(monthlyIncome)}
               </div>
@@ -354,7 +356,7 @@ export default function BusinessInfoPage() {
             {/* Total Orders - Small Cube */}
             <div className="backdrop-blur-2xl bg-gradient-to-br from-pink-400/30 to-rose-400/30 border border-white/40 rounded-xl shadow-lg p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-center items-center w-44 h-40 flex-shrink-0">
               <div className="text-4xl mb-2 text-center">📦</div>
-              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">Total Orders</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">סה״כ הזמנות</h2>
               <div className="text-2xl font-bold text-pink-700 text-center">
                 {Object.values(ordersByStatus).reduce((sum, count) => sum + count, 0)}
               </div>
@@ -362,7 +364,7 @@ export default function BusinessInfoPage() {
 
             {/* Orders by Status - Desktop: in same row, Mobile: separate */}
             <div className="hidden lg:flex flex-1 backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-3 h-40 flex-col min-w-96">
-              <h2 className="text-base font-bold text-gray-800 mb-3 text-center">Orders by Status</h2>
+              <h2 className="text-base font-bold text-gray-800 mb-3 text-center">הזמנות לפי סטטוס</h2>
               <div className="flex gap-3 flex-1 min-w-0 w-full">
                 {Object.entries(ordersByStatus).map(([status, count]) => (
                   <div 
@@ -379,7 +381,7 @@ export default function BusinessInfoPage() {
 
           {/* Orders by Status - Mobile: separate row */}
           <div className="lg:hidden backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-2">
-            <h2 className="text-sm font-bold text-gray-800 mb-2">Orders by Status</h2>
+            <h2 className="text-sm font-bold text-gray-800 mb-2">הזמנות לפי סטטוס</h2>
             <div className="flex gap-0.5 w-full">
               {Object.entries(ordersByStatus).map(([status, count]) => (
                 <div 
@@ -395,7 +397,7 @@ export default function BusinessInfoPage() {
 
           {/* Yearly Chart */}
           <div className="backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-4">
-            <h2 className="text-base font-bold text-gray-800 mb-3">Yearly Overview - {selectedYear}</h2>
+            <h2 className="text-base font-bold text-gray-800 mb-3 text-center">סקירה שנתית - {selectedYear}</h2>
             <div ref={chartContainerRef} className="w-full overflow-x-auto">
             <svg width={isMobile ? chartWidth : "100%"} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="xMidYMid meet" className={isMobile ? "" : "w-full"}>
               {/* Grid lines */}
@@ -495,7 +497,7 @@ export default function BusinessInfoPage() {
                         month: chartPoint.month
                       })}
                     />
-                    <title>{`${point.month}: ${point.value} orders`}</title>
+                    <title>{`${point.month}: ${point.value} הזמנות`}</title>
                   </g>
                 );
               })}
@@ -530,7 +532,7 @@ export default function BusinessInfoPage() {
                       textAnchor="middle"
                       className="text-xs fill-green-300 font-medium"
                     >
-                      Revenue: {formatPrice(hoveredPoint.revenue)}
+                      הכנסה: {formatPrice(hoveredPoint.revenue)}
                     </text>
                     <text
                       x={hoveredPoint.x}
@@ -538,7 +540,7 @@ export default function BusinessInfoPage() {
                       textAnchor="middle"
                       className="text-xs fill-blue-300 font-medium"
                     >
-                      Orders: {hoveredPoint.orders}
+                      הזמנות: {hoveredPoint.orders}
                     </text>
                   </g>
                 );
@@ -567,7 +569,7 @@ export default function BusinessInfoPage() {
                 return (
                   <text
                     key={`revenue-${i}`}
-                    x={padding.left - (isMobile ? 3 : 5)}
+                    x={padding.left - 55 }
                     y={y + 4}
                     textAnchor="end"
                     className={`${isMobile ? 'text-[10px]' : 'text-xs'} fill-gray-600`}
@@ -584,7 +586,7 @@ export default function BusinessInfoPage() {
                 return (
                   <text
                     key={`orders-${i}`}
-                    x={chartWidth - padding.right + (isMobile ? 3 : 5)}
+                    x={chartWidth - padding.right + 25 }
                     y={y + 4}
                     textAnchor="start"
                     className={`${isMobile ? 'text-[10px]' : 'text-xs'} fill-gray-600`}
@@ -598,11 +600,11 @@ export default function BusinessInfoPage() {
             <div className="flex items-center justify-center gap-6 mt-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-xs text-gray-700">Revenue</span>
+                <span className="text-xs text-gray-700">הכנסה</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span className="text-xs text-gray-700">Completed Orders</span>
+                <span className="text-xs text-gray-700">הזמנות שהושלמו</span>
               </div>
             </div>
           </div>
