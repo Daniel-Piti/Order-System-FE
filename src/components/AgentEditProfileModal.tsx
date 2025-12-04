@@ -91,7 +91,7 @@ export default function AgentEditProfileModal({
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'Failed to update profile'
+          'נכשל בעדכון הפרופיל'
       );
     } finally {
       setIsSubmitting(false);
@@ -107,9 +107,9 @@ export default function AgentEditProfileModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85">
+      <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85" dir="rtl">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">Edit Personal Details</h2>
+          <h2 className="text-lg font-bold text-gray-800">ערוך פרטים אישיים</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
@@ -139,7 +139,7 @@ export default function AgentEditProfileModal({
         <form onSubmit={handleSubmit} className="space-y-3" noValidate>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">First Name *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">שם פרטי *</label>
               <input
                 name="firstName"
                 type="text"
@@ -148,7 +148,7 @@ export default function AgentEditProfileModal({
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                   showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="John"
+                placeholder="לדוגמה: יוחנן"
               />
               {showErrors && fieldErrors.firstName && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.firstName}</p>
@@ -156,7 +156,7 @@ export default function AgentEditProfileModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Last Name *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">שם משפחה *</label>
               <input
                 name="lastName"
                 type="text"
@@ -165,7 +165,7 @@ export default function AgentEditProfileModal({
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                   showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="Doe"
+                placeholder="לדוגמה: כהן"
               />
               {showErrors && fieldErrors.lastName && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
@@ -175,7 +175,7 @@ export default function AgentEditProfileModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">מספר טלפון *</label>
               <input
                 name="phoneNumber"
                 type="tel"
@@ -184,7 +184,7 @@ export default function AgentEditProfileModal({
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                   showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="5551234567"
+                placeholder="לדוגמה: 0501234567"
               />
               {showErrors && fieldErrors.phoneNumber && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.phoneNumber}</p>
@@ -192,7 +192,7 @@ export default function AgentEditProfileModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">City *</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">עיר *</label>
               <input
                 name="city"
                 type="text"
@@ -201,7 +201,7 @@ export default function AgentEditProfileModal({
                 className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                   showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
                 }`}
-                placeholder="New York"
+                placeholder="לדוגמה: תל אביב"
               />
               {showErrors && fieldErrors.city && (
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.city}</p>
@@ -210,7 +210,7 @@ export default function AgentEditProfileModal({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Street Address *</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">כתובת *</label>
             <input
               name="streetAddress"
               type="text"
@@ -219,28 +219,28 @@ export default function AgentEditProfileModal({
               className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                 showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
               }`}
-              placeholder="123 Main St"
+              placeholder="לדוגמה: רחוב הרצל 123"
             />
             {showErrors && fieldErrors.streetAddress && (
               <p className="text-red-500 text-xs mt-0.5">{fieldErrors.streetAddress}</p>
             )}
           </div>
 
-          <div className="flex space-x-3 pt-3">
+          <div className="flex gap-3 pt-3">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border-gray-400 hover:border-gray-500 disabled:opacity-50"
             >
-              Cancel
+              ביטול
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="glass-button flex-1 py-1.5 px-3 rounded-lg text-sm font-semibold text-gray-800 
                        bg-sky-100/60 hover:bg-sky-200/70 border-sky-600 hover:border-sky-700 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center space-x-2"
+                       flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -264,10 +264,10 @@ export default function AgentEditProfileModal({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Saving…</span>
+                  <span>שומר...</span>
                 </>
               ) : (
-                <span>Save Changes</span>
+                <span>שמור שינויים</span>
               )}
             </button>
           </div>

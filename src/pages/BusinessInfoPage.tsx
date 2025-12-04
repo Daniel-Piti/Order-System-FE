@@ -208,8 +208,8 @@ export default function BusinessInfoPage() {
   const chartHeight = 300;
   // Adjust padding for mobile vs desktop - ensure right padding is enough for labels
   const padding = isMobile 
-    ? { top: 10, right: 45, bottom: 30, left: 40 }
-    : { top: 20, right: 40, bottom: 40, left: 60 };
+    ? { top: 10, right: 45, bottom: 30, left: 80 }
+    : { top: 20, right: 40, bottom: 40, left: 100 };
   const graphWidth = chartWidth - padding.left - padding.right;
   const graphHeight = chartHeight - padding.top - padding.bottom;
 
@@ -348,7 +348,7 @@ export default function BusinessInfoPage() {
             <div className="backdrop-blur-2xl bg-gradient-to-br from-green-400/30 to-emerald-400/30 border border-white/40 rounded-xl shadow-lg p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-center items-center w-44 h-40 flex-shrink-0">
               <div className="text-4xl mb-2 text-center">💰</div>
               <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">הכנסות</h2>
-              <div className="text-2xl font-bold text-green-700 text-center">
+              <div className={`font-bold text-green-700 text-center ${monthlyIncome >= 1000000 ? 'text-lg' : monthlyIncome >= 100000 ? 'text-xl' : 'text-2xl'}`}>
                 {loadingIncome ? '...' : formatPrice(monthlyIncome)}
               </div>
             </div>
@@ -569,9 +569,9 @@ export default function BusinessInfoPage() {
                 return (
                   <text
                     key={`revenue-${i}`}
-                    x={padding.left - 55 }
+                    x={padding.left - 15 }
                     y={y + 4}
-                    textAnchor="end"
+                    textAnchor="start"
                     className={`${isMobile ? 'text-[10px]' : 'text-xs'} fill-gray-600`}
                   >
                     {formatPrice(value)}
