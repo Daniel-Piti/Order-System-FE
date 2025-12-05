@@ -139,9 +139,6 @@ export default function AgentOverridesPage() {
     products.forEach(p => {
       map.set(p.id, p);
       map.set(String(p.id), p);
-      if (typeof p.id !== 'string') {
-        map.set(p.id.toString(), p);
-      }
     });
     return map;
   }, [products]);
@@ -150,19 +147,6 @@ export default function AgentOverridesPage() {
     return new Map(customers.map(c => [c.id, c]));
   }, [customers]);
 
-  // Get selected product for add modal - useMemo to ensure React tracks changes
-  const selectedProductForAdd = useMemo(() => {
-    if (!formData.productId || products.length === 0) {
-      return undefined;
-    }
-    // Try multiple lookup methods to handle any type mismatches
-    const product = productMap.get(formData.productId) 
-      || productMap.get(String(formData.productId))
-      || products.find(p => p.id === formData.productId)
-      || products.find(p => String(p.id) === String(formData.productId))
-      || products.find(p => p.id.toString() === formData.productId.toString());
-    return product;
-  }, [formData.productId, productMap, products]);
 
   const handleProductFilterChange = (value: string) => {
     setProductFilter(value);

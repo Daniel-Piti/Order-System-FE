@@ -27,7 +27,6 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [, setTotalElements] = useState(0);
   
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
@@ -125,7 +124,6 @@ export default function ProductsPage() {
       );
       setProducts(pageResponse.content);
       setTotalPages(pageResponse.totalPages);
-      setTotalElements(pageResponse.totalElements);
       
       // Clear old images and fetch images for all products in parallel
       setProductImages({});

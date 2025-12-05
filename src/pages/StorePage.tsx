@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { publicAPI, orderAPI, agentAPI, managerAPI } from '../services/api';
+import { publicAPI, orderAPI, agentAPI } from '../services/api';
 import type { Product, Category, Brand, OrderPublic, Order } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
 import PaginationBar from '../components/PaginationBar';
@@ -38,7 +38,6 @@ export default function StorePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
-  const [, setTotalElements] = useState(0);
   
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
@@ -313,7 +312,6 @@ export default function StorePage() {
         
         setProducts(paginatedProducts);
         setTotalPages(Math.ceil(sortedProducts.length / pageSize));
-        setTotalElements(sortedProducts.length);
         
         // Fetch images for products
         await fetchProductImagesForAll(paginatedProducts);
@@ -366,7 +364,6 @@ export default function StorePage() {
           
           setProducts(paginatedProducts);
           setTotalPages(Math.ceil(sortedProducts.length / pageSize));
-          setTotalElements(sortedProducts.length);
           
           await fetchProductImagesForAll(paginatedProducts);
         } else {
@@ -381,7 +378,6 @@ export default function StorePage() {
           
           setProducts(pageResponse.content);
           setTotalPages(pageResponse.totalPages);
-          setTotalElements(pageResponse.totalElements);
           
           await fetchProductImagesForAll(pageResponse.content);
         }

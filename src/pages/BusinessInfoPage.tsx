@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { orderAPI, LinksCreatedStats, MonthlyData } from '../services/api';
+import { orderAPI } from '../services/api';
+import type { LinksCreatedStats, MonthlyData } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
 export default function BusinessInfoPage() {
@@ -10,16 +11,16 @@ export default function BusinessInfoPage() {
   const [yearlyData, setYearlyData] = useState<MonthlyData[]>([]);
   
   // Loading states for each card
-  const [loadingLinks, setLoadingLinks] = useState(true);
-  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [, setLoadingLinks] = useState(true);
+  const [, setLoadingOrders] = useState(true);
   const [loadingIncome, setLoadingIncome] = useState(true);
-  const [loadingYearly, setLoadingYearly] = useState(true);
+  const [, setLoadingYearly] = useState(true);
   
   // Errors for each card
-  const [errorLinks, setErrorLinks] = useState('');
-  const [errorOrders, setErrorOrders] = useState('');
-  const [errorIncome, setErrorIncome] = useState('');
-  const [errorYearly, setErrorYearly] = useState('');
+  const [, setErrorLinks] = useState('');
+  const [, setErrorOrders] = useState('');
+  const [, setErrorIncome] = useState('');
+  const [, setErrorYearly] = useState('');
   
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
@@ -164,16 +165,6 @@ export default function BusinessInfoPage() {
     return years;
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      EMPTY: 'from-blue-400 to-blue-600',
-      PLACED: 'from-yellow-400 to-yellow-600',
-      DONE: 'from-green-400 to-green-600',
-      EXPIRED: 'from-gray-400 to-gray-600',
-      CANCELLED: 'from-red-400 to-red-600',
-    };
-    return colors[status] || 'from-indigo-400 to-indigo-600';
-  };
 
   const getStatusBgColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -504,7 +495,6 @@ export default function BusinessInfoPage() {
 
               {/* Tooltip */}
               {hoveredPoint && (() => {
-                const minY = Math.min(...chartPoints.map(p => Math.min(p.revenueY, p.ordersY)));
                 const isNearTop = hoveredPoint.y < padding.top + 100;
                 const tooltipTop = isNearTop ? hoveredPoint.y : hoveredPoint.y - 100;
                 return (

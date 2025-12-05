@@ -105,28 +105,32 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
   const validateForm = (): ValidationErrors => {
     const errors: ValidationErrors = {};
 
-    errors.name = validateRequiredWithMaxLength(formData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
-    errors.phoneNumber = validatePhoneNumberDigitsOnly(formData.phoneNumber, MAX_CUSTOMER_PHONE_LENGTH, 'Phone number');
-    errors.email = validateEmail(formData.email);
-    errors.streetAddress = validateRequiredWithMaxLength(
+    const nameError = validateRequiredWithMaxLength(formData.name, 'Customer name', MAX_CUSTOMER_NAME_LENGTH);
+    if (nameError) errors.name = nameError;
+    
+    const phoneError = validatePhoneNumberDigitsOnly(formData.phoneNumber, MAX_CUSTOMER_PHONE_LENGTH, 'Phone number');
+    if (phoneError) errors.phoneNumber = phoneError;
+    
+    const emailError = validateEmail(formData.email);
+    if (emailError) errors.email = emailError;
+    
+    const streetError = validateRequiredWithMaxLength(
       formData.streetAddress,
       'Street address',
       MAX_CUSTOMER_STREET_LENGTH
     );
-    errors.city = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
-    errors.discountPercentage = validateDiscountPercentage(
+    if (streetError) errors.streetAddress = streetError;
+    
+    const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
+    if (cityError) errors.city = cityError;
+    
+    const discountError = validateDiscountPercentage(
       formData.discountPercentage ?? 0,
       'Discount percentage'
     );
+    if (discountError) errors.discountPercentage = discountError;
 
-    const cleanedErrors: ValidationErrors = {};
-    Object.entries(errors).forEach(([key, value]) => {
-      if (value) {
-        cleanedErrors[key] = value;
-      }
-    });
-
-    return cleanedErrors;
+    return errors;
   };
 
   const handleSubmit = async (event: FormEvent) => {

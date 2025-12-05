@@ -952,7 +952,7 @@ export default function OverridesPage() {
                   <span className="font-semibold">מוצר:</span> {getProductName(overrideToDelete.productId)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-semibold">מחיר מקורי:</span> {formatPrice(overrideToDelete.productPrice)}
+                  <span className="font-semibold">מחיר מקורי:</span> {formatPrice(productMap.get(overrideToDelete.productId)?.price ?? 0)}
                 </p>
                 <p className="text-sm text-gray-600">
                   <span className="font-semibold">מחיר מותאם:</span> {formatPrice(overrideToDelete.overridePrice)}

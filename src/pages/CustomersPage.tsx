@@ -154,18 +154,6 @@ export default function CustomersPage() {
     return phone;
   };
 
-  const formatInitials = (value: string) => {
-    if (!value) return 'CU';
-    const initials = value
-      .split(' ')
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('');
-    if (initials.length === 0) {
-      return value.charAt(0).toUpperCase();
-    }
-    return initials.slice(0, 2).padEnd(2, initials.charAt(0));
-  };
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);

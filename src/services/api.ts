@@ -367,6 +367,13 @@ export interface Product {
   description: string;
 }
 
+export interface ProductDataForOrder {
+  productId: string;
+  productName: string;
+  quantity: number;
+  pricePerUnit: number;
+}
+
 export interface PageResponse<T> {
   content: T[];
   page: number;

@@ -7,7 +7,6 @@ import { formatPrice } from '../utils/formatPrice';
 export default function AgentOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [currentAgentId, setCurrentAgentId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -73,8 +72,7 @@ export default function AgentOrdersPage() {
 
   const fetchCurrentAgent = async () => {
     try {
-      const agent = await agentAPI.getCurrentAgent();
-      setCurrentAgentId(agent.id);
+      await agentAPI.getCurrentAgent();
     } catch (err: any) {
       console.error('Error fetching current agent:', err);
     }
