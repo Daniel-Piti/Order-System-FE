@@ -247,7 +247,7 @@ export default function BrandsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
       // Create FormData for multipart/form-data
       const formData = new FormData();
@@ -308,7 +308,7 @@ export default function BrandsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
       // Create FormData for multipart/form-data
       const formData = new FormData();
@@ -355,7 +355,7 @@ export default function BrandsPage() {
       setIsDeleting(true);
       const token = localStorage.getItem('authToken');
       
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await fetch(`${API_BASE_URL}/brands/${brandToDelete.id}`, {
         method: 'DELETE',
         headers: {

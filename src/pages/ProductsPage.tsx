@@ -142,7 +142,7 @@ export default function ProductsPage() {
     if (!managerId || productsList.length === 0) return;
     
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const imagePromises = productsList.map(async (product) => {
         try {
           const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
@@ -490,7 +490,7 @@ export default function ProductsPage() {
   const fetchProductImages = async (managerId: string, productId: string) => {
     try {
       setIsLoadingImages(true);
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}/images`);
       
       if (response.ok) {
@@ -656,7 +656,7 @@ export default function ProductsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
       // Only update product data if it changed
       if (productDataChanged) {
@@ -734,7 +734,7 @@ export default function ProductsPage() {
     try {
       setIsDeleting(true);
       const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await fetch(`${API_BASE_URL}/products/${productToDelete.id}`, {
         method: 'DELETE',
         headers: {
@@ -821,7 +821,7 @@ export default function ProductsPage() {
         formDataToSend.append('images', image);
       });
       
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {

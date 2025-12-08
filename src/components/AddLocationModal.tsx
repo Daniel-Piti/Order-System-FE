@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface AddLocationModalProps {
   isOpen: boolean;

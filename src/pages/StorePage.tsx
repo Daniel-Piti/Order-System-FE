@@ -402,7 +402,7 @@ export default function StorePage() {
     if (!managerId || productsList.length === 0) return;
     
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const imagePromises = productsList.map(async (product) => {
         try {
           const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);

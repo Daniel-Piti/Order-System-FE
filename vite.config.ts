@@ -7,4 +7,14 @@ export default defineConfig({
   // Expose environment variables to the client
   // Variables prefixed with VITE_ are available in the app via import.meta.env.VITE_*
   envPrefix: 'VITE_',
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      }
+    }
+  },
 })

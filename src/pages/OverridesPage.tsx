@@ -7,7 +7,7 @@ import type { ProductOverrideWithPrice, ProductListItem, CustomerListItem, Produ
 import { formatPrice } from '../utils/formatPrice';
 
 const MAX_PRICE = 1_000_000;
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export default function OverridesPage() {
   const [overrides, setOverrides] = useState<ProductOverrideWithPrice[]>([]);
