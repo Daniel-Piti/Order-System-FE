@@ -315,7 +315,7 @@ export default function BrandsPage() {
           fileMd5Base64: fileMd5Base64,
         };
       }
-
+      
       const response = await fetch(`${API_BASE_URL}/brands`, {
         method: 'POST',
         headers: {
@@ -404,7 +404,7 @@ export default function BrandsPage() {
           fileMd5Base64: fileMd5Base64,
         };
       }
-
+      
       const response = await fetch(`${API_BASE_URL}/brands/${brandToEdit.id}`, {
         method: 'PUT',
         headers: {

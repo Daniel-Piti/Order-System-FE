@@ -4,6 +4,55 @@ import { managerAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
+import SparkMD5 from 'spark-md5';
+
+// Helper function to calculate MD5 hash of a file and return as Base64
+async function calculateFileMD5(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const blobSlice = File.prototype.slice;
+    const chunkSize = 2097152; // Read in chunks of 2MB
+    const chunks = Math.ceil(file.size / chunkSize);
+    let currentChunk = 0;
+    const spark = new SparkMD5.ArrayBuffer();
+    const fileReader = new FileReader();
+
+    fileReader.onload = function (e) {
+      if (e.target?.result) {
+        spark.append(e.target.result as ArrayBuffer);
+        currentChunk++;
+
+        if (currentChunk < chunks) {
+          loadNext();
+        } else {
+          const hashHex = spark.end();
+          // Convert hex string to base64
+          const hashBytes = new Uint8Array(
+            hashHex.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16))
+          );
+          // Convert bytes to base64
+          let binary = '';
+          for (let i = 0; i < hashBytes.length; i++) {
+            binary += String.fromCharCode(hashBytes[i]);
+          }
+          const hashBase64 = btoa(binary);
+          resolve(hashBase64);
+        }
+      }
+    };
+
+    fileReader.onerror = function () {
+      reject(new Error('Failed to read file for MD5 calculation'));
+    };
+
+    function loadNext() {
+      const start = currentChunk * chunkSize;
+      const end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+      fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+    }
+
+    loadNext();
+  });
+}
 
 const MAX_PRICE = 1_000_000;
 const MAX_PRODUCT_NAME_LENGTH = 200;
@@ -682,39 +731,83 @@ export default function ProductsPage() {
         }
       }
 
-      // Delete images if any were marked for deletion
+      // Delete images if any were marked for deletion (bulk delete)
       if (imagesToDelete.length > 0) {
-        for (const imageId of imagesToDelete) {
-          const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images/${imageId}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          
-          if (!deleteResponse.ok) {
-            console.error(`Failed to delete image ${imageId}`);
-          }
+        const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(imagesToDelete),
+        });
+        
+        if (!deleteResponse.ok) {
+          const errorText = await deleteResponse.text();
+          throw new Error(errorText || 'Failed to delete images');
         }
       }
 
       // Upload new images if any were added
       if (newImagesToAdd.length > 0) {
-        for (const imageFile of newImagesToAdd) {
-          const formData = new FormData();
-          formData.append('image', imageFile);
-          
-          const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-            body: formData,
-          });
-          
-          if (!uploadResponse.ok) {
-            console.error(`Failed to upload image ${imageFile.name}`);
+        // Calculate MD5 hashes for all new images
+        const imagesMetadata = await Promise.all(
+          newImagesToAdd.map(async (imageFile) => {
+            const fileMd5Base64 = await calculateFileMD5(imageFile);
+            return {
+              fileName: imageFile.name,
+              contentType: imageFile.type,
+              fileSizeBytes: imageFile.size,
+              fileMd5Base64: fileMd5Base64,
+            };
+          })
+        );
+
+        // Step 1: Get presigned URLs from backend
+        const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(imagesMetadata),
+        });
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          let errorMessage = 'Failed to upload images';
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.userMessage || errorData.message || 'נכשל בהעלאת התמונות';
+          } catch (parseError) {
+            errorMessage = errorText || 'נכשל בהעלאת התמונות';
           }
+          throw new Error(errorMessage);
+        }
+
+        const result = await uploadResponse.json();
+
+        // Step 2: Upload images to S3 using presigned URLs
+        if (result.imagesPreSignedUrls && result.imagesPreSignedUrls.length > 0) {
+          await Promise.all(
+            result.imagesPreSignedUrls.map(async (preSignedUrl: string, index: number) => {
+              const imageFile = newImagesToAdd[index];
+              const imageMetadata = imagesMetadata[index];
+              
+              const s3UploadResponse = await fetch(preSignedUrl, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': imageFile.type,
+                  'Content-MD5': imageMetadata.fileMd5Base64,
+                },
+                body: imageFile,
+              });
+
+              if (!s3UploadResponse.ok) {
+                throw new Error(`נכשל בהעלאת התמונה ${imageFile.name} ל-S3`);
+              }
+            })
+          );
         }
       }
 
@@ -799,41 +892,81 @@ export default function ProductsPage() {
     try {
       setIsSubmitting(true);
       const token = localStorage.getItem('authToken');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
       const minimumPriceValue = Math.round(Math.min(Number(formData.minimumPrice), MAX_PRICE) * 100) / 100;
       const finalPrice = Math.round(Math.min(Number(formData.price), MAX_PRICE) * 100) / 100;
       
-      // Create FormData
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      if (formData.brandId) {
-        formDataToSend.append('brandId', formData.brandId);
-      }
-      if (formData.categoryId) {
-        formDataToSend.append('categoryId', formData.categoryId);
-      }
-      formDataToSend.append('minimumPrice', minimumPriceValue.toString());
-      formDataToSend.append('price', finalPrice.toString());
-      formDataToSend.append('description', formData.description || ''); // Always send, even if empty
-      
-      // Add images
-      selectedImages.forEach(image => {
-        formDataToSend.append('images', image);
-      });
-      
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+      // Calculate MD5 hashes for all images
+      const imagesMetadata = await Promise.all(
+        selectedImages.map(async (image) => {
+          const fileMd5Base64 = await calculateFileMD5(image);
+          return {
+            fileName: image.name,
+            contentType: image.type,
+            fileSizeBytes: image.size,
+            fileMd5Base64: fileMd5Base64,
+          };
+        })
+      );
+
+      // Step 1: Create product with image metadata (backend generates s3Keys and returns presigned URLs)
+      const createProductBody: any = {
+        productInfo: {
+          name: formData.name,
+          brandId: formData.brandId ? Number(formData.brandId) : null,
+          categoryId: formData.categoryId ? Number(formData.categoryId) : null,
+          minimumPrice: minimumPriceValue,
+          price: finalPrice,
+          description: formData.description || '',
+        },
+        imagesMetadata: imagesMetadata,
+      };
+
       const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
+          'Content-Type': 'application/json',
         },
-        body: formDataToSend,
+        body: JSON.stringify(createProductBody),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to create product');
+        let errorMessage = 'Failed to create product';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.userMessage || errorData.message || 'נכשל ביצירת המוצר';
+        } catch (parseError) {
+          errorMessage = errorText || 'נכשל ביצירת המוצר';
+        }
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      // Step 2: Upload images to S3 using presigned URLs
+      if (result.imagesPreSignedUrls && result.imagesPreSignedUrls.length > 0) {
+        await Promise.all(
+          result.imagesPreSignedUrls.map(async (preSignedUrl: string, index: number) => {
+            const imageFile = selectedImages[index];
+            const imageMetadata = imagesMetadata[index];
+            
+            const uploadResponse = await fetch(preSignedUrl, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': imageFile.type,
+                'Content-MD5': imageMetadata.fileMd5Base64,
+              },
+              body: imageFile,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error(`נכשל בהעלאת התמונה ${imageFile.name} ל-S3`);
+            }
+          })
+        );
       }
 
       // Success - refresh products and close modal
