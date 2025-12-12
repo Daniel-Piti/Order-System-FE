@@ -4,6 +4,55 @@ import { managerAPI, publicAPI } from '../services/api';
 import type { Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
+import SparkMD5 from 'spark-md5';
+
+// Helper function to calculate MD5 hash of a file and return as Base64
+async function calculateFileMD5(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const blobSlice = File.prototype.slice;
+    const chunkSize = 2097152; // Read in chunks of 2MB
+    const chunks = Math.ceil(file.size / chunkSize);
+    let currentChunk = 0;
+    const spark = new SparkMD5.ArrayBuffer();
+    const fileReader = new FileReader();
+
+    fileReader.onload = function (e) {
+      if (e.target?.result) {
+        spark.append(e.target.result as ArrayBuffer);
+        currentChunk++;
+
+        if (currentChunk < chunks) {
+          loadNext();
+        } else {
+          const hashHex = spark.end();
+          // Convert hex string to base64
+          const hashBytes = new Uint8Array(
+            hashHex.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16))
+          );
+          // Convert bytes to base64
+          let binary = '';
+          for (let i = 0; i < hashBytes.length; i++) {
+            binary += String.fromCharCode(hashBytes[i]);
+          }
+          const hashBase64 = btoa(binary);
+          resolve(hashBase64);
+        }
+      }
+    };
+
+    fileReader.onerror = function () {
+      reject(new Error('Failed to read file for MD5 calculation'));
+    };
+
+    function loadNext() {
+      const start = currentChunk * chunkSize;
+      const end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+      fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+    }
+
+    loadNext();
+  });
+}
 
 export default function BrandsPage() {
   const MAX_BRAND_NAME_LENGTH = 50;
@@ -249,20 +298,31 @@ export default function BrandsPage() {
       const token = localStorage.getItem('authToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
-      // Create FormData for multipart/form-data
-      const formData = new FormData();
-      formData.append('name', brandName);
+      // Step 1: Create brand with file metadata (backend generates s3Key and returns presigned URL)
+      const createBrandBody: any = {
+        name: brandName,
+      };
+
+      let fileMd5Base64: string | null = null;
       if (selectedImage) {
-        formData.append('image', selectedImage);
+        // Calculate MD5 hash of the file
+        fileMd5Base64 = await calculateFileMD5(selectedImage);
+        
+        createBrandBody.imageMetadata = {
+          fileName: selectedImage.name,
+          contentType: selectedImage.type,
+          fileSizeBytes: selectedImage.size,
+          fileMd5Base64: fileMd5Base64,
+        };
       }
-      
+
       const response = await fetch(`${API_BASE_URL}/brands`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(createBrandBody),
       });
 
       if (!response.ok) {
@@ -272,10 +332,27 @@ export default function BrandsPage() {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.userMessage || errorData.message || 'נכשל ביצירת המותג';
         } catch (parseError) {
-          // If JSON parse fails, use the raw error text
           errorMessage = errorText || 'נכשל ביצירת המותג';
         }
         throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      // Step 2: If image was provided, upload to S3 using presigned URL
+      if (selectedImage && result.preSignedUrl && fileMd5Base64) {
+        const uploadResponse = await fetch(result.preSignedUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': selectedImage.type,
+            'Content-MD5': fileMd5Base64,  // Required: presigned URL was signed with content-md5
+          },
+          body: selectedImage,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('נכשל בהעלאת התמונה ל-S3');
+        }
       }
 
       await fetchBrands();
@@ -310,20 +387,31 @@ export default function BrandsPage() {
       const token = localStorage.getItem('authToken');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       
-      // Create FormData for multipart/form-data
-      const formData = new FormData();
-      formData.append('name', brandName);
+      // Step 1: Update brand with file metadata (backend generates s3Key and returns presigned URL)
+      const updateBrandBody: any = {
+        name: brandName,
+      };
+
+      let fileMd5Base64: string | null = null;
       if (selectedImage) {
-        formData.append('image', selectedImage);
+        // Calculate MD5 hash of the file
+        fileMd5Base64 = await calculateFileMD5(selectedImage);
+        
+        updateBrandBody.imageMetadata = {
+          fileName: selectedImage.name,
+          contentType: selectedImage.type,
+          fileSizeBytes: selectedImage.size,
+          fileMd5Base64: fileMd5Base64,
+        };
       }
-      
+
       const response = await fetch(`${API_BASE_URL}/brands/${brandToEdit.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type - let browser set it with boundary for multipart/form-data
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(updateBrandBody),
       });
 
       if (!response.ok) {
@@ -333,10 +421,27 @@ export default function BrandsPage() {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.userMessage || errorData.message || 'נכשל בעדכון המותג';
         } catch (parseError) {
-          // If JSON parse fails, use the raw error text
           errorMessage = errorText || 'נכשל בעדכון המותג';
         }
         throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      // Step 2: If new image was provided, upload to S3 using presigned URL
+      if (selectedImage && result.preSignedUrl && fileMd5Base64) {
+        const uploadResponse = await fetch(result.preSignedUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': selectedImage.type,
+            'Content-MD5': fileMd5Base64,  // Required: presigned URL was signed with content-md5
+          },
+          body: selectedImage,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('נכשל בהעלאת התמונה ל-S3');
+        }
       }
 
       await fetchBrands();
