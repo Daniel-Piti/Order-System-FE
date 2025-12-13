@@ -480,7 +480,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
                   >
-                    <div className="font-semibold text-gray-800 mb-1">{location.name}</div>
+                    <div className="font-semibold text-gray-800 mb-1 break-words">{location.name}</div>
                     <div className="text-sm text-gray-600 break-words">רחוב: {location.streetAddress}</div>
                     <div className="text-sm text-gray-600 break-words">עיר: {location.city}</div>
                     <div className="text-sm text-gray-600 break-words">טלפון: {location.phoneNumber}</div>

@@ -16,6 +16,7 @@ export default function OrdersPage() {
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+  const [copiedPhoneNumber, setCopiedPhoneNumber] = useState<string | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -349,6 +350,31 @@ export default function OrdersPage() {
     });
   };
 
+  const formatDateShort = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  };
+
+  const getOrderCardDate = (order: Order): { label: string; date: string } | null => {
+    switch (order.status) {
+      case 'EMPTY':
+        return { label: 'נוצר ב:\u00A0', date: order.createdAt };
+      case 'PLACED':
+        return { label: 'הוזמן ב:\u00A0', date: order.placedAt || order.createdAt };
+      case 'DONE':
+        return { label: 'הושלם ב:\u00A0', date: order.doneAt || order.placedAt || order.createdAt };
+      case 'EXPIRED':
+        return { label: 'פג תוקף ב:\u00A0', date: order.linkExpiresAt };
+      case 'CANCELLED':
+        return null; // No date for cancelled
+      default:
+        return { label: 'נוצר ב:\u00A0', date: order.createdAt };
+    }
+  };
+
   // Filter customers in modal based on search query
   const filteredCustomers = customers.filter((customer) => {
     if (!customerSearchQuery.trim()) return true;
@@ -531,7 +557,7 @@ export default function OrdersPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 justify-items-center">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 justify-items-center">
           {orders && orders.map((order) => {
             const linkedCustomer = order.customerId
               ? customers.find((customer) => customer.id === order.customerId)
@@ -578,15 +604,62 @@ export default function OrdersPage() {
               {/* Customer Info - Fixed height */}
               <div className="mb-2 min-h-[3.5rem] flex flex-col gap-1 overflow-hidden items-center justify-center">
                 {showOrderCustomerDetails ? (
-                  <div className="w-full space-y-1 text-center">
-                    <p className="text-sm font-bold text-gray-800 truncate">{order.customerName}</p>
+                  <div className="w-full space-y-1.5 text-center">
+                    <p className="text-base font-bold text-gray-800 truncate">{order.customerName}</p>
                     {order.customerPhone && (
-                      <p className="text-xs text-gray-600 font-medium truncate flex items-center justify-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        {order.customerPhone}
-                      </p>
+                      <a
+                        href={`tel:${order.customerPhone}`}
+                        onClick={(e) => {
+                          // On desktop, prevent default tel: behavior and copy instead
+                          if (window.innerWidth >= 768 || !('ontouchstart' in window)) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const phoneNumber = order.customerPhone || '';
+                            navigator.clipboard.writeText(phoneNumber).then(() => {
+                              setCopiedPhoneNumber(phoneNumber);
+                              setTimeout(() => {
+                                setCopiedPhoneNumber(null);
+                              }, 1500);
+                            }).catch(() => {
+                              // Fallback if clipboard API fails
+                              const textArea = document.createElement('textarea');
+                              textArea.value = phoneNumber;
+                              textArea.style.position = 'fixed';
+                              textArea.style.opacity = '0';
+                              document.body.appendChild(textArea);
+                              textArea.select();
+                              document.execCommand('copy');
+                              document.body.removeChild(textArea);
+                              setCopiedPhoneNumber(phoneNumber);
+                              setTimeout(() => {
+                                setCopiedPhoneNumber(null);
+                              }, 1500);
+                            });
+                          }
+                        }}
+                        className={`text-sm font-semibold truncate flex items-center justify-center gap-1.5 transition-all duration-300 relative ${
+                          copiedPhoneNumber === order.customerPhone
+                            ? 'text-green-600'
+                            : 'text-indigo-600 hover:text-indigo-700'
+                        }`}
+                      >
+                        <span className={`transition-opacity duration-300 ${
+                          copiedPhoneNumber === order.customerPhone ? 'opacity-100' : 'opacity-0 absolute'
+                        }`}>
+                          <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          הועתק!
+                        </span>
+                        <span className={`transition-opacity duration-300 flex items-center gap-1.5 ${
+                          copiedPhoneNumber === order.customerPhone ? 'opacity-0 absolute' : 'opacity-100'
+                        }`}>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                          </svg>
+                          {order.customerPhone}
+                        </span>
+                      </a>
                     )}
                   </div>
                 ) : order.status === 'EMPTY' ? (
@@ -602,45 +675,29 @@ export default function OrdersPage() {
 
               </div>
 
-              <div className="min-h-[32px] flex items-center justify-center">
-                {linkedCustomer ? (
-                  <div className="mt-1 pb-0 w-full flex justify-center">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/dashboard/customers');
-                      }}
-                      className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-1.5 max-w-full overflow-hidden"
-                      title="צפה בלקוח מקושר"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                      <span className="truncate max-w-[160px]">{linkedCustomer?.name ?? 'צפה בלקוח'}</span>
-                    </button>
-                  </div>
-                ) : (
-                  <p className="mt-1 pt-1 pb-1 text-sm text-gray-500 italic text-center">אין לקוח מקושר</p>
-                )}
-              </div>
-
               {/* Total Price - Prominent */}
               <div className="mt-3 pb-2 border-t border-gray-200/50 border-b border-gray-200/30 pt-3">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">סה״כ</span>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="flex items-baseline justify-between gap-2 min-w-0">
+                  <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
                     {formatPrice(order.totalPrice)}
                   </span>
                 </div>
               </div>
 
-              {/* Created/Placed Date - Subtle */}
-              <div className="mt-auto pt-3 pb-2 flex items-center justify-between min-h-[40px]">
-                <p className="text-xs text-gray-500 font-medium flex items-center">
-                  {formatDate(order.createdAt)}
-                </p>
-                {/* Floating Actions */}
+              {/* Date & Floating Actions */}
+              <div className="mt-auto pt-3 pb-2 flex items-center justify-between min-h-[40px] gap-2">
+                {getOrderCardDate(order) ? (
+                  <p className="text-xs text-gray-500 font-medium flex items-center min-w-0 flex-1 pt-1 sm:pt-0">
+                    <span className="truncate">
+                      <span>{getOrderCardDate(order)!.label}</span>
+                      <span>{formatDateShort(getOrderCardDate(order)!.date)}</span>
+                    </span>
+                  </p>
+                ) : (
+                  <div></div>
+                )}
+                <div className="flex items-center justify-end flex-shrink-0 pt-1">
                 {order.status === 'EMPTY' ? (
                   <button
                     onClick={(e) => {
@@ -674,19 +731,18 @@ export default function OrdersPage() {
                     </span>
                   </button>
                 ) : order.status === 'PLACED' ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/store/edit/${order.id}`);
                       }}
-                      className="px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm flex-shrink-0 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
                       title="ערוך הזמנה"
                     >
-                      <svg className="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      <span className="text-xs font-semibold text-blue-700">ערוך</span>
                     </button>
                     <button
                       onClick={(e) => {
@@ -694,7 +750,7 @@ export default function OrdersPage() {
                         handleMarkOrderDone(order.id);
                       }}
                       disabled={updatingOrderId === order.id}
-                      className={`px-3 py-1.5 rounded-full border-2 flex items-center gap-2 transition-all shadow-sm flex-shrink-0 ${
+                      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 flex items-center justify-center transition-all shadow-sm flex-shrink-0 ${
                         updatingOrderId === order.id
                           ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
                           : 'bg-green-100 text-green-700 border-green-700 hover:shadow-lg'
@@ -702,21 +758,19 @@ export default function OrdersPage() {
                       title="סמן כהושלם"
                     >
                       {updatingOrderId === order.id ? (
-                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
                         </svg>
                       ) : (
-                        <>
-                          <svg className="w-4 h-4 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-xs font-semibold text-green-700">הושלם</span>
-                        </>
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
                       )}
                     </button>
                   </div>
                 ) : null}
+                </div>
               </div>
             </div>
             </div>
@@ -973,9 +1027,6 @@ export default function OrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(viewingOrder.status)}`}>
                   {viewingOrder.status === 'EMPTY' ? 'ריק' : viewingOrder.status === 'PLACED' ? 'הוזמן' : viewingOrder.status === 'DONE' ? 'הושלם' : viewingOrder.status === 'EXPIRED' ? 'פג תוקף' : viewingOrder.status === 'CANCELLED' ? 'בוטל' : viewingOrder.status}
                 </span>
-                <span className="text-sm text-gray-600">
-                  {viewingOrder.placedAt ? 'הוזמן' : 'נוצר'} {formatDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
-                </span>
               </div>
             </div>
 
@@ -1090,12 +1141,6 @@ export default function OrdersPage() {
                     {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
                   </span>
                 </div>
-                {viewingOrder.doneAt && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">הושלם</span>
-                    <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.doneAt)}</span>
-                  </div>
-                )}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
                   <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
                   <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
@@ -1103,17 +1148,35 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Link Info */}
+            {/* Link Info & Dates */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע קישור</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע נוסף</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">קישור פג תוקף</span>
-                  <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.linkExpiresAt)}</span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">מספר הזמנה</span>
-                  <span className="text-xs font-mono text-gray-800">{viewingOrder.id}</span>
+                  <span className="text-xs font-mono font-bold text-gray-800">{viewingOrder.id}</span>
+                </div>
+                <div className="pt-2 border-t border-gray-200/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">נוצר ב:</span>
+                    <span className="text-sm font-medium text-gray-600">{formatDate(viewingOrder.createdAt)}</span>
+                  </div>
+                  {viewingOrder.placedAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">הוזמן ב:</span>
+                      <span className="text-sm font-medium text-blue-600">{formatDate(viewingOrder.placedAt)}</span>
+                    </div>
+                  )}
+                  {viewingOrder.doneAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">הושלם ב:</span>
+                      <span className="text-sm font-medium text-green-600">{formatDate(viewingOrder.doneAt)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">פג תוקף ב:</span>
+                    <span className="text-sm font-medium text-orange-600">{formatDate(viewingOrder.linkExpiresAt)}</span>
+                  </div>
                 </div>
               </div>
             </div>

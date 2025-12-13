@@ -65,7 +65,7 @@ export default function PaginationBar({
   }
 
   const containerClasses = fixed
-    ? `fixed bottom-0 left-0 right-0 ${sidebarOffset ? 'lg:left-64' : ''} bg-white/85 backdrop-blur-sm pt-3 pb-3 border-t border-gray-300/30 shadow-lg z-40`
+    ? `fixed bottom-0 left-0 right-0 ${sidebarOffset ? 'lg:right-64' : ''} bg-white/85 backdrop-blur-sm pt-3 pb-3 border-t border-gray-300/30 shadow-lg z-40`
     : `glass-card rounded-3xl py-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 shadow-sm`;
 
   return (

@@ -72,6 +72,9 @@ export default function ProductsPage() {
   const [productImageDirections, setProductImageDirections] = useState<Record<string, 'next' | 'prev'>>({});
   const [productPrevImageIndices, setProductPrevImageIndices] = useState<Record<string, number | null>>({});
   
+  // Swipe detection state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; productId: string } | null>(null);
+  
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -1199,7 +1202,7 @@ export default function ProductsPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
           {products.map((product) => {
             const images = productImages[product.id] || [];
             const currentImageIndex = productImageIndices[product.id] || 0;
@@ -1208,7 +1211,40 @@ export default function ProductsPage() {
             return (
               <div key={product.id} className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col">
                 {/* Product Image */}
-                <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
+                <div 
+                  className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image"
+                  onTouchStart={(e) => {
+                    if (images.length > 1) {
+                      const touch = e.touches[0];
+                      setTouchStart({
+                        x: touch.clientX,
+                        y: touch.clientY,
+                        productId: product.id
+                      });
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    if (!touchStart || touchStart.productId !== product.id || images.length <= 1) return;
+                    
+                    const touch = e.changedTouches[0];
+                    const deltaX = touch.clientX - touchStart.x;
+                    const deltaY = touch.clientY - touchStart.y;
+                    
+                    // Only trigger if horizontal swipe is greater than vertical (more horizontal than vertical)
+                    // And minimum swipe distance of 50px
+                    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                      e.stopPropagation();
+                      // In RTL: swipe right (positive deltaX) = previous, swipe left (negative deltaX) = next
+                      if (deltaX > 0) {
+                        handlePrevProductImage(product.id, images);
+                      } else {
+                        handleNextProductImage(product.id, images);
+                      }
+                    }
+                    
+                    setTouchStart(null);
+                  }}
+                >
                   {images.length > 0 ? (
                     <>
                       {previousImageIndex != null && previousImageIndex !== currentImageIndex && images[previousImageIndex] && (
@@ -1292,16 +1328,16 @@ export default function ProductsPage() {
                   )}
                   
                   {/* Action Buttons */}
-                  <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-2 right-2 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEditProduct(product);
                       }}
-                      className="p-1.5 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-md backdrop-blur-sm"
+                      className="p-2 md:p-1.5 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-md backdrop-blur-sm touch-manipulation"
                       title="ערוך מוצר"
                     >
-                      <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 md:w-4 md:h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
@@ -1310,10 +1346,10 @@ export default function ProductsPage() {
                         e.stopPropagation();
                         setProductToDelete(product);
                       }}
-                      className="p-1.5 rounded-lg bg-white/90 hover:bg-red-50 transition-colors shadow-md backdrop-blur-sm"
+                      className="p-2 md:p-1.5 rounded-lg bg-white/90 hover:bg-red-50 transition-colors shadow-md backdrop-blur-sm touch-manipulation"
                       title="מחק מוצר"
                     >
-                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 md:w-4 md:h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>

@@ -6,20 +6,20 @@ import { formatPrice } from '../utils/formatPrice';
 export default function BusinessInfoPage() {
   // Individual state for each card
   const [linksCreated, setLinksCreated] = useState<LinksCreatedStats | null>(null);
-  const [ordersByStatus, setOrdersByStatus] = useState<Record<string, number>>({});
   const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
+  const [completedOrdersCount, setCompletedOrdersCount] = useState<number>(0);
   const [yearlyData, setYearlyData] = useState<MonthlyData[]>([]);
   
   // Loading states for each card
   const [, setLoadingLinks] = useState(true);
-  const [, setLoadingOrders] = useState(true);
   const [loadingIncome, setLoadingIncome] = useState(true);
+  const [loadingCompletedOrders, setLoadingCompletedOrders] = useState(true);
   const [, setLoadingYearly] = useState(true);
   
   // Errors for each card
   const [, setErrorLinks] = useState('');
-  const [, setErrorOrders] = useState('');
   const [, setErrorIncome] = useState('');
+  const [, setErrorCompletedOrders] = useState('');
   const [, setErrorYearly] = useState('');
   
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -32,8 +32,8 @@ export default function BusinessInfoPage() {
   // Fetch monthly data when month changes
   useEffect(() => {
     fetchLinksCreated();
-    fetchOrdersByStatus();
     fetchMonthlyIncome();
+    fetchCompletedOrdersCount();
   }, [selectedMonth]);
 
   // Fetch yearly data when year changes or on initial load
@@ -92,20 +92,6 @@ export default function BusinessInfoPage() {
     }
   };
 
-  const fetchOrdersByStatus = async () => {
-    setLoadingOrders(true);
-    setErrorOrders('');
-    try {
-      const data = await orderAPI.getOrdersByStatus(selectedYear, selectedMonth);
-      setOrdersByStatus(data);
-    } catch (err: any) {
-      setErrorOrders('נכשל בטעינת הזמנות לפי סטטוס');
-      console.error('Error fetching orders by status:', err);
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
-
   const fetchMonthlyIncome = async () => {
     setLoadingIncome(true);
     setErrorIncome('');
@@ -117,6 +103,20 @@ export default function BusinessInfoPage() {
       console.error('Error fetching monthly income:', err);
     } finally {
       setLoadingIncome(false);
+    }
+  };
+
+  const fetchCompletedOrdersCount = async () => {
+    setLoadingCompletedOrders(true);
+    setErrorCompletedOrders('');
+    try {
+      const data = await orderAPI.getCompletedOrdersCount(selectedYear, selectedMonth);
+      setCompletedOrdersCount(data);
+    } catch (err: any) {
+      setErrorCompletedOrders('נכשל בטעינת מספר הזמנות שהושלמו');
+      console.error('Error fetching completed orders count:', err);
+    } finally {
+      setLoadingCompletedOrders(false);
     }
   };
 
@@ -165,28 +165,6 @@ export default function BusinessInfoPage() {
     return years;
   };
 
-
-  const getStatusBgColor = (status: string) => {
-    const colors: Record<string, string> = {
-      EMPTY: 'bg-gradient-to-br from-blue-400/20 to-blue-600/20',
-      PLACED: 'bg-gradient-to-br from-yellow-400/20 to-yellow-600/20',
-      DONE: 'bg-gradient-to-br from-green-400/20 to-green-600/20',
-      EXPIRED: 'bg-gradient-to-br from-gray-400/20 to-gray-600/20',
-      CANCELLED: 'bg-gradient-to-br from-red-400/20 to-red-600/20',
-    };
-    return colors[status] || 'bg-gradient-to-br from-indigo-400/20 to-indigo-600/20';
-  };
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      EMPTY: 'ריק',
-      PLACED: 'הוזמן',
-      DONE: 'הושלם',
-      EXPIRED: 'פג תוקף',
-      CANCELLED: 'בוטל',
-    };
-    return labels[status] || status;
-  };
 
   // Filter yearly data to only show months up to current month if viewing current year
   const currentYear = new Date().getFullYear();
@@ -331,9 +309,9 @@ export default function BusinessInfoPage() {
           </div>
         </div>
 
-        {/* Right Side - Small Cubes, Orders by Status & Chart */}
+        {/* Right Side - Monthly Income & Chart */}
         <div className="lg:col-span-3 space-y-4">
-          {/* Monthly Income & Total Orders */}
+          {/* Monthly Income & Completed Orders */}
           <div className="flex gap-3 flex-wrap justify-center lg:justify-start">
             {/* Monthly Income - Small Cube */}
             <div className="backdrop-blur-2xl bg-gradient-to-br from-green-400/30 to-emerald-400/30 border border-white/40 rounded-xl shadow-lg p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-center items-center w-44 h-40 flex-shrink-0">
@@ -344,45 +322,13 @@ export default function BusinessInfoPage() {
               </div>
             </div>
 
-            {/* Total Orders - Small Cube */}
+            {/* Completed Orders - Small Cube */}
             <div className="backdrop-blur-2xl bg-gradient-to-br from-pink-400/30 to-rose-400/30 border border-white/40 rounded-xl shadow-lg p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-center items-center w-44 h-40 flex-shrink-0">
               <div className="text-4xl mb-2 text-center">📦</div>
-              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">סה״כ הזמנות</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-2 text-center">הזמנות שהושלמו</h2>
               <div className="text-2xl font-bold text-pink-700 text-center">
-                {Object.values(ordersByStatus).reduce((sum, count) => sum + count, 0)}
+                {loadingCompletedOrders ? '...' : completedOrdersCount}
               </div>
-            </div>
-
-            {/* Orders by Status - Desktop: in same row, Mobile: separate */}
-            <div className="hidden lg:flex flex-1 backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-3 h-40 flex-col min-w-96">
-              <h2 className="text-base font-bold text-gray-800 mb-3 text-center">הזמנות לפי סטטוס</h2>
-              <div className="flex gap-3 flex-1 min-w-0 w-full">
-                {Object.entries(ordersByStatus).map(([status, count]) => (
-                  <div 
-                    key={status} 
-                    className={`flex-1 min-w-0 backdrop-blur-sm rounded-lg p-1.5 border border-white/40 flex flex-col items-center justify-center ${getStatusBgColor(status)}`}
-                  >
-                    <span className="text-xs font-semibold text-gray-700 mb-0.5 text-center w-full">{getStatusLabel(status)}</span>
-                    <span className="text-base font-bold text-gray-800 text-center w-full">{count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Orders by Status - Mobile: separate row */}
-          <div className="lg:hidden backdrop-blur-2xl bg-white/60 border border-white/40 rounded-2xl shadow-xl p-2">
-            <h2 className="text-sm font-bold text-gray-800 mb-2">הזמנות לפי סטטוס</h2>
-            <div className="flex gap-0.5 w-full">
-              {Object.entries(ordersByStatus).map(([status, count]) => (
-                <div 
-                  key={status} 
-                  className={`flex-1 min-w-0 backdrop-blur-sm rounded-lg p-2 border border-white/40 flex flex-col items-center justify-center ${getStatusBgColor(status)}`}
-                >
-                  <span className="text-xs font-semibold text-gray-700 mb-1 text-center w-full">{getStatusLabel(status)}</span>
-                  <span className="text-xl font-bold text-gray-800 text-center w-full">{count}</span>
-                </div>
-              ))}
             </div>
           </div>
 

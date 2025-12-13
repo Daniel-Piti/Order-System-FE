@@ -464,7 +464,6 @@ export interface MonthlyData {
 
 export interface BusinessStats {
   linksCreatedThisMonth: LinksCreatedStats;
-  ordersByStatus: Record<string, number>;
   monthlyIncome: number;
   yearlyData: MonthlyData[];
 }
@@ -528,19 +527,19 @@ export const orderAPI = {
     return response.data;
   },
 
-  getOrdersByStatus: async (year?: number, month?: number): Promise<Record<string, number>> => {
-    const params: any = {};
-    if (year !== undefined) params.year = year;
-    if (month !== undefined) params.month = month;
-    const response = await api.get<Record<string, number>>('/business-stats/orders-by-status', { params });
-    return response.data;
-  },
-
   getMonthlyIncome: async (year?: number, month?: number): Promise<number> => {
     const params: any = {};
     if (year !== undefined) params.year = year;
     if (month !== undefined) params.month = month;
     const response = await api.get<number>('/business-stats/monthly-income', { params });
+    return response.data;
+  },
+
+  getCompletedOrdersCount: async (year?: number, month?: number): Promise<number> => {
+    const params: any = {};
+    if (year !== undefined) params.year = year;
+    if (month !== undefined) params.month = month;
+    const response = await api.get<number>('/business-stats/completed-orders', { params });
     return response.data;
   },
 

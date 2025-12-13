@@ -693,11 +693,12 @@ export default function StorePage() {
           </div>
 
           {/* Filters and Controls Bar */}
-          <div className="mt-4 flex flex-wrap gap-2 sm:gap-3 items-center justify-center relative w-full">
-            {/* Mobile Filter Button */}
+          <div className="mt-4 space-y-3">
+            {/* Mobile Filter Button - Full width on mobile */}
+            <div className="lg:hidden flex justify-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2 absolute right-0"
+                className="glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -709,7 +710,10 @@ export default function StorePage() {
                 </span>
               )}
             </button>
+            </div>
 
+            {/* Sort and Show Controls */}
+            <div className="flex flex-wrap gap-2 sm:gap-3 items-center justify-center">
             {/* Sort */}
             <div className="flex items-center gap-1.5 sm:gap-2">
               <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">מיין:</span>
@@ -768,6 +772,7 @@ export default function StorePage() {
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
+              </div>
             </div>
           </div>
         </div>
@@ -814,13 +819,13 @@ export default function StorePage() {
                   {categories.slice(0, showAllCategories ? categories.length : 5).map((category) => (
                     <label
                       key={category.id}
-                      className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                      className="flex items-center gap-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={selectedCategories.includes(category.id)}
                         onChange={() => handleCategoryToggle(category.id)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                       />
                       <span className="text-sm text-gray-700 flex-1">{category.category}</span>
                     </label>
@@ -863,13 +868,13 @@ export default function StorePage() {
                   {brands.slice(0, showAllBrands ? brands.length : 5).map((brand) => (
                     <label
                       key={brand.id}
-                      className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                      className="flex items-center gap-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={selectedBrands.includes(brand.id)}
                         onChange={() => handleBrandToggle(brand.id)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                       />
                       <span className="text-sm text-gray-700 flex-1">{brand.name}</span>
                     </label>
@@ -904,7 +909,7 @@ export default function StorePage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {filteredProducts.map((product) => {
               const cartItem = cart.find(item => item.product.id === product.id);
               const inCart = !!cartItem;
@@ -935,7 +940,7 @@ export default function StorePage() {
                         {/* Navigation arrows - only show if multiple images */}
                         {productImages[product.id].length > 1 && (
                           <>
-                            {/* Left Arrow */}
+                            {/* Previous Arrow (Right side in RTL) */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -943,14 +948,14 @@ export default function StorePage() {
                                 const newIndex = currentIndex === 0 ? productImages[product.id].length - 1 : currentIndex - 1;
                                 setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                               }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white opacity-100 md:opacity-0 md:group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                               title="תמונה קודמת"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
                             </button>
-                            {/* Left Arrow */}
+                            {/* Next Arrow (Left side in RTL) */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -958,11 +963,11 @@ export default function StorePage() {
                                 const newIndex = (currentIndex + 1) % productImages[product.id].length;
                                 setProductImageIndices(prev => ({ ...prev, [product.id]: newIndex }));
                               }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/80 text-white opacity-0 group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/70 hover:bg-black/90 text-white opacity-100 md:opacity-0 md:group-hover/image:opacity-100 transition-opacity backdrop-blur-sm z-10"
                               title="תמונה הבאה"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                               </svg>
                             </button>
                           </>
@@ -1166,9 +1171,6 @@ export default function StorePage() {
                   </button>
                 )}
 
-                {/* Filter Title */}
-                <h2 className="text-xl font-bold text-gray-800 mb-4">מסננים</h2>
-
                 {/* Divider */}
                 <div className="mb-4 border-t border-gray-300/40"></div>
 
@@ -1194,13 +1196,13 @@ export default function StorePage() {
                       {categories.slice(0, showAllCategories ? categories.length : 5).map((category) => (
                         <label
                           key={category.id}
-                          className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                          className="flex items-center gap-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={selectedCategories.includes(category.id)}
                             onChange={() => handleCategoryToggle(category.id)}
-                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                           />
                           <span className="text-sm text-gray-700 flex-1">{category.category}</span>
                         </label>
@@ -1240,13 +1242,13 @@ export default function StorePage() {
                       {brands.slice(0, showAllBrands ? brands.length : 5).map((brand) => (
                         <label
                           key={brand.id}
-                          className="flex items-center space-x-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
+                          className="flex items-center gap-2 cursor-pointer hover:bg-white/30 p-2 rounded-lg transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={selectedBrands.includes(brand.id)}
                             onChange={() => handleBrandToggle(brand.id)}
-                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                            className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                           />
                           <span className="text-sm text-gray-700 flex-1">{brand.name}</span>
                         </label>

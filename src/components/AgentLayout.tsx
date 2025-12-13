@@ -52,20 +52,20 @@ export default function AgentLayout() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 right-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-l-2 border-white/40 shadow-2xl z-50 transition-transform duration-300 overflow-hidden
+          fixed top-0 right-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-l-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
-        style={{ maxHeight: '100vh', height: '100vh' }}
+        style={{ maxHeight: '100vh', height: '100vh', overflow: 'hidden' }}
       >
-        <div className="h-full flex flex-col p-6 pb-6 overflow-hidden" style={{ maxHeight: '100%' }}>
+        <div className="h-full flex flex-col p-6 pb-6" style={{ maxHeight: '100%', minHeight: 0 }}>
           <div className="mb-8 flex-shrink-0">
             <h1 className="text-2xl font-bold text-gray-800">
               תפריט
             </h1>
           </div>
 
-          <nav className="space-y-2 flex-1 overflow-y-auto pl-2 min-h-0 scrollbar-hide mb-4">
+          <nav className="space-y-2 flex-1 overflow-y-auto pl-2 min-h-0 scrollbar-hide mb-4" style={{ minHeight: 0 }}>
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
@@ -85,7 +85,7 @@ export default function AgentLayout() {
             ))}
           </nav>
 
-          <div className="mt-auto pt-4 pb-2 flex-shrink-0 border-t border-gray-200/50">
+          <div className="mt-auto pt-4 pb-2 flex-shrink-0 border-t border-gray-200/50" style={{ flexShrink: 0 }}>
             <button
               onClick={handleLogout}
               className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center gap-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"
