@@ -562,7 +562,11 @@ export default function OrdersPage() {
             const linkedCustomer = order.customerId
               ? customers.find((customer) => customer.id === order.customerId)
               : null;
-            const showOrderCustomerDetails = order.status !== 'EMPTY' && !!order.customerName;
+            // Show customer details if: (status is not EMPTY and has customerName) OR (status is EMPTY and is linked to customer)
+            const showOrderCustomerDetails = (order.status !== 'EMPTY' && !!order.customerName) || (order.status === 'EMPTY' && !!linkedCustomer);
+            // For EMPTY orders linked to customer, use linkedCustomer data; otherwise use order data
+            const displayCustomerName = order.status === 'EMPTY' && linkedCustomer ? linkedCustomer.name : order.customerName;
+            const displayCustomerPhone = order.status === 'EMPTY' && linkedCustomer ? linkedCustomer.phoneNumber : order.customerPhone;
 
             const cardStyles = getCardStyles(order.status);
             const labelStyles = getLabelStyles(order.status);
@@ -605,16 +609,16 @@ export default function OrdersPage() {
               <div className="mb-2 min-h-[3.5rem] flex flex-col gap-1 overflow-hidden items-center justify-center">
                 {showOrderCustomerDetails ? (
                   <div className="w-full space-y-1.5 text-center">
-                    <p className="text-base font-bold text-gray-800 truncate">{order.customerName}</p>
-                    {order.customerPhone && (
+                    <p className="text-base font-bold text-gray-800 truncate">{displayCustomerName}</p>
+                    {displayCustomerPhone && (
                       <a
-                        href={`tel:${order.customerPhone}`}
+                        href={`tel:${displayCustomerPhone}`}
                         onClick={(e) => {
                           // On desktop, prevent default tel: behavior and copy instead
                           if (window.innerWidth >= 768 || !('ontouchstart' in window)) {
                             e.preventDefault();
                             e.stopPropagation();
-                            const phoneNumber = order.customerPhone || '';
+                            const phoneNumber = displayCustomerPhone || '';
                             navigator.clipboard.writeText(phoneNumber).then(() => {
                               setCopiedPhoneNumber(phoneNumber);
                               setTimeout(() => {
@@ -638,13 +642,13 @@ export default function OrdersPage() {
                           }
                         }}
                         className={`text-sm font-semibold truncate flex items-center justify-center gap-1.5 transition-all duration-300 relative ${
-                          copiedPhoneNumber === order.customerPhone
+                          copiedPhoneNumber === displayCustomerPhone
                             ? 'text-green-600'
                             : 'text-indigo-600 hover:text-indigo-700'
                         }`}
                       >
                         <span className={`transition-opacity duration-300 ${
-                          copiedPhoneNumber === order.customerPhone ? 'opacity-100' : 'opacity-0 absolute'
+                          copiedPhoneNumber === displayCustomerPhone ? 'opacity-100' : 'opacity-0 absolute'
                         }`}>
                           <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -652,12 +656,12 @@ export default function OrdersPage() {
                           הועתק!
                         </span>
                         <span className={`transition-opacity duration-300 flex items-center gap-1.5 ${
-                          copiedPhoneNumber === order.customerPhone ? 'opacity-0 absolute' : 'opacity-100'
+                          copiedPhoneNumber === displayCustomerPhone ? 'opacity-0 absolute' : 'opacity-100'
                         }`}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                        {order.customerPhone}
+                        {displayCustomerPhone}
                         </span>
                       </a>
                     )}
