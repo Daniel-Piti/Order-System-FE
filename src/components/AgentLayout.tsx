@@ -56,51 +56,53 @@ export default function AgentLayout() {
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
-        style={{ maxHeight: '100vh', height: '100vh', overflow: 'hidden' }}
       >
-        <div className="h-full flex flex-col p-6 pb-6" style={{ maxHeight: '100%', minHeight: 0 }}>
-          <div className="mb-8 flex-shrink-0">
+        <div className="h-full flex flex-col">
+          {/* Header */}
+          <div className="flex-shrink-0 p-6 pb-4">
             <h1 className="text-2xl font-bold text-gray-800">
               תפריט
             </h1>
           </div>
 
-          <nav className="space-y-2 flex-1 overflow-y-auto pl-2 min-h-0 scrollbar-hide mb-4" style={{ minHeight: 0 }}>
-            {menuItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={() => setIsSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
-                    isActive
-                      ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
-                      : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
-                  }`
-                }
+          {/* Scrollable Menu */}
+          <nav className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide">
+            <div className="space-y-2 pt-2">
+              {menuItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
+                      isActive
+                        ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
+                        : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
+                    }`
+                  }
+                >
+                  <span className="text-xl" aria-hidden>{item.icon}</span>
+                  <span>{item.name}</span>
+                </NavLink>
+              ))}
+              
+              {/* Logout Button as part of menu */}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none backdrop-blur-xl bg-red-50/90 text-red-600 hover:bg-red-100/90 border border-red-200/70 hover:border-red-300/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60 font-semibold"
               >
-                <span className="text-xl" aria-hidden>{item.icon}</span>
-                <span>{item.name}</span>
-              </NavLink>
-            ))}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                <span>התנתק</span>
+              </button>
+            </div>
           </nav>
-
-          <div className="mt-auto pt-4 pb-2 flex-shrink-0 border-t border-gray-200/50" style={{ flexShrink: 0 }}>
-            <button
-              onClick={handleLogout}
-              className="w-full py-3 px-4 rounded-xl font-semibold text-gray-800 flex items-center justify-center gap-2 backdrop-blur-xl bg-white/90 hover:bg-red-50/90 border border-gray-300/70 hover:border-red-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-red-300/60 transition-all duration-200 select-none"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              <span>התנתק</span>
-            </button>
-          </div>
         </div>
       </aside>
 
