@@ -129,7 +129,12 @@ export default function AgentOrdersPage() {
       setCurrentPage(0); // Reset to first page
       await fetchOrders(0);
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל ביצירת הזמנה');
+      const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
+      // Translate specific error messages to Hebrew
+      const translatedMessage = errorMessage === 'Cannot create order. Please add at least one location first.'
+        ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד תחילה.'
+        : errorMessage;
+      setError(translatedMessage);
     } finally {
       setIsCreating(false);
     }

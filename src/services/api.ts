@@ -44,7 +44,6 @@ export interface Manager {
   firstName: string;
   lastName: string;
   email: string;
-  businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
   streetAddress: string;
@@ -74,7 +73,6 @@ export interface NewManagerRequest {
   firstName: string;
   lastName: string;
   email: string;
-  businessName: string;
   password: string;
   phoneNumber: string;
   dateOfBirth: string;
@@ -85,7 +83,6 @@ export interface NewManagerRequest {
 export interface UpdateManagerDetailsRequest {
   firstName: string;
   lastName: string;
-  businessName: string;
   phoneNumber: string;
   dateOfBirth: string;
   streetAddress: string;

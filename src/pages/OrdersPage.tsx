@@ -141,7 +141,12 @@ export default function OrdersPage() {
       setCurrentPage(0); // Reset to first page
       await fetchOrders(0);
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to create order');
+      const errorMessage = err.response?.data?.userMessage || 'Failed to create order';
+      // Translate specific error messages to Hebrew
+      const translatedMessage = errorMessage === 'Cannot create order. Please add at least one location first.'
+        ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד תחילה.'
+        : errorMessage;
+      setError(translatedMessage);
     } finally {
       setIsCreating(false);
     }

@@ -10,7 +10,6 @@ interface EditProfileModalProps {
   currentProfile: {
     firstName: string;
     lastName: string;
-    businessName: string;
     phoneNumber: string;
     dateOfBirth: string;
     streetAddress: string;
@@ -20,13 +19,11 @@ interface EditProfileModalProps {
 
 export default function EditProfileModal({ isOpen, onClose, onSuccess, currentProfile }: EditProfileModalProps) {
   const MAX_NAME_LENGTH = 50;
-  const MAX_BUSINESS_NAME_LENGTH = 70;
   const MAX_STREET_ADDRESS_LENGTH = 120;
   const MAX_CITY_LENGTH = 60;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    businessName: '',
     phoneNumber: '',
     dateOfBirth: '',
     streetAddress: '',
@@ -43,7 +40,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
       setFormData({
         firstName: currentProfile.firstName,
         lastName: currentProfile.lastName,
-        businessName: currentProfile.businessName,
         phoneNumber: currentProfile.phoneNumber,
         dateOfBirth: currentProfile.dateOfBirth,
         streetAddress: currentProfile.streetAddress,
@@ -77,7 +73,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     const hasChanges =
       formData.firstName !== currentProfile.firstName ||
       formData.lastName !== currentProfile.lastName ||
-      formData.businessName !== currentProfile.businessName ||
       formData.phoneNumber !== currentProfile.phoneNumber ||
       formData.dateOfBirth !== currentProfile.dateOfBirth ||
       formData.streetAddress !== currentProfile.streetAddress ||
@@ -114,8 +109,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
         ? value.slice(0, MAX_NAME_LENGTH)
         : name === 'phoneNumber'
         ? value.replace(/\D/g, '')
-        : name === 'businessName'
-        ? value.slice(0, MAX_BUSINESS_NAME_LENGTH)
         : name === 'streetAddress'
         ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
         : name === 'city'
@@ -138,7 +131,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     setFormData({
       firstName: '',
       lastName: '',
-      businessName: '',
       phoneNumber: '',
       dateOfBirth: '',
       streetAddress: '',
@@ -226,28 +218,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
               )}
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="businessName" className="block text-xs font-medium text-gray-700 mb-1">
-              שם העסק *
-            </label>
-            <input
-              id="businessName"
-              name="businessName"
-              type="text"
-              value={formData.businessName}
-              onChange={handleChange}
-              maxLength={MAX_BUSINESS_NAME_LENGTH}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                showErrors && fieldErrors.businessName ? 'border-red-400 focus:ring-red-400' : ''
-              }`}
-              placeholder="עסק בע״מ"
-              dir="ltr"
-            />
-            {showErrors && fieldErrors.businessName && (
-              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.businessName}</p>
-            )}
           </div>
 
           <div>

@@ -14,13 +14,11 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
   const MAX_NAME_LENGTH = 50;
   const MAX_EMAIL_LENGTH = 100;
   const MAX_PHONE_LENGTH = 10;
-  const MAX_BUSINESS_NAME_LENGTH = 70;
   const MAX_STREET_ADDRESS_LENGTH = 120;
   const MAX_CITY_LENGTH = 60;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    businessName: '',
     email: '',
     password: 'Aa123456!', // Default password
     phoneNumber: '',
@@ -38,7 +36,6 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
     setFormData({
       firstName: '',
       lastName: '',
-      businessName: '',
       email: '',
       password: 'Aa123456!',
       phoneNumber: '',
@@ -91,7 +88,6 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
       setFormData({
         firstName: '',
         lastName: '',
-        businessName: '',
         email: '',
         password: 'Aa123456!',
         phoneNumber: '',
@@ -117,8 +113,6 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
         ? value.replace(/\D/g, '').slice(0, MAX_PHONE_LENGTH)
         : name === 'email'
         ? value.slice(0, MAX_EMAIL_LENGTH)
-        : name === 'businessName'
-        ? value.slice(0, MAX_BUSINESS_NAME_LENGTH)
         : name === 'streetAddress'
         ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
         : name === 'city'
@@ -211,27 +205,6 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
                 <p className="text-red-500 text-xs mt-0.5">{fieldErrors.lastName}</p>
               )}
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="businessName" className="block text-xs font-medium text-gray-700 mb-1">
-              Business Name *
-            </label>
-            <input
-              id="businessName"
-              name="businessName"
-              type="text"
-              value={formData.businessName}
-              onChange={handleChange}
-              maxLength={MAX_BUSINESS_NAME_LENGTH}
-              className={`glass-input w-full px-2.5 py-1.5 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                showErrors && fieldErrors.businessName ? 'border-red-400 focus:ring-red-400' : ''
-              }`}
-              placeholder="Acme Corp"
-            />
-            {showErrors && fieldErrors.businessName && (
-              <p className="text-red-500 text-xs mt-0.5">{fieldErrors.businessName}</p>
-            )}
           </div>
 
           <div>

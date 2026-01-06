@@ -173,16 +173,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Business Name */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              שם העסק
-            </label>
-            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm break-words">
-              {profile.businessName}
-            </div>
-          </div>
-
           {/* Manager ID */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -288,7 +278,6 @@ export default function ProfilePage() {
           currentProfile={{
             firstName: profile.firstName,
             lastName: profile.lastName,
-            businessName: profile.businessName,
             phoneNumber: profile.phoneNumber,
             dateOfBirth: profile.dateOfBirth,
             streetAddress: profile.streetAddress,
