@@ -12,7 +12,8 @@ export default function UserLayout() {
   };
 
   const menuItems = [
-    { name: 'פרופיל', path: '/dashboard/profile', icon: '👤' },
+    { name: 'פרופיל מנהל', path: '/dashboard/profile', icon: '👤' },
+    { name: 'פרופיל עסק', path: '/dashboard/business-data', icon: '🏢' },
     { name: 'הזמנות', path: '/dashboard/orders', icon: '📦' },
     { name: 'מידע עסקי', path: '/dashboard/business-info', icon: '📊' },
     { name: 'סוכנים', path: '/dashboard/agents', icon: '🧑‍🤝‍🧑' },

@@ -22,6 +22,7 @@ import BrandsPage from './pages/BrandsPage';
 import LocationsPage from './pages/LocationsPage';
 import StorePage from './pages/StorePage';
 import BusinessInfoPage from './pages/BusinessInfoPage';
+import BusinessDataPage from './pages/BusinessDataPage';
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
         >
           <Route index element={<Navigate to="/dashboard/profile" replace />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="business-data" element={<BusinessDataPage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="business-info" element={<BusinessInfoPage />} />
           <Route path="customers" element={<CustomersPage />} />
