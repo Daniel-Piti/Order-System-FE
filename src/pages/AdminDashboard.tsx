@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { managerAPI } from '../services/api';
-import type { Manager } from '../services/api';
+import { managerAPI, businessAPI } from '../services/api';
+import type { Manager, Business } from '../services/api';
 import AddManagerModal from '../components/AddManagerModal';
 
+interface ManagerWithBusiness extends Manager {
+  business?: Business;
+}
+
 export default function AdminDashboard() {
-  const [managers, setManagers] = useState<Manager[]>([]);
+  const [managers, setManagers] = useState<ManagerWithBusiness[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
@@ -17,6 +21,7 @@ export default function AdminDashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
   const [resetConfirmText, setResetConfirmText] = useState('');
+  const [selectedManager, setSelectedManager] = useState<ManagerWithBusiness | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,8 +31,21 @@ export default function AdminDashboard() {
   const fetchManagers = async () => {
     try {
       setIsLoading(true);
-      const data = await managerAPI.getAllManagers();
-      setManagers(data);
+      const managersData = await managerAPI.getAllManagers();
+      
+      // Fetch all businesses in a single batch request
+      const managerIds = managersData.map(m => m.id);
+      const businessesMap = managerIds.length > 0 
+        ? await businessAPI.getBusinessesByManagerIds(managerIds)
+        : {};
+
+      // Merge managers with their businesses
+      const managersWithBusiness: ManagerWithBusiness[] = managersData.map(manager => ({
+        ...manager,
+        business: businessesMap[manager.id] || undefined,
+      }));
+
+      setManagers(managersWithBusiness);
       setError('');
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'Failed to load managers');
@@ -93,7 +111,6 @@ export default function AdminDashboard() {
 
   const handleCloseResetPasswordModal = () => {
     setManagerToResetPassword(null);
-    setManagerToResetPassword(null);
     setNewPassword('');
     setShowResetConfirmation(false);
     setResetConfirmText('');
@@ -121,6 +138,14 @@ export default function AdminDashboard() {
   const formatPhoneNumber = (phone: string) => {
     if (phone.length <= 3) return phone;
     return `${phone.slice(0, 3)}-${phone.slice(3)}`;
+  };
+
+  const handleRowClick = (manager: ManagerWithBusiness, e: React.MouseEvent) => {
+    // Don't open modal if clicking on action buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    setSelectedManager(manager);
   };
 
   return (
@@ -165,7 +190,7 @@ export default function AdminDashboard() {
         <div className="glass-card rounded-2xl p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">All Managers</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Managers and Businesses Data</h2>
               <p className="text-gray-600 text-sm mt-1">
                 Total: {managers.length} manager{managers.length !== 1 ? 's' : ''}
               </p>
@@ -238,93 +263,262 @@ export default function AdminDashboard() {
               <p>No managers found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">ID</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Name</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Email</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Phone</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Date of Birth</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Address</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Created</th>
-                    <th className="text-left py-3 px-4 text-gray-700 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {managers.map((manager) => (
-                    <tr
-                      key={manager.id}
-                      className="border-b border-white/10 hover:bg-white/10 transition-colors"
-                    >
-                      <td className="py-3 px-4 text-gray-600 text-sm font-mono">{manager.id}</td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-gray-800">
-                          {manager.firstName} {manager.lastName}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">{manager.email}</td>
-                      <td className="py-3 px-4 text-gray-700">{formatPhoneNumber(manager.phoneNumber)}</td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {formatDate(manager.dateOfBirth)}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700 max-w-xs truncate">
-                        {manager.streetAddress}, {manager.city}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {formatDate(manager.createdAt)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => setManagerToResetPassword(manager)}
-                            className="p-2 rounded-lg hover:bg-white/20 transition-colors"
-                            title="Reset password"
-                          >
-                            <svg
-                              className="w-4 h-4 text-indigo-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => setManagerToDelete(manager)}
-                            className="p-2 rounded-lg hover:bg-white/20 transition-colors"
-                            title="Delete manager"
-                          >
-                            <svg
-                              className="w-4 h-4 text-red-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
+            <div className="glass-card rounded-3xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-indigo-50/70 backdrop-blur-sm">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Manager ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Phone</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Created</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {managers.map((manager) => (
+                      <tr
+                        key={manager.id}
+                        onClick={(e) => handleRowClick(manager, e)}
+                        className="hover:bg-indigo-50/50 transition-colors cursor-pointer"
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200">{manager.id}</td>
+                        <td className="px-6 py-4 border-l border-gray-200">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {manager.firstName} {manager.lastName}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200">
+                          <span className="truncate block max-w-[16rem]" title={manager.email}>
+                            {manager.email}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200">
+                          {formatPhoneNumber(manager.phoneNumber)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200">
+                          {manager.business?.id || '-'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200">
+                          <span className="truncate block max-w-[12rem]" title={manager.business?.name || ''}>
+                            {manager.business?.name || '-'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200">
+                          {formatDate(manager.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap border-l border-gray-200">
+                          <div className="inline-flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => setManagerToResetPassword(manager)}
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
+                              title="Reset password"
+                            >
+                              <svg
+                                className="w-4 h-4 text-indigo-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setManagerToDelete(manager)}
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
+                              title="Delete manager"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Manager & Business Detail Modal */}
+      {selectedManager && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="glass-card rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Manager & Business Details</h2>
+              <button
+                onClick={() => setSelectedManager(null)}
+                className="p-2 hover:bg-white/30 rounded-xl transition-all duration-200 hover:rotate-90"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Manager Information */}
+              <div className="space-y-4">
+                <div className="pb-3 border-b border-gray-200/50">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-600 flex items-center justify-center text-sm font-bold">👤</span>
+                    Manager Information
+                  </h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">ID</label>
+                    <div className="text-sm text-gray-800 font-mono">{selectedManager.id}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+                    <div className="text-sm text-gray-800">{selectedManager.firstName} {selectedManager.lastName}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                    <div className="text-sm text-gray-800">{selectedManager.email}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Phone Number</label>
+                    <div className="text-sm text-gray-800">{formatPhoneNumber(selectedManager.phoneNumber)}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Date of Birth</label>
+                    <div className="text-sm text-gray-800">{formatDate(selectedManager.dateOfBirth)}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                    <div className="text-sm text-gray-800">{selectedManager.streetAddress}, {selectedManager.city}</div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Created At</label>
+                    <div className="text-sm text-gray-800">{formatDate(selectedManager.createdAt)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Information */}
+              <div className="space-y-4">
+                <div className="pb-3 border-b border-gray-200/50">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-green-500/20 text-green-600 flex items-center justify-center text-sm font-bold">🏢</span>
+                    Business Information
+                  </h3>
+                </div>
+
+                {selectedManager.business ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Business ID</label>
+                      <div className="text-sm text-gray-800 font-mono">{selectedManager.business.id}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Business Name</label>
+                      <div className="text-sm text-gray-800">{selectedManager.business.name}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">State ID Number</label>
+                      <div className="text-sm text-gray-800">{selectedManager.business.stateIdNumber}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Business Email</label>
+                      <div className="text-sm text-gray-800">{selectedManager.business.email}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Phone Number</label>
+                      <div className="text-sm text-gray-800">{formatPhoneNumber(selectedManager.business.phoneNumber)}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Address</label>
+                      <div className="text-sm text-gray-800">{selectedManager.business.streetAddress}, {selectedManager.business.city}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Created At</label>
+                      <div className="text-sm text-gray-800">{formatDate(selectedManager.business.createdAt)}</div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Updated At</label>
+                      <div className="text-sm text-gray-800">{formatDate(selectedManager.business.updatedAt)}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <svg
+                      className="w-12 h-12 mx-auto mb-3 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <p className="text-sm">No business registered</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-200/50">
+              <button
+                onClick={() => setSelectedManager(null)}
+                className="glass-button w-full py-2.5 px-4 rounded-xl font-semibold text-gray-800 bg-gray-100/60 hover:bg-gray-200/70 border border-gray-300/50 transition-all duration-200 hover:scale-[1.02]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Manager Modal */}
       <AddManagerModal
@@ -578,4 +772,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

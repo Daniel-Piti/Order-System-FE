@@ -171,6 +171,46 @@ export const managerAPI = {
   },
 };
 
+export interface CreateBusinessRequest {
+  managerId: string;
+  name: string;
+  stateIdNumber: string;
+  email: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}
+
+export interface Business {
+  id: number;
+  managerId: string;
+  name: string;
+  stateIdNumber: string;
+  email: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const businessAPI = {
+  createBusiness: async (data: CreateBusinessRequest): Promise<number> => {
+    const response = await api.post<number>('/businesses', data);
+    return response.data;
+  },
+
+  getMyBusiness: async (): Promise<Business> => {
+    const response = await api.get<Business>('/businesses/me');
+    return response.data;
+  },
+
+  getBusinessesByManagerIds: async (managerIds: string[]): Promise<Record<string, Business>> => {
+    const response = await api.post<Record<string, Business>>('/businesses/by-managers', managerIds);
+    return response.data;
+  },
+};
+
 export const customerAPI = {
   getAllCustomers: async (): Promise<Customer[]> => {
     const response = await api.get<Customer[]>('/manager/customers');

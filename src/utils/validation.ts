@@ -250,6 +250,27 @@ export function validateUserCreationForm(formData: {
   ]);
 }
 
+/**
+ * Validate business creation form
+ */
+export function validateBusinessForm(formData: {
+  name: string;
+  stateIdNumber: string;
+  email: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}): ValidationResult {
+  return validateFields([
+    { field: 'name', error: validateRequiredWithMaxLength(formData.name, 'Business name', MAX_NAME_LENGTH) },
+    { field: 'stateIdNumber', error: validateRequiredWithMaxLength(formData.stateIdNumber, 'State ID number', 20) },
+    { field: 'email', error: validateEmail(formData.email, MAX_EMAIL_LENGTH) },
+    { field: 'phoneNumber', error: validatePhoneNumberDigitsOnly(formData.phoneNumber, MAX_PHONE_LENGTH, 'Phone number') },
+    { field: 'streetAddress', error: validateRequiredWithMaxLength(formData.streetAddress, 'Street address', MAX_STREET_ADDRESS_LENGTH) },
+    { field: 'city', error: validateRequiredWithMaxLength(formData.city, 'City', MAX_CITY_LENGTH) },
+  ]);
+}
+
 export function validateAgentCreationForm(formData: {
   firstName: string;
   lastName: string;
