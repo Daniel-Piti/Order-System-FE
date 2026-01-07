@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import CloseButton from './CloseButton';
 import { agentAPI, type CustomerRequest, type Customer } from '../services/api';
 import { validateEmail, validatePhoneNumberDigitsOnly, validateRequiredWithMaxLength, validateDiscountPercentage, type ValidationErrors } from '../utils/validation';
+import Spinner from './Spinner';
 
 interface AgentCustomerEditModalProps {
   isOpen: boolean;

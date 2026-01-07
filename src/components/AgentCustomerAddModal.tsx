@@ -3,6 +3,7 @@ import { agentAPI, type CustomerRequest } from '../services/api';
 import CloseButton from './CloseButton';
 import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
+import Spinner from './Spinner';
 
 interface AgentCustomerAddModalProps {
   isOpen: boolean;

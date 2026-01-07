@@ -5,6 +5,7 @@ import { categoryAPI, managerAPI, publicAPI } from '../services/api';
 import type { Category } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithCategory } from '../utils/types';
+import Spinner from '../components/Spinner';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

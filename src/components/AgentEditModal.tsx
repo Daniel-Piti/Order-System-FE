@@ -3,6 +3,7 @@ import { agentAPI, type UpdateAgentRequest, type Agent } from '../services/api';
 import CloseButton from './CloseButton';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm, AGENT_FIELD_LIMITS } from '../utils/validation';
+import Spinner from './Spinner';
 
 interface AgentEditModalProps {
   isOpen: boolean;

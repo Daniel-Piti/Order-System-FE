@@ -182,7 +182,7 @@ export interface CreateBusinessRequest {
 }
 
 export interface Business {
-  id: number;
+  id: string;
   managerId: string;
   name: string;
   stateIdNumber: string;
@@ -195,8 +195,8 @@ export interface Business {
 }
 
 export const businessAPI = {
-  createBusiness: async (data: CreateBusinessRequest): Promise<number> => {
-    const response = await api.post<number>('/businesses', data);
+  createBusiness: async (data: CreateBusinessRequest): Promise<string> => {
+    const response = await api.post<string>('/businesses', data);
     return response.data;
   },
 

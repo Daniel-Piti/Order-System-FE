@@ -6,6 +6,7 @@ import type { Product, Category, Brand } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import SparkMD5 from 'spark-md5';
+import Spinner from '../components/Spinner';
 
 // Helper function to calculate MD5 hash of a file and return as Base64
 async function calculateFileMD5(file: File): Promise<string> {
