@@ -234,6 +234,31 @@
     transform: translateX(100%);
   }
 
+  /* Loading Spinner Components */
+  .spinner {
+    @apply animate-spin;
+  }
+
+  .spinner-sm {
+    @apply h-5 w-5;
+  }
+
+  .spinner-md {
+    @apply h-8 w-8;
+  }
+
+  .spinner-lg {
+    @apply h-12 w-12;
+  }
+
+  .spinner-circle {
+    @apply opacity-25;
+  }
+
+  .spinner-path {
+    @apply opacity-75;
+  }
+
   .glass-select {
     @apply backdrop-blur-xl bg-white/50 border-2 border-gray-400/80 
            hover:bg-gray-200/70 hover:border-gray-500 
