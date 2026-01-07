@@ -127,8 +127,8 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
       // Success!
       setStep('complete');
       setTimeout(() => {
-        onSuccess();
-        handleClose();
+      onSuccess();
+      handleClose();
       }, 1000);
     } catch (err: any) {
       setError(err.response?.data?.userMessage || err.message || 'Failed to create manager and business');
@@ -268,150 +268,150 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
                 <div className="grid grid-cols-2 gap-3">
                   <div className="transform transition-all duration-200 hover:scale-[1.02]">
                     <label htmlFor="firstName" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      First Name *
-                    </label>
-                    <input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
+                First Name *
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
                       value={managerFormData.firstName}
                       onChange={handleManagerChange}
-                      maxLength={MAX_NAME_LENGTH}
+              maxLength={MAX_NAME_LENGTH}
                       className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                         showErrors && managerFieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                      }`}
-                      placeholder="John"
-                    />
+                }`}
+                placeholder="John"
+              />
                     {showErrors && managerFieldErrors.firstName && (
                       <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.firstName}</p>
-                    )}
-                  </div>
+              )}
+            </div>
 
                   <div className="transform transition-all duration-200 hover:scale-[1.02]">
                     <label htmlFor="lastName" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Last Name *
-                    </label>
-                    <input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
+                Last Name *
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
                       value={managerFormData.lastName}
                       onChange={handleManagerChange}
-                      maxLength={MAX_NAME_LENGTH}
+              maxLength={MAX_NAME_LENGTH}
                       className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                         showErrors && managerFieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                      }`}
-                      placeholder="Doe"
-                    />
+                }`}
+                placeholder="Doe"
+              />
                     {showErrors && managerFieldErrors.lastName && (
                       <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.lastName}</p>
-                    )}
-                  </div>
-                </div>
+              )}
+            </div>
+          </div>
 
                 <div className="transform transition-all duration-200 hover:scale-[1.02]">
                   <label htmlFor="managerEmail" className="block text-xs font-medium text-gray-700 mb-1.5">
-                    Email *
-                  </label>
-                  <input
+              Email *
+            </label>
+            <input
                     id="managerEmail"
-                    name="email"
-                    type="email"
+              name="email"
+              type="email"
                     value={managerFormData.email}
                     onChange={handleManagerChange}
-                    maxLength={MAX_EMAIL_LENGTH}
+            maxLength={MAX_EMAIL_LENGTH}
                     className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                       showErrors && managerFieldErrors.email ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                    }`}
-                    placeholder="john@example.com"
-                  />
+              }`}
+              placeholder="john@example.com"
+            />
                   {showErrors && managerFieldErrors.email && (
                     <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.email}</p>
-                  )}
-                </div>
+            )}
+          </div>
 
                 <div className="transform transition-all duration-200 hover:scale-[1.02]">
                   <label htmlFor="managerPassword" className="block text-xs font-medium text-gray-700 mb-1.5">
-                    Password *
-                  </label>
-                  <input
+              Password *
+            </label>
+            <input
                     id="managerPassword"
-                    name="password"
-                    type="text"
+              name="password"
+              type="text"
                     value={managerFormData.password}
                     onChange={handleManagerChange}
                     className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                       showErrors && managerFieldErrors.password ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                    }`}
-                    placeholder="Aa123456!"
-                  />
+              }`}
+              placeholder="Aa123456!"
+            />
                   {showErrors && managerFieldErrors.password ? (
                     <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.password}</p>
-                  ) : (
+            ) : (
                     <p className="text-xs text-gray-500 mt-1">Must contain uppercase, lowercase, numbers, and special characters</p>
-                  )}
-                </div>
+            )}
+          </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="transform transition-all duration-200 hover:scale-[1.02]">
                     <label htmlFor="managerPhoneNumber" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Phone Number *
-                    </label>
-                    <input
+                Phone Number *
+              </label>
+              <input
                       id="managerPhoneNumber"
-                      name="phoneNumber"
-                      type="tel"
+                name="phoneNumber"
+                type="tel"
                       value={managerFormData.phoneNumber}
                       onChange={handleManagerChange}
-                      maxLength={MAX_PHONE_LENGTH}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
+            maxLength={MAX_PHONE_LENGTH}
+            inputMode="numeric"
+            pattern="[0-9]*"
                       className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                         showErrors && managerFieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                      }`}
+                }`}
                       placeholder="0501234567"
-                    />
+              />
                     {showErrors && managerFieldErrors.phoneNumber && (
                       <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.phoneNumber}</p>
-                    )}
-                  </div>
+              )}
+            </div>
 
                   <div className="transform transition-all duration-200 hover:scale-[1.02]">
                     <label htmlFor="managerDateOfBirth" className="block text-xs font-medium text-gray-700 mb-1.5">
-                      Date of Birth *
-                    </label>
-                    <input
+                Date of Birth *
+              </label>
+              <input
                       id="managerDateOfBirth"
-                      name="dateOfBirth"
-                      type="date"
+                name="dateOfBirth"
+                type="date"
                       value={managerFormData.dateOfBirth}
                       onChange={handleManagerChange}
                       className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                         showErrors && managerFieldErrors.dateOfBirth ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                      }`}
-                    />
+                }`}
+              />
                     {showErrors && managerFieldErrors.dateOfBirth && (
                       <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.dateOfBirth}</p>
-                    )}
-                  </div>
-                </div>
+              )}
+            </div>
+          </div>
 
                 <div className="transform transition-all duration-200 hover:scale-[1.02]">
                   <label htmlFor="managerStreetAddress" className="block text-xs font-medium text-gray-700 mb-1.5">
-                    Street Address *
-                  </label>
-                  <input
+              Street Address *
+            </label>
+            <input
                     id="managerStreetAddress"
-                    name="streetAddress"
-                    type="text"
+              name="streetAddress"
+              type="text"
                     value={managerFormData.streetAddress}
                     onChange={handleManagerChange}
-                    maxLength={MAX_STREET_ADDRESS_LENGTH}
+              maxLength={MAX_STREET_ADDRESS_LENGTH}
                     className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 ${
                       showErrors && managerFieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                    }`}
-                    placeholder="123 Main St"
-                  />
+              }`}
+              placeholder="123 Main St"
+            />
                   {showErrors && managerFieldErrors.streetAddress && (
                     <p className="text-red-500 text-xs mt-1 animate-fadeIn">{managerFieldErrors.streetAddress}</p>
                   )}
@@ -554,28 +554,28 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
                   />
                   {showErrors && businessFieldErrors.streetAddress && (
                     <p className="text-red-500 text-xs mt-1 animate-fadeIn">{businessFieldErrors.streetAddress}</p>
-                  )}
-                </div>
+            )}
+          </div>
 
                 <div className="transform transition-all duration-200 hover:scale-[1.02]">
                   <label htmlFor="businessCity" className="block text-xs font-medium text-gray-700 mb-1.5">
-                    City *
-                  </label>
-                  <input
+              City *
+            </label>
+            <input
                     id="businessCity"
-                    name="city"
-                    type="text"
+              name="city"
+              type="text"
                     value={businessFormData.city}
                     onChange={handleBusinessChange}
-                    maxLength={MAX_CITY_LENGTH}
+              maxLength={MAX_CITY_LENGTH}
                     className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 ${
                       showErrors && businessFieldErrors.city ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
-                    }`}
+              }`}
                     placeholder="Tel Aviv"
-                  />
+            />
                   {showErrors && businessFieldErrors.city && (
                     <p className="text-red-500 text-xs mt-1 animate-fadeIn">{businessFieldErrors.city}</p>
-                  )}
+            )}
                 </div>
               </div>
             </div>

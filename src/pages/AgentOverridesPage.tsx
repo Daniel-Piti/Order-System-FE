@@ -552,26 +552,26 @@ export default function AgentOverridesPage() {
 
       {/* Add Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">הוסף מחיר מיוחד</h2>
-              <button onClick={handleCloseModal} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">הוסף מחיר מיוחד</h2>
+              <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-100/60 border border-red-300 rounded-xl text-red-700 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleAddSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleAddSubmit} className="space-y-3.5" noValidate>
               <div>
-                <label htmlFor="productId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="productId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מוצר *
                 </label>
                 <select
@@ -584,8 +584,8 @@ export default function AgentOverridesPage() {
                       setFieldErrors({ ...fieldErrors, productId: '' });
                     }
                   }}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                    showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                    showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                 >
@@ -620,7 +620,7 @@ export default function AgentOverridesPage() {
               </div>
 
               <div>
-                <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="customerId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   לקוח *
                 </label>
                 <select
@@ -633,8 +633,8 @@ export default function AgentOverridesPage() {
                       setFieldErrors({ ...fieldErrors, customerId: '' });
                     }
                   }}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                    showErrors && fieldErrors.customerId ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                    showErrors && fieldErrors.customerId ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                 >
@@ -649,52 +649,63 @@ export default function AgentOverridesPage() {
               </div>
 
               <div>
-                <label htmlFor="overridePrice" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="overridePrice" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מחיר מותאם *
                 </label>
-                <input
-                  id="overridePrice"
-                  name="overridePrice"
-                  type="number"
-                  min="0"
-                  max={MAX_PRICE}
-                  step="0.01"
-                  value={formData.overridePrice}
-                  onChange={(e) => {
-                    let value = e.target.value;
-                    // Limit to 2 decimal places
-                    if (value.includes('.')) {
-                      const parts = value.split('.');
-                      if (parts[1] && parts[1].length > 2) {
-                        value = parts[0] + '.' + parts[1].substring(0, 2);
+                <div className="relative">
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <input
+                    id="overridePrice"
+                    name="overridePrice"
+                    type="number"
+                    min="0"
+                    max={MAX_PRICE}
+                    step="0.01"
+                    value={formData.overridePrice}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Limit to 2 decimal places
+                      if (value.includes('.')) {
+                        const parts = value.split('.');
+                        if (parts[1] && parts[1].length > 2) {
+                          value = parts[0] + '.' + parts[1].substring(0, 2);
+                        }
                       }
-                    }
-                    // Limit to max price
-                    if (value && !isNaN(Number(value)) && Number(value) > MAX_PRICE) {
-                      value = MAX_PRICE.toString();
-                    }
-                    setFormData((prev) => ({ ...prev, overridePrice: value }));
-                    if (showErrors && fieldErrors.overridePrice) {
-                      setFieldErrors({ ...fieldErrors, overridePrice: '' });
-                    }
-                  }}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                    showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
-                  placeholder="הזן מחיר מותאם"
-                  dir="ltr"
-                />
+                      // Limit to max price
+                      if (value && !isNaN(Number(value)) && Number(value) > MAX_PRICE) {
+                        value = MAX_PRICE.toString();
+                      }
+                      setFormData((prev) => ({ ...prev, overridePrice: value }));
+                      if (showErrors && fieldErrors.overridePrice) {
+                        setFieldErrors({ ...fieldErrors, overridePrice: '' });
+                      }
+                    }}
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400/50' : ''
+                    }`}
+                    placeholder="0.00"
+                    dir="ltr"
+                  />
+                </div>
                 {showErrors && fieldErrors.overridePrice && <p className="text-xs text-red-500 mt-1">{fieldErrors.overridePrice}</p>}
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-4">
-                <button type="button" onClick={handleCloseModal} className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-700">
-                  ביטול
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={handleCloseModal}
+                  disabled={isSubmitting}
+                  className="btn-cancel"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-sky-100/80 hover:bg-sky-200/80 border border-sky-400 hover:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -709,7 +720,12 @@ export default function AgentOverridesPage() {
                       <span>שומר...</span>
                     </>
                   ) : (
-                    <span>שמור מחיר מיוחד</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>שמור מחיר מיוחד</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -720,15 +736,15 @@ export default function AgentOverridesPage() {
 
       {/* Edit Modal */}
       {isEditModalOpen && overrideToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-900/30 backdrop-blur" dir="rtl">
-          <div className="glass-card rounded-[28px] p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 shadow-2xl shadow-sky-200/60 border border-white/40">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">עדכן מחיר מיוחד</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">עדכן מחיר מיוחד</h2>
               <button
                 onClick={handleCloseEditModal}
-                className="p-2 rounded-full bg-white/70 hover:bg-white transition-colors shadow-sm"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -766,18 +782,18 @@ export default function AgentOverridesPage() {
             })()}
 
             {formError && (
-              <div className="mb-4 rounded-2xl bg-red-50 border border-red-200 p-3 text-sm text-red-600 shadow">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} className="space-y-5" noValidate>
+            <form onSubmit={handleEditSubmit} className="space-y-3.5" noValidate>
               <div>
-                <label htmlFor="edit-overridePrice" className="block text-xs uppercase tracking-[0.2em] text-gray-500 font-semibold mb-2">
-                  מחיר מותאם
+                <label htmlFor="edit-overridePrice" className="block text-xs font-medium text-gray-700 mb-1.5">
+                  מחיר מותאם *
                 </label>
                 <div className="relative">
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₪</span>
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                   <input
                     id="edit-overridePrice"
                     type="number"
@@ -803,31 +819,34 @@ export default function AgentOverridesPage() {
                         setFieldErrors({ ...fieldErrors, overridePrice: '' });
                       }
                     }}
-                    className={`w-full pr-9 pl-4 py-2.5 rounded-2xl text-sm text-gray-900 bg-white/70 border border-white/60 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white ${
-                      showErrors && fieldErrors.overridePrice ? 'border-red-300 focus:ring-red-300 bg-red-50' : ''
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400/50' : ''
                     }`}
-                    placeholder="הזן מחיר מותאם חדש"
+                    placeholder="0.00"
                     dir="ltr"
                   />
                 </div>
                 {showErrors && fieldErrors.overridePrice && (
-                  <p className="text-red-500 text-xs mt-2 font-medium">{fieldErrors.overridePrice}</p>
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.overridePrice}</p>
                 )}
               </div>
 
-              <div className="flex items-center justify-center gap-3 pt-2">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-700 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-sky-100/80 hover:bg-sky-200/80 border border-sky-400 hover:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -842,7 +861,12 @@ export default function AgentOverridesPage() {
                       <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>עדכן מחיר מיוחד</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכן מחיר מיוחד</span>
+                    </>
                   )}
                 </button>
               </div>

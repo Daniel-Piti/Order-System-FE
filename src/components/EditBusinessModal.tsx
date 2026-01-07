@@ -1,31 +1,35 @@
 import { useState, useEffect } from 'react';
-import { validateUserProfileForm } from '../utils/validation';
+import { validateBusinessForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-import { managerAPI } from '../services/api';
+import { businessAPI } from '../services/api';
 
-interface EditProfileModalProps {
+interface EditBusinessModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  currentProfile: {
-    firstName: string;
-    lastName: string;
+  currentBusiness: {
+    name: string;
+    stateIdNumber: string;
+    email: string;
     phoneNumber: string;
-    dateOfBirth: string;
     streetAddress: string;
     city: string;
   };
 }
 
-export default function EditProfileModal({ isOpen, onClose, onSuccess, currentProfile }: EditProfileModalProps) {
+export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentBusiness }: EditBusinessModalProps) {
   const MAX_NAME_LENGTH = 50;
+  const MAX_STATE_ID_LENGTH = 20;
+  const MAX_EMAIL_LENGTH = 100;
+  const MAX_PHONE_LENGTH = 10;
   const MAX_STREET_ADDRESS_LENGTH = 120;
   const MAX_CITY_LENGTH = 60;
+
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
+    stateIdNumber: '',
+    email: '',
     phoneNumber: '',
-    dateOfBirth: '',
     streetAddress: '',
     city: '',
   });
@@ -34,27 +38,27 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   const [fieldErrors, setFieldErrors] = useState<ValidationErrors>({});
   const [showErrors, setShowErrors] = useState(false);
 
-  // Initialize form with current profile data
+  // Initialize form with current business data
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        firstName: currentProfile.firstName,
-        lastName: currentProfile.lastName,
-        phoneNumber: currentProfile.phoneNumber,
-        dateOfBirth: currentProfile.dateOfBirth,
-        streetAddress: currentProfile.streetAddress,
-        city: currentProfile.city,
+        name: currentBusiness.name,
+        stateIdNumber: currentBusiness.stateIdNumber,
+        email: currentBusiness.email,
+        phoneNumber: currentBusiness.phoneNumber,
+        streetAddress: currentBusiness.streetAddress,
+        city: currentBusiness.city,
       });
       setShowErrors(false);
       setFieldErrors({});
       setError('');
     }
-  }, [isOpen, currentProfile]);
+  }, [isOpen, currentBusiness]);
 
   if (!isOpen) return null;
 
   const validateForm = () => {
-    const result = validateUserProfileForm(formData);
+    const result = validateBusinessForm(formData);
     setFieldErrors(result.errors);
     return result.isValid;
   };
@@ -71,12 +75,12 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
     // Check if anything has changed
     const hasChanges =
-      formData.firstName !== currentProfile.firstName ||
-      formData.lastName !== currentProfile.lastName ||
-      formData.phoneNumber !== currentProfile.phoneNumber ||
-      formData.dateOfBirth !== currentProfile.dateOfBirth ||
-      formData.streetAddress !== currentProfile.streetAddress ||
-      formData.city !== currentProfile.city;
+      formData.name !== currentBusiness.name ||
+      formData.stateIdNumber !== currentBusiness.stateIdNumber ||
+      formData.email !== currentBusiness.email ||
+      formData.phoneNumber !== currentBusiness.phoneNumber ||
+      formData.streetAddress !== currentBusiness.streetAddress ||
+      formData.city !== currentBusiness.city;
 
     // If nothing changed, just close the modal without making an API call
     if (!hasChanges) {
@@ -87,7 +91,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     setIsLoading(true);
 
     try {
-      await managerAPI.updateCurrentManager(formData);
+      await businessAPI.updateMyBusiness(formData);
       onSuccess();
       handleClose();
     } catch (err: any) {
@@ -95,7 +99,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
         err.response?.data?.userMessage ||
           err.response?.data?.message ||
           err.message ||
-          'נכשל בעדכון הפרופיל'
+          'נכשל בעדכון פרטי העסק'
       );
     } finally {
       setIsLoading(false);
@@ -105,10 +109,14 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const sanitizedValue =
-      name === 'firstName' || name === 'lastName'
+      name === 'name'
         ? value.slice(0, MAX_NAME_LENGTH)
+        : name === 'stateIdNumber'
+        ? value.slice(0, MAX_STATE_ID_LENGTH)
+        : name === 'email'
+        ? value.slice(0, MAX_EMAIL_LENGTH)
         : name === 'phoneNumber'
-        ? value.replace(/\D/g, '')
+        ? value.replace(/\D/g, '').slice(0, MAX_PHONE_LENGTH)
         : name === 'streetAddress'
         ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
         : name === 'city'
@@ -129,10 +137,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
 
   const handleClose = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
+      name: '',
+      stateIdNumber: '',
+      email: '',
       phoneNumber: '',
-      dateOfBirth: '',
       streetAddress: '',
       city: '',
     });
@@ -146,7 +154,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
       <div className="glass-card rounded-3xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-semibold text-gray-900">ערוך פרטים אישיים</h2>
+          <h2 className="text-xl font-semibold text-gray-900">עדכן פרטי עסק</h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
@@ -174,46 +182,64 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
         )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
-          <div className="grid grid-cols-2 gap-2.5">
-            <div>
-              <label htmlFor="firstName" className="form-label">
-                שם פרטי *
-              </label>
-              <input
-                id="firstName"
-                name="firstName"
-                type="text"
-                value={formData.firstName}
-                onChange={handleChange}
-                maxLength={MAX_NAME_LENGTH}
-                className={`form-input text-center ${showErrors && fieldErrors.firstName ? 'form-input-error' : ''}`}
-                placeholder="יוחנן"
-                dir="ltr"
-              />
-              {showErrors && fieldErrors.firstName && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.firstName}</p>
-              )}
-            </div>
+          <div>
+            <label htmlFor="name" className="form-label">
+              שם העסק *
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              maxLength={MAX_NAME_LENGTH}
+              className={`form-input text-center ${showErrors && fieldErrors.name ? 'form-input-error' : ''}`}
+              placeholder="שם העסק"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.name && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+            )}
+          </div>
 
-            <div>
-              <label htmlFor="lastName" className="form-label">
-                שם משפחה *
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                value={formData.lastName}
-                onChange={handleChange}
-                maxLength={MAX_NAME_LENGTH}
-                className={`form-input text-center ${showErrors && fieldErrors.lastName ? 'form-input-error' : ''}`}
-                placeholder="כהן"
-                dir="ltr"
-              />
-              {showErrors && fieldErrors.lastName && (
-                <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>
-              )}
-            </div>
+          <div>
+            <label htmlFor="stateIdNumber" className="form-label">
+              ח.פ / ע.מ *
+            </label>
+            <input
+              id="stateIdNumber"
+              name="stateIdNumber"
+              type="text"
+              value={formData.stateIdNumber}
+              onChange={handleChange}
+              maxLength={MAX_STATE_ID_LENGTH}
+              className={`form-input text-center ${showErrors && fieldErrors.stateIdNumber ? 'form-input-error' : ''}`}
+              placeholder="123456789"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.stateIdNumber && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.stateIdNumber}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="email" className="form-label">
+              אימייל העסק *
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              maxLength={MAX_EMAIL_LENGTH}
+              className={`form-input text-center ${showErrors && fieldErrors.email ? 'form-input-error' : ''}`}
+              placeholder="business@example.com"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.email && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div>
@@ -226,7 +252,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
-              maxLength={10}
+              maxLength={MAX_PHONE_LENGTH}
               inputMode="numeric"
               pattern="[0-9]*"
               className={`form-input text-center ${showErrors && fieldErrors.phoneNumber ? 'form-input-error' : ''}`}
@@ -234,24 +260,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
             />
             {showErrors && fieldErrors.phoneNumber && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="dateOfBirth" className="form-label">
-              תאריך לידה *
-            </label>
-            <input
-              id="dateOfBirth"
-              name="dateOfBirth"
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              className={`form-input text-center ${showErrors && fieldErrors.dateOfBirth ? 'form-input-error' : ''}`}
-              dir="ltr"
-            />
-            {showErrors && fieldErrors.dateOfBirth && (
-              <p className="text-red-500 text-xs mt-1">{fieldErrors.dateOfBirth}</p>
             )}
           </div>
 

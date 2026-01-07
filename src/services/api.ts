@@ -205,6 +205,18 @@ export const businessAPI = {
     return response.data;
   },
 
+  updateMyBusiness: async (data: {
+    name: string;
+    stateIdNumber: string;
+    email: string;
+    phoneNumber: string;
+    streetAddress: string;
+    city: string;
+  }): Promise<Business> => {
+    const response = await api.put<Business>('/businesses/me', data);
+    return response.data;
+  },
+
   getBusinessesByManagerIds: async (managerIds: string[]): Promise<Record<string, Business>> => {
     const response = await api.post<Record<string, Business>>('/businesses/by-managers', managerIds);
     return response.data;

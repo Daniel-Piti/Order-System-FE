@@ -474,12 +474,12 @@ export default function CustomersPage() {
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="mt-2 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+            className="mt-2 md:mt-0 btn-add-indigo"
           >
-            <span>הוסף לקוח</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
+            <span>הוסף לקוח</span>
           </button>
         </div>
       </div>
@@ -695,16 +695,16 @@ export default function CustomersPage() {
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">הוסף לקוח חדש</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">הוסף לקוח חדש</h2>
               <button
                 onClick={handleCloseModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -720,14 +720,14 @@ export default function CustomersPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="form-label">
                   שם הלקוח *
                 </label>
                 <input
@@ -737,9 +737,7 @@ export default function CustomersPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   maxLength={MAX_CUSTOMER_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.name ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: יוחנן כהן"
                   autoFocus
                 />
@@ -749,7 +747,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="phoneNumber" className="form-label">
                   מספר טלפון *
                 </label>
                 <input
@@ -761,10 +759,9 @@ export default function CustomersPage() {
                   maxLength={MAX_CUSTOMER_PHONE_LENGTH}
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.phoneNumber ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: 0501234567"
+                  dir="ltr"
                 />
                 {showErrors && fieldErrors.phoneNumber && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
@@ -772,7 +769,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="form-label">
                   כתובת אימייל *
                 </label>
                 <input
@@ -782,10 +779,9 @@ export default function CustomersPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   maxLength={MAX_CUSTOMER_EMAIL_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.email ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: yohanan@example.com"
+                  dir="ltr"
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
@@ -793,7 +789,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="streetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="streetAddress" className="form-label">
                   כתובת *
                 </label>
                 <input
@@ -803,9 +799,7 @@ export default function CustomersPage() {
                   value={formData.streetAddress}
                   onChange={handleInputChange}
                   maxLength={MAX_CUSTOMER_STREET_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.streetAddress ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: רחוב הרצל 123"
                 />
                 {showErrors && fieldErrors.streetAddress && (
@@ -814,7 +808,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="city" className="form-label">
                   עיר *
                 </label>
                 <input
@@ -824,9 +818,7 @@ export default function CustomersPage() {
                   value={formData.city}
                   onChange={handleInputChange}
                   maxLength={MAX_CUSTOMER_CITY_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.city ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: תל אביב"
                 />
                 {showErrors && fieldErrors.city && (
@@ -835,7 +827,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="discountPercentage" className="block text-xs font-medium text-gray-700 mb-1.5">
                   אחוז הנחה
                 </label>
                 <div className="space-y-2">
@@ -888,14 +880,17 @@ export default function CustomersPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -922,7 +917,12 @@ export default function CustomersPage() {
                       <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>צור לקוח</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>צור לקוח</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -933,16 +933,16 @@ export default function CustomersPage() {
 
       {/* Edit Customer Modal */}
       {isEditModalOpen && customerToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">ערוך לקוח</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">ערוך לקוח</h2>
               <button
                 onClick={handleCloseEditModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -958,14 +958,14 @@ export default function CustomersPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleEditSubmit} noValidate className="space-y-3.5">
               <div>
-                <label htmlFor="editName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editName" className="form-label">
                   שם הלקוח *
                 </label>
                 <input
@@ -975,9 +975,7 @@ export default function CustomersPage() {
                   value={editFormData.name}
                   onChange={handleEditInputChange}
                   maxLength={MAX_CUSTOMER_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.name ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: יוחנן כהן"
                   autoFocus
                 />
@@ -987,7 +985,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="editPhoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editPhoneNumber" className="form-label">
                   מספר טלפון *
                 </label>
                 <input
@@ -999,10 +997,9 @@ export default function CustomersPage() {
                   maxLength={MAX_CUSTOMER_PHONE_LENGTH}
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.phoneNumber ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: 0501234567"
+                  dir="ltr"
                 />
                 {showErrors && fieldErrors.phoneNumber && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
@@ -1010,7 +1007,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editEmail" className="form-label">
                   כתובת אימייל *
                 </label>
                 <input
@@ -1020,10 +1017,9 @@ export default function CustomersPage() {
                   value={editFormData.email}
                   onChange={handleEditInputChange}
                   maxLength={MAX_CUSTOMER_EMAIL_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.email ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: yohanan@example.com"
+                  dir="ltr"
                 />
                 {showErrors && fieldErrors.email && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
@@ -1031,7 +1027,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="editStreetAddress" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editStreetAddress" className="form-label">
                   כתובת *
                 </label>
                 <input
@@ -1041,9 +1037,7 @@ export default function CustomersPage() {
                   value={editFormData.streetAddress}
                   onChange={handleEditInputChange}
                   maxLength={MAX_CUSTOMER_STREET_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.streetAddress ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: רחוב הרצל 123"
                 />
                 {showErrors && fieldErrors.streetAddress && (
@@ -1052,7 +1046,7 @@ export default function CustomersPage() {
               </div>
 
               <div>
-                <label htmlFor="editCity" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editCity" className="form-label">
                   עיר *
                 </label>
                 <input
@@ -1062,9 +1056,7 @@ export default function CustomersPage() {
                   value={editFormData.city}
                   onChange={handleEditInputChange}
                   maxLength={MAX_CUSTOMER_CITY_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
-                  }`}
+                  className={`form-input text-center ${showErrors && fieldErrors.city ? 'form-input-error' : ''}`}
                   placeholder="לדוגמה: תל אביב"
                 />
                 {showErrors && fieldErrors.city && (
@@ -1126,14 +1118,17 @@ export default function CustomersPage() {
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -1160,7 +1155,12 @@ export default function CustomersPage() {
                       <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>עדכן לקוח</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכן לקוח</span>
+                    </>
                   )}
                 </button>
               </div>

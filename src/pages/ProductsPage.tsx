@@ -1035,12 +1035,12 @@ export default function ProductsPage() {
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+            className="mt-4 md:mt-0 btn-add-indigo"
           >
-            <span>הוסף מוצר</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
+            <span>הוסף מוצר</span>
           </button>
         </div>
       </div>
@@ -1400,16 +1400,16 @@ export default function ProductsPage() {
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">הוסף מוצר חדש</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">הוסף מוצר חדש</h2>
               <button
                 onClick={handleCloseModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1425,14 +1425,14 @@ export default function ProductsPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-1.5">
                   שם המוצר *
                 </label>
                 <input
@@ -1442,8 +1442,8 @@ export default function ProductsPage() {
                   value={formData.name}
                   onChange={handleInputChange}
                   maxLength={MAX_PRODUCT_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                   placeholder="לדוגמה: פולי קפה פרמיום"
@@ -1454,7 +1454,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="categoryId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   קטגוריה
                 </label>
                 <select
@@ -1462,7 +1462,7 @@ export default function ProductsPage() {
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
                   dir="ltr"
                 >
                   <option value="">ללא</option>
@@ -1475,7 +1475,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="brandId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מותג
                 </label>
                 <select
@@ -1483,7 +1483,7 @@ export default function ProductsPage() {
                   name="brandId"
                   value={formData.brandId}
                   onChange={handleInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
                   dir="ltr"
                 >
                   <option value="">ללא</option>
@@ -1495,13 +1495,13 @@ export default function ProductsPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label htmlFor="minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="minimumPrice" className="block text-xs font-medium text-gray-700 mb-1.5">
                     מחיר מינימלי *
                   </label>
                   <div className="relative">
-                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="minimumPrice"
                       name="minimumPrice"
@@ -1511,8 +1511,8 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={formData.minimumPrice}
                       onChange={handleInputChange}
-                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
+                      className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400/50' : ''
                       }`}
                       dir="ltr"
                       placeholder="0.00"
@@ -1524,11 +1524,11 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="price" className="block text-xs font-medium text-gray-700 mb-1.5">
                     מחיר *
                   </label>
                   <div className="relative">
-                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="price"
                       name="price"
@@ -1538,8 +1538,8 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={formData.price}
                       onChange={handleInputChange}
-                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
+                      className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400/50' : ''
                       }`}
                       dir="ltr"
                       placeholder="0.00"
@@ -1552,7 +1552,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-xs font-medium text-gray-700 mb-1.5">
                   תיאור
                 </label>
                 <textarea
@@ -1561,7 +1561,7 @@ export default function ProductsPage() {
                   value={formData.description}
                   onChange={handleInputChange}
                   maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none transition-all"
                   placeholder="תיאור המוצר (אופציונלי)"
                   rows={3}
                 />
@@ -1569,7 +1569,7 @@ export default function ProductsPage() {
 
               {/* Image Upload Section */}
               <div>
-                <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="images" className="block text-xs font-medium text-gray-700 mb-1.5">
                   תמונות <span className="text-gray-500 text-xs">(עד 5, אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
@@ -1653,14 +1653,17 @@ export default function ProductsPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -1687,7 +1690,12 @@ export default function ProductsPage() {
                       <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>צור מוצר</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>צור מוצר</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -1698,16 +1706,16 @@ export default function ProductsPage() {
 
       {/* Edit Product Modal */}
       {isEditModalOpen && productToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">ערוך מוצר</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">ערוך מוצר</h2>
               <button
                 onClick={handleCloseEditModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1723,14 +1731,14 @@ export default function ProductsPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleEditSubmit} noValidate className="space-y-3.5">
               <div>
-                <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-name" className="block text-xs font-medium text-gray-700 mb-1.5">
                   שם המוצר *
                 </label>
                 <input
@@ -1740,8 +1748,8 @@ export default function ProductsPage() {
                   value={editFormData.name}
                   onChange={handleEditInputChange}
                   maxLength={MAX_PRODUCT_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                   placeholder="לדוגמה: פולי קפה פרמיום"
@@ -1752,7 +1760,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-categoryId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   קטגוריה
                 </label>
                 <select
@@ -1760,7 +1768,7 @@ export default function ProductsPage() {
                   name="categoryId"
                   value={editFormData.categoryId}
                   onChange={handleEditInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center"
                   dir="ltr"
                 >
                   <option value="">ללא</option>
@@ -1773,7 +1781,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-brandId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-brandId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מותג
                 </label>
                 <select
@@ -1781,7 +1789,7 @@ export default function ProductsPage() {
                   name="brandId"
                   value={editFormData.brandId}
                   onChange={handleEditInputChange}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center"
                   dir="ltr"
                 >
                   <option value="">ללא</option>
@@ -1793,13 +1801,13 @@ export default function ProductsPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label htmlFor="edit-minimumPrice" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="edit-minimumPrice" className="block text-xs font-medium text-gray-700 mb-1.5">
                     מחיר מינימלי *
                   </label>
                   <div className="relative">
-                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-minimumPrice"
                       name="minimumPrice"
@@ -1809,8 +1817,8 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={editFormData.minimumPrice}
                       onChange={handleEditInputChange}
-                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400' : ''
+                      className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center ${
+                        showErrors && fieldErrors.minimumPrice ? 'border-red-400 focus:ring-red-400/50' : ''
                       }`}
                       dir="ltr"
                       placeholder="0.00"
@@ -1822,11 +1830,11 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="edit-price" className="block text-xs font-medium text-gray-700 mb-1.5">
                     מחיר *
                   </label>
                   <div className="relative">
-                    <span className="absolute right-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                    <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                     <input
                       id="edit-price"
                       name="price"
@@ -1836,8 +1844,8 @@ export default function ProductsPage() {
                       max={MAX_PRICE}
                       value={editFormData.price}
                       onChange={handleEditInputChange}
-                      className={`glass-input w-full pr-7 pl-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400' : ''
+                      className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center ${
+                        showErrors && fieldErrors.price ? 'border-red-400 focus:ring-red-400/50' : ''
                       }`}
                       dir="ltr"
                       placeholder="0.00"
@@ -1850,7 +1858,7 @@ export default function ProductsPage() {
               </div>
 
               <div>
-                <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-description" className="block text-xs font-medium text-gray-700 mb-1.5">
                   תיאור
                 </label>
                 <textarea
@@ -1859,7 +1867,7 @@ export default function ProductsPage() {
                   value={editFormData.description}
                   onChange={handleEditInputChange}
                   maxLength={MAX_PRODUCT_DESCRIPTION_LENGTH}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none"
                   placeholder="תיאור המוצר (אופציונלי)"
                   rows={3}
                 />
@@ -1867,7 +1875,7 @@ export default function ProductsPage() {
 
               {/* Image Management Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
                   תמונות <span className="text-gray-500 text-xs">(עד 5 סה״כ)</span>
                 </label>
                 <div className="space-y-3">
@@ -2031,14 +2039,17 @@ export default function ProductsPage() {
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -2065,7 +2076,12 @@ export default function ProductsPage() {
                       <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>עדכן מוצר</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכן מוצר</span>
+                    </>
                   )}
                 </button>
               </div>

@@ -92,6 +92,148 @@
            placeholder:text-gray-400;
   }
 
+  /* Form Components */
+  .form-label {
+    @apply block text-xs font-medium text-gray-700 mb-1.5;
+  }
+
+  .form-input {
+    @apply glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 
+           focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all;
+  }
+
+  .form-input-error {
+    @apply border-red-400 focus:ring-red-400/50;
+  }
+
+  .form-select {
+    @apply glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 
+           focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center;
+  }
+
+  .form-textarea {
+    @apply glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 
+           focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none;
+  }
+
+  /* Button Components */
+  .btn-save {
+    @apply flex-1 py-3 px-6 rounded-2xl text-sm font-semibold text-white
+           bg-gradient-to-r from-green-600 via-green-600 to-green-700
+           hover:from-green-700 hover:via-green-700 hover:to-green-800
+           disabled:from-gray-400 disabled:via-gray-400 disabled:to-gray-500
+           border-2 border-green-700/40 hover:border-green-800/60
+           disabled:border-gray-300/40
+           shadow-lg shadow-green-600/30 hover:shadow-xl hover:shadow-green-700/40
+           disabled:shadow-none disabled:cursor-not-allowed
+           flex items-center justify-center gap-2
+           transition-all duration-300 ease-out
+           hover:scale-[1.02] active:scale-[0.98]
+           relative overflow-hidden;
+  }
+
+  .btn-save::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 700ms;
+  }
+
+  .btn-save:hover::before {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+
+  .btn-save-indigo {
+    @apply flex-1 py-3 px-6 rounded-2xl text-sm font-semibold text-white
+           bg-gradient-to-r from-indigo-500 to-indigo-600
+           hover:from-indigo-600 hover:to-indigo-700
+           disabled:from-gray-400 disabled:to-gray-500
+           border-2 border-indigo-600/40 hover:border-indigo-700/60
+           disabled:border-gray-300/40
+           shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40
+           disabled:shadow-none disabled:cursor-not-allowed
+           flex items-center justify-center gap-2
+           transition-all duration-300 ease-out
+           hover:scale-[1.02] active:scale-[0.98]
+           relative overflow-hidden;
+  }
+
+  .btn-save-indigo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 700ms;
+  }
+
+  .btn-save-indigo:hover::before {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+
+  .btn-cancel {
+    @apply flex-1 py-3 px-6 rounded-2xl text-sm font-semibold text-gray-700
+           bg-gradient-to-r from-slate-100 to-gray-100
+           hover:from-slate-200 hover:to-gray-200
+           disabled:from-slate-100 disabled:to-gray-100
+           border-2 border-slate-400/80 hover:border-slate-500/90
+           disabled:border-slate-200/40
+           shadow-md shadow-slate-300/25 hover:shadow-lg hover:shadow-slate-400/30
+           disabled:shadow-none disabled:cursor-not-allowed disabled:opacity-50
+           flex items-center justify-center gap-2
+           transition-all duration-300 ease-out
+           hover:scale-[1.02] active:scale-[0.98]
+           relative overflow-hidden;
+  }
+
+  .btn-cancel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 700ms;
+  }
+
+  .btn-cancel:hover::before {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+
+  .btn-add-indigo {
+    @apply py-3 px-6 rounded-2xl text-sm font-semibold text-white
+           bg-gradient-to-r from-indigo-500 to-indigo-600
+           hover:from-indigo-600 hover:to-indigo-700
+           border-2 border-indigo-600/40 hover:border-indigo-700/60
+           shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/40
+           flex items-center justify-center gap-2
+           transition-all duration-300 ease-out
+           hover:scale-[1.02] active:scale-[0.98]
+           relative overflow-hidden;
+  }
+
+  .btn-add-indigo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: opacity 300ms, transform 700ms;
+  }
+
+  .btn-add-indigo:hover::before {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+
   .glass-select {
     @apply backdrop-blur-xl bg-white/50 border-2 border-gray-400/80 
            hover:bg-gray-200/70 hover:border-gray-500 

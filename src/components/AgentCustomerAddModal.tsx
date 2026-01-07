@@ -164,57 +164,53 @@ export default function AgentCustomerAddModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
-      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/85">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">הוסף לקוח חדש</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-semibold text-gray-900">הוסף לקוח חדש</h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
             aria-label="סגור חלון"
           >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {error && (
-          <div className="glass-card bg-red-50/60 border border-red-200 rounded-xl p-3 text-red-600 text-sm mb-4">
+          <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 text-red-600 text-sm mb-4">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">שם לקוח *</label>
+            <label className="form-label">שם לקוח *</label>
             <input
               name="name"
               type="text"
               value={formData.name}
               onChange={handleChange}
               maxLength={MAX_CUSTOMER_NAME_LENGTH}
-              className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
-              }`}
+              className={`form-input text-center ${showErrors && fieldErrors.name ? 'form-input-error' : ''}`}
               placeholder="שם מלא"
               dir="rtl"
             />
             {showErrors && fieldErrors.name && <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">מספר טלפון *</label>
+              <label className="form-label">מספר טלפון *</label>
               <input
                 name="phoneNumber"
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 maxLength={MAX_CUSTOMER_PHONE_LENGTH}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                  showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input text-center ${showErrors && fieldErrors.phoneNumber ? 'form-input-error' : ''}`}
                 placeholder="0501234567"
                 dir="ltr"
               />
@@ -223,16 +219,14 @@ export default function AgentCustomerAddModal({
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">כתובת אימייל *</label>
+              <label className="form-label">כתובת אימייל *</label>
               <input
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
                 maxLength={MAX_CUSTOMER_EMAIL_LENGTH}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                  showErrors && fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input text-center ${showErrors && fieldErrors.email ? 'form-input-error' : ''}`}
                 placeholder="customer@example.com"
                 dir="ltr"
               />
@@ -240,18 +234,16 @@ export default function AgentCustomerAddModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">כתובת רחוב *</label>
+              <label className="form-label">כתובת רחוב *</label>
               <input
                 name="streetAddress"
                 type="text"
                 value={formData.streetAddress}
                 onChange={handleChange}
                 maxLength={MAX_CUSTOMER_STREET_LENGTH}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                  showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input text-center ${showErrors && fieldErrors.streetAddress ? 'form-input-error' : ''}`}
                 placeholder="רחוב ושם רחוב"
                 dir="rtl"
               />
@@ -260,16 +252,14 @@ export default function AgentCustomerAddModal({
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">עיר *</label>
+              <label className="form-label">עיר *</label>
               <input
                 name="city"
                 type="text"
                 value={formData.city}
                 onChange={handleChange}
                 maxLength={MAX_CUSTOMER_CITY_LENGTH}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                  showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input text-center ${showErrors && fieldErrors.city ? 'form-input-error' : ''}`}
                 placeholder="תל אביב"
                 dir="rtl"
               />
@@ -323,16 +313,17 @@ export default function AgentCustomerAddModal({
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/70 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
+              className="btn-cancel"
             >
-              ביטול
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>ביטול</span>
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 
-                       bg-sky-100/80 hover:bg-sky-200/80 border border-sky-400 hover:border-sky-500 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2 transition-colors"
+              className="btn-save"
             >
               {isSubmitting ? (
                 <>
@@ -347,7 +338,12 @@ export default function AgentCustomerAddModal({
                   <span>מוסיף...</span>
                 </>
               ) : (
-                <span>הוסף לקוח</span>
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>הוסף לקוח</span>
+                </>
               )}
             </button>
           </div>

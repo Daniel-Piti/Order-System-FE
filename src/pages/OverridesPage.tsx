@@ -444,12 +444,12 @@ export default function OverridesPage() {
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+            className="btn-add-indigo"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            הוסף מחיר מיוחד
+            <span>הוסף מחיר מיוחד</span>
           </button>
         </div>
       </div>
@@ -665,30 +665,30 @@ export default function OverridesPage() {
 
       {/* Add Override Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">הוסף מחיר מיוחד</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">הוסף מחיר מיוחד</h2>
               <button
                 onClick={handleCloseModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-100/60 border border-red-300 rounded-xl text-red-700 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleAddSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleAddSubmit} className="space-y-3.5" noValidate>
               {/* Product */}
               <div>
-                <label htmlFor="productId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="productId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מוצר *
                 </label>
                 <select
@@ -701,9 +701,10 @@ export default function OverridesPage() {
                       setFieldErrors({ ...fieldErrors, productId: '' });
                     }
                   }}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                    showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
+                  dir="ltr"
                 >
                   <option value="">בחר מוצר</option>
                   {products.map((product) => (
@@ -728,7 +729,7 @@ export default function OverridesPage() {
 
               {/* Customer */}
               <div>
-                <label htmlFor="customerId" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="customerId" className="block text-xs font-medium text-gray-700 mb-1.5">
                   לקוח *
                 </label>
                 <select
@@ -741,9 +742,10 @@ export default function OverridesPage() {
                       setFieldErrors({ ...fieldErrors, customerId: '' });
                     }
                   }}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    showErrors && fieldErrors.customerId ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                    showErrors && fieldErrors.customerId ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
+                  dir="ltr"
                 >
                   <option value="">בחר לקוח</option>
                   {customers.map((customer) => (
@@ -759,11 +761,11 @@ export default function OverridesPage() {
 
               {/* Override Price */}
               <div>
-                <label htmlFor="overridePrice" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="overridePrice" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מחיר מותאם *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                   <input
                     id="overridePrice"
                     name="overridePrice"
@@ -791,10 +793,11 @@ export default function OverridesPage() {
                         setFieldErrors({ ...fieldErrors, overridePrice: '' });
                       }
                     }}
-                    className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400' : ''
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400/50' : ''
                     }`}
                     placeholder="0.00"
+                    dir="ltr"
                   />
                 </div>
                 {showErrors && fieldErrors.overridePrice && (
@@ -807,16 +810,34 @@ export default function OverridesPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50"
+                  className="btn-save"
                 >
-                  {isSubmitting ? 'יוצר...' : 'צור מחיר מיוחד'}
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>יוצר...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>צור מחיר מיוחד</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -826,15 +847,15 @@ export default function OverridesPage() {
 
       {/* Edit Override Modal */}
       {isEditModalOpen && overrideToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/85">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">ערוך מחיר מיוחד</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">ערוך מחיר מיוחד</h2>
               <button
                 onClick={handleCloseEditModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -851,19 +872,19 @@ export default function OverridesPage() {
             </div>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-100/60 border border-red-300 rounded-xl text-red-700 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} className="space-y-4" noValidate>
+            <form onSubmit={handleEditSubmit} className="space-y-3.5" noValidate>
               {/* Override Price */}
               <div>
-                <label htmlFor="edit-overridePrice" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="edit-overridePrice" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מחיר מותאם *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
                   <input
                     id="edit-overridePrice"
                     name="overridePrice"
@@ -891,10 +912,11 @@ export default function OverridesPage() {
                         setFieldErrors({ ...fieldErrors, overridePrice: '' });
                       }
                     }}
-                    className={`glass-input w-full pl-7 pr-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400' : ''
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                      showErrors && fieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400/50' : ''
                     }`}
                     placeholder="0.00"
+                    dir="ltr"
                   />
                 </div>
                 {showErrors && fieldErrors.overridePrice && (
@@ -907,16 +929,34 @@ export default function OverridesPage() {
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50"
+                  className="btn-save"
                 >
-                  {isSubmitting ? 'מעדכן...' : 'עדכן מחיר מיוחד'}
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>מעדכן...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכן מחיר מיוחד</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

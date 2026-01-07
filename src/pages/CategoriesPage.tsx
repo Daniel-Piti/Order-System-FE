@@ -325,12 +325,12 @@ export default function CategoriesPage() {
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="mt-4 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+            className="mt-4 md:mt-0 btn-add-indigo"
           >
-            <span>הוסף קטגוריה</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
+            <span>הוסף קטגוריה</span>
           </button>
         </div>
       </div>
@@ -523,16 +523,16 @@ export default function CategoriesPage() {
 
       {/* Add Category Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">הוסף קטגוריה חדשה</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">הוסף קטגוריה חדשה</h2>
               <button
                 onClick={handleCloseModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -548,14 +548,14 @@ export default function CategoriesPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
-                <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="categoryName" className="block text-xs font-medium text-gray-700 mb-1.5">
                   שם *
                 </label>
                 <input
@@ -570,8 +570,8 @@ export default function CategoriesPage() {
                     }
                   }}
                   maxLength={MAX_CATEGORY_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                   placeholder="לדוגמה: משקאות, חטיפים, אלקטרוניקה"
@@ -587,14 +587,17 @@ export default function CategoriesPage() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -621,7 +624,12 @@ export default function CategoriesPage() {
                       <span>יוצר...</span>
                     </>
                   ) : (
-                    <span>צור קטגוריה</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>צור קטגוריה</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -632,16 +640,16 @@ export default function CategoriesPage() {
 
       {/* Edit Category Modal */}
       {isEditModalOpen && categoryToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85" dir="rtl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">ערוך קטגוריה</h2>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 backdrop-blur-xl shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-semibold text-gray-900">ערוך קטגוריה</h2>
               <button
                 onClick={handleCloseEditModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
               >
                 <svg
-                  className="w-6 h-6 text-gray-600"
+                  className="w-5 h-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -657,14 +665,14 @@ export default function CategoriesPage() {
             </div>
 
             {formError && (
-              <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleEditSubmit} className="space-y-4">
+            <form onSubmit={handleEditSubmit} className="space-y-3.5">
               <div>
-                <label htmlFor="editCategoryName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="editCategoryName" className="block text-xs font-medium text-gray-700 mb-1.5">
                   שם *
                 </label>
                 <input
@@ -679,8 +687,8 @@ export default function CategoriesPage() {
                     }
                   }}
                   maxLength={MAX_CATEGORY_NAME_LENGTH}
-                  className={`glass-input w-full px-3 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center ${
-                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400' : ''
+                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center ${
+                    showErrors && fieldErrors.name ? 'border-red-400 focus:ring-red-400/50' : ''
                   }`}
                   dir="ltr"
                   placeholder="לדוגמה: משקאות, חטיפים, אלקטרוניקה"
@@ -696,14 +704,17 @@ export default function CategoriesPage() {
                   type="button"
                   onClick={handleCloseEditModal}
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                  className="btn-cancel"
                 >
-                  ביטול
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span>ביטול</span>
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="btn-save"
                 >
                   {isSubmitting ? (
                     <>
@@ -730,7 +741,12 @@ export default function CategoriesPage() {
                       <span>מעדכן...</span>
                     </>
                   ) : (
-                    <span>עדכן קטגוריה</span>
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>עדכן קטגוריה</span>
+                    </>
                   )}
                 </button>
               </div>

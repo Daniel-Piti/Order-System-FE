@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { businessAPI } from '../services/api';
 import type { Business } from '../services/api';
+import EditBusinessModal from '../components/EditBusinessModal';
 
 export default function BusinessDataPage() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -154,6 +156,17 @@ export default function BusinessDataPage() {
               פרטי העסק
             </p>
           </div>
+          <div className="mt-4 md:mt-0 w-full md:w-auto">
+            <button 
+              onClick={() => setIsEditModalOpen(true)}
+              className="w-full md:w-auto btn-add-indigo"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>עדכן פרטי עסק</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -241,6 +254,25 @@ export default function BusinessDataPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Business Modal */}
+      {business && (
+        <EditBusinessModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => {
+            fetchBusiness(); // Refresh the business data
+          }}
+          currentBusiness={{
+            name: business.name,
+            stateIdNumber: business.stateIdNumber,
+            email: business.email,
+            phoneNumber: business.phoneNumber,
+            streetAddress: business.streetAddress,
+            city: business.city,
+          }}
+        />
+      )}
     </div>
   );
 }

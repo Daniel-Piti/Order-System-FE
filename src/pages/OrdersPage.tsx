@@ -417,12 +417,12 @@ export default function OrdersPage() {
           </div>
           <button
             onClick={openCreateModal}
-            className="mt-2 md:mt-0 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all flex items-center gap-2 border-0"
+            className="mt-2 md:mt-0 btn-add-indigo"
           >
-            <span>צור הזמנה חדשה</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
+            <span>צור הזמנה חדשה</span>
           </button>
         </div>
       </div>
@@ -951,15 +951,18 @@ export default function OrdersPage() {
                 type="button"
                 onClick={closeCreateModal}
                 disabled={isCreating}
-                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-red-100/60 hover:bg-red-200/70 border-red-500 hover:border-red-600 disabled:opacity-50"
+                className="btn-cancel"
               >
-                ביטול
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>ביטול</span>
               </button>
               <button
                 type="button"
                 onClick={handleCreateOrder}
                 disabled={isCreating}
-                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 bg-green-100/60 hover:bg-green-200/70 border-green-600 hover:border-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="btn-save"
               >
                 {isCreating ? (
                   <>
@@ -986,7 +989,12 @@ export default function OrdersPage() {
                     <span>יוצר...</span>
                   </>
                 ) : (
-                  <span>צור הזמנה</span>
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>צור הזמנה</span>
+                  </>
                 )}
               </button>
             </div>

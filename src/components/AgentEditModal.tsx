@@ -127,42 +127,40 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/85" dir="rtl">
-        <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
+      <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-lg font-bold text-gray-800">ערוך סוכן</h2>
+            <h2 className="text-xl font-semibold text-gray-900">ערוך סוכן</h2>
             <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {agent.firstName} {agent.lastName}</p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
             aria-label="Close modal"
           >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {error && (
-          <div className="glass-card bg-red-50/60 border border-red-200 rounded-xl p-3 text-red-600 text-sm mb-4">
+          <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">שם פרטי *</label>
+              <label className="form-label">שם פרטי *</label>
               <input
                 name="firstName"
                 type="text"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  showErrors && fieldErrors.firstName ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input ${showErrors && fieldErrors.firstName ? 'form-input-error' : ''}`}
                 placeholder="לדוגמה: יוחנן"
               />
               {showErrors && fieldErrors.firstName && (
@@ -170,48 +168,43 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">שם משפחה *</label>
+              <label className="form-label">שם משפחה *</label>
               <input
                 name="lastName"
                 type="text"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  showErrors && fieldErrors.lastName ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input ${showErrors && fieldErrors.lastName ? 'form-input-error' : ''}`}
                 placeholder="לדוגמה: כהן"
               />
               {showErrors && fieldErrors.lastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.lastName}</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">מספר טלפון *</label>
+              <label className="form-label">מספר טלפון *</label>
               <input
                 name="phoneNumber"
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  showErrors && fieldErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input ${showErrors && fieldErrors.phoneNumber ? 'form-input-error' : ''}`}
                 placeholder="לדוגמה: 0501234567"
+                dir="ltr"
               />
               {showErrors && fieldErrors.phoneNumber && (
                 <p className="text-red-500 text-xs mt-1">{fieldErrors.phoneNumber}</p>
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">עיר *</label>
+              <label className="form-label">עיר *</label>
               <input
                 name="city"
                 type="text"
                 value={formData.city}
                 onChange={handleChange}
-                className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  showErrors && fieldErrors.city ? 'border-red-400 focus:ring-red-400' : ''
-                }`}
+                className={`form-input ${showErrors && fieldErrors.city ? 'form-input-error' : ''}`}
                 placeholder="לדוגמה: תל אביב"
               />
               {showErrors && fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
@@ -219,15 +212,13 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">כתובת *</label>
+            <label className="form-label">כתובת *</label>
             <input
               name="streetAddress"
               type="text"
               value={formData.streetAddress}
               onChange={handleChange}
-              className={`glass-input w-full px-3 py-2 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                showErrors && fieldErrors.streetAddress ? 'border-red-400 focus:ring-red-400' : ''
-              }`}
+              className={`form-input ${showErrors && fieldErrors.streetAddress ? 'form-input-error' : ''}`}
               placeholder="לדוגמה: רחוב הרצל 123"
             />
             {showErrors && fieldErrors.streetAddress && (
@@ -240,16 +231,17 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100/70 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
+              className="btn-cancel"
             >
-              ביטול
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>ביטול</span>
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-800 
-                       bg-indigo-100/80 hover:bg-indigo-200/80 border border-indigo-400 hover:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2 transition-colors"
+              className="btn-save"
             >
               {isSubmitting ? (
                 <>
@@ -264,7 +256,12 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
                   <span>שומר...</span>
                 </>
               ) : (
-                <span>שמור שינויים</span>
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>שמור שינויים</span>
+                </>
               )}
             </button>
           </div>
