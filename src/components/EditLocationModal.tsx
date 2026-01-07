@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CloseButton from './CloseButton';
 import Spinner from './Spinner';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
@@ -127,24 +128,7 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
       <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-semibold text-gray-900">ערוך סניף</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-          >
-            <svg
-              className="w-5 h-5 text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} />
         </div>
 
         {error && (

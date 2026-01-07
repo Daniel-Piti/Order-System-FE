@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import CloseButton from './CloseButton';
 import { agentAPI, type CustomerRequest, type Customer } from '../services/api';
 import { validateEmail, validatePhoneNumberDigitsOnly, validateRequiredWithMaxLength, validateDiscountPercentage, type ValidationErrors } from '../utils/validation';
 
@@ -192,16 +193,7 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
             <h2 className="text-xl font-semibold text-gray-900">ערוך לקוח</h2>
             <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {customer.name}</p>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-            aria-label="סגור חלון"
-            type="button"
-          >
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} ariaLabel="סגור חלון" />
         </div>
 
         {error && (

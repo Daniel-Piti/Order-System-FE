@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CloseButton from '../components/CloseButton';
 import { useNavigate } from 'react-router-dom';
 import { managerAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
@@ -1404,24 +1405,7 @@ export default function ProductsPage() {
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-semibold text-gray-900">הוסף מוצר חדש</h2>
-              <button
-                onClick={handleCloseModal}
-                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+              <CloseButton onClick={handleCloseModal} />
             </div>
 
             {formError && (
@@ -1691,24 +1675,7 @@ export default function ProductsPage() {
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-semibold text-gray-900">ערוך מוצר</h2>
-              <button
-                onClick={handleCloseEditModal}
-                className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-              >
-                <svg
-                  className="w-5 h-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+              <CloseButton onClick={handleCloseEditModal} />
             </div>
 
             {formError && (

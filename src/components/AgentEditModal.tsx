@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type UpdateAgentRequest, type Agent } from '../services/api';
+import CloseButton from './CloseButton';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm, AGENT_FIELD_LIMITS } from '../utils/validation';
 
@@ -134,15 +135,7 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
             <h2 className="text-xl font-semibold text-gray-900">ערוך סוכן</h2>
             <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {agent.firstName} {agent.lastName}</p>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-            aria-label="Close modal"
-          >
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} ariaLabel="Close modal" />
         </div>
 
         {error && (

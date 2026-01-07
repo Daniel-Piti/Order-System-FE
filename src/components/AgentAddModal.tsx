@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Spinner from './Spinner';
+import CloseButton from './CloseButton';
 import { agentAPI, type NewAgentRequest } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentCreationForm, AGENT_FIELD_LIMITS } from '../utils/validation';
@@ -119,15 +120,7 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
       <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-semibold text-gray-900">הוסף סוכן חדש</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-            aria-label="Close modal"
-          >
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} ariaLabel="Close modal" />
         </div>
 
         {error && (

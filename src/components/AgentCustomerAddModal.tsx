@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type CustomerRequest } from '../services/api';
+import CloseButton from './CloseButton';
 import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 
@@ -168,15 +169,7 @@ export default function AgentCustomerAddModal({
       <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-semibold text-gray-900">הוסף לקוח חדש</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100/50 rounded-xl transition-colors"
-            aria-label="סגור חלון"
-          >
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <CloseButton onClick={handleClose} ariaLabel="סגור חלון" />
         </div>
 
         {error && (
