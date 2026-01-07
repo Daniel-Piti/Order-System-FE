@@ -776,8 +776,8 @@ export default function BrandsPage() {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-gray-900">הוסף מותג חדש</h2>
+            <div className="modal-header">
+              <h2 className="modal-header-title">הוסף מותג חדש</h2>
               <CloseButton onClick={handleCloseModal} />
             </div>
 
@@ -925,8 +925,8 @@ export default function BrandsPage() {
       {isEditModalOpen && brandToEdit && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
           <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-semibold text-gray-900">ערוך מותג</h2>
+            <div className="modal-header">
+              <h2 className="modal-header-title">ערוך מותג</h2>
               <CloseButton onClick={handleCloseEditModal} />
             </div>
 

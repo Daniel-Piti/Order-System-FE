@@ -130,9 +130,9 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
       <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="flex items-center justify-between mb-5">
+        <div className="modal-header">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">ערוך סוכן</h2>
+            <h2 className="modal-header-title">ערוך סוכן</h2>
             <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {agent.firstName} {agent.lastName}</p>
           </div>
           <CloseButton onClick={handleClose} ariaLabel="Close modal" />
