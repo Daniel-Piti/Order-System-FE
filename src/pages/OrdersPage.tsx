@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import Spinner from '../components/Spinner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { orderAPI, customerAPI, agentAPI, type Order, type Customer, type Agent } from '../services/api';
+import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer, type Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
+import InvoiceCreationModal from '../components/InvoiceCreationModal';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -22,6 +23,10 @@ export default function OrdersPage() {
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [orderInvoiceUrls, setOrderInvoiceUrls] = useState<Map<string, string>>(new Map());
+  const [checkedOrders, setCheckedOrders] = useState<Set<string>>(new Set()); // Track which orders we've checked (even if no invoice)
+  const [loadingInvoiceUrls, setLoadingInvoiceUrls] = useState<Set<string>>(new Set());
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -41,6 +46,64 @@ export default function OrdersPage() {
   useEffect(() => {
     fetchOrders(currentPage);
   }, [currentPage, sortBy, sortDirection, pageSize, statusFilter, agentFilter]);
+
+  // Check invoice status for DONE orders (batch check)
+  useEffect(() => {
+    const checkInvoiceStatus = async () => {
+      const doneOrders = orders.filter(order => order.status === 'DONE');
+      if (doneOrders.length === 0) return;
+
+      // Only check orders that we haven't checked yet
+      const ordersToCheck = doneOrders.filter(order => !checkedOrders.has(order.id));
+      if (ordersToCheck.length === 0) return; // All already checked
+
+      // Mark orders as loading
+      const orderIdsToCheck = ordersToCheck.map(order => order.id);
+      setLoadingInvoiceUrls(prev => {
+        const updated = new Set(prev);
+        orderIdsToCheck.forEach(id => updated.add(id));
+        return updated;
+      });
+
+      try {
+        // Batch check invoices for all orders at once
+        const invoiceMap = await invoiceAPI.getInvoicesByOrderIds(orderIdsToCheck);
+        
+        // Update invoice URLs from the batch response
+        if (Object.keys(invoiceMap).length > 0) {
+          setOrderInvoiceUrls(prev => {
+            const updated = new Map(prev);
+            Object.entries(invoiceMap).forEach(([orderId, url]) => {
+              updated.set(orderId, url);
+            });
+            return updated;
+          });
+        }
+      } catch (err: any) {
+        // Log error but don't fail silently
+        console.error('Error checking invoices for orders:', err);
+      } finally {
+        // Clear loading state and mark all as checked
+        setLoadingInvoiceUrls(prev => {
+          const updated = new Set(prev);
+          orderIdsToCheck.forEach(id => updated.delete(id));
+          return updated;
+        });
+
+        // Mark all checked orders as checked (even if they don't have invoices)
+        setCheckedOrders(prev => {
+          const updated = new Set(prev);
+          orderIdsToCheck.forEach(id => updated.add(id));
+          return updated;
+        });
+      }
+    };
+
+    if (orders.length > 0) {
+      checkInvoiceStatus();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders]);
 
   const fetchOrders = async (page: number = 0) => {
     setIsLoading(true);
@@ -779,6 +842,54 @@ export default function OrdersPage() {
                       )}
                     </button>
                   </div>
+                ) : order.status === 'DONE' ? (
+                  orderInvoiceUrls.has(order.id) ? (
+                    // Invoice exists - show eye icon + file icon
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const invoiceUrl = orderInvoiceUrls.get(order.id);
+                        if (invoiceUrl) {
+                          window.open(invoiceUrl, '_blank');
+                        }
+                      }}
+                      className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full border-2 transition-all shadow-sm flex-shrink-0 bg-green-50 text-green-600 border-green-500 hover:bg-green-100 hover:shadow-lg"
+                      title="צפה בחשבונית"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  ) : (
+                    // No invoice - show text "צור" + file icon
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInvoiceOrder(order);
+                      }}
+                      className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full border-2 transition-all shadow-sm flex-shrink-0 bg-green-100 text-green-700 border-green-600 hover:bg-green-200 hover:shadow-lg"
+                      title="צור חשבונית"
+                      disabled={loadingInvoiceUrls.has(order.id)}
+                    >
+                      {loadingInvoiceUrls.has(order.id) ? (
+                        <svg className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-green-700" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
+                        </svg>
+                      ) : (
+                        <>
+                          <span className="text-xs sm:text-sm font-semibold text-green-700">צור</span>
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  )
                 ) : null}
                 </div>
               </div>
@@ -1296,6 +1407,32 @@ export default function OrdersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Invoice Creation Modal */}
+      {invoiceOrder && (
+        <InvoiceCreationModal
+          order={invoiceOrder}
+          isOpen={!!invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+          onSuccess={() => {
+            if (invoiceOrder) {
+              // After creating invoice, we need to re-check this order
+              setCheckedOrders(prev => {
+                const updated = new Set(prev);
+                updated.delete(invoiceOrder.id);
+                return updated;
+              });
+              setOrderInvoiceUrls(prev => {
+                const updated = new Map(prev);
+                updated.delete(invoiceOrder.id);
+                return updated;
+              });
+            }
+            fetchOrders(currentPage);
+            setInvoiceOrder(null);
+          }}
+        />
       )}
     </div>
   );

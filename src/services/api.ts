@@ -728,5 +728,30 @@ export interface UpdateOrderRequest {
   notes?: string;
 }
 
+export const invoiceAPI = {
+  createInvoice: async (data: CreateInvoiceRequest): Promise<CreateInvoiceResponse> => {
+    const response = await api.post<CreateInvoiceResponse>('/invoices', data);
+    return response.data;
+  },
+
+  getInvoicesByOrderIds: async (orderIds: string[]): Promise<Record<string, string>> => {
+    const response = await api.post<Record<string, string>>('/invoices/by-order-ids', orderIds);
+    return response.data;
+  },
+};
+
+export interface CreateInvoiceRequest {
+  orderId: string;
+  paymentMethod: 'CREDIT_CARD' | 'CASH';
+  paymentProof: string;
+  allocationNumber?: string | null;
+}
+
+export interface CreateInvoiceResponse {
+  invoiceId: number;
+  invoiceName: string;
+  pdfUrl: string;
+}
+
 export default api;
 

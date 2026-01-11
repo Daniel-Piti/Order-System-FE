@@ -1,0 +1,249 @@
+import { useState, useEffect } from 'react';
+import Spinner from './Spinner';
+import { invoiceAPI, type CreateInvoiceRequest } from '../services/api';
+import { formatPrice } from '../utils/formatPrice';
+import type { Order } from '../services/api';
+
+interface InvoiceCreationModalProps {
+  order: Order;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export default function InvoiceCreationModal({
+  order,
+  isOpen,
+  onClose,
+  onSuccess,
+}: InvoiceCreationModalProps) {
+  const [paymentMethod, setPaymentMethod] = useState<'CREDIT_CARD' | 'CASH'>('CASH');
+  const [creditCardLast4, setCreditCardLast4] = useState('');
+  const [allocationNumber, setAllocationNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  // Check if allocation number is required
+  const isAllocationNumberRequired = (): boolean => {
+    if (!order.doneAt) return false;
+    
+    const doneDate = new Date(order.doneAt);
+    const year = doneDate.getFullYear();
+    const month = doneDate.getMonth() + 1; // JavaScript months are 0-indexed
+
+    const threshold = (year < 2026 || (year === 2026 && month < 6)) ? 10000 : 5000;
+    return order.totalPrice >= threshold;
+  };
+
+  const allocationRequired = isAllocationNumberRequired();
+
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form when modal closes
+      setPaymentMethod('CASH');
+      setCreditCardLast4('');
+      setAllocationNumber('');
+      setError('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      // Build payment proof based on payment method
+      let paymentProof = '';
+      if (paymentMethod === 'CREDIT_CARD') {
+        if (!creditCardLast4.trim() || creditCardLast4.trim().length !== 4) {
+          setError('יש להזין 4 ספרות אחרונות של כרטיס האשראי');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!/^\d{4}$/.test(creditCardLast4.trim())) {
+          setError('4 הספרות האחרונות חייבות להיות מספרים בלבד');
+          setIsSubmitting(false);
+          return;
+        }
+        paymentProof = creditCardLast4.trim();
+      } else {
+        // For CASH, send a placeholder string (required by backend, but no specific format needed)
+        paymentProof = 'תשלום במזומן';
+      }
+
+      // Build request
+      const request: CreateInvoiceRequest = {
+        orderId: order.id,
+        paymentMethod,
+        paymentProof,
+        allocationNumber: allocationRequired ? (allocationNumber.trim() || null) : null,
+      };
+
+      await invoiceAPI.createInvoice(request);
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.userMessage || err.message || 'נכשל ביצירת החשבונית';
+      setError(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
+      <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">צור חשבונית</h2>
+            <p className="text-sm text-gray-600 mt-1">הזמנה #{order.id.slice(0, 8)}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            disabled={isSubmitting}
+          >
+            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {error && (
+          <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Order Summary */}
+        <div className="mb-6 glass-card rounded-xl p-4 border border-gray-200/50">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600">סה״כ הזמנה</span>
+            <span className="text-lg font-bold text-indigo-600">{formatPrice(order.totalPrice)}</span>
+          </div>
+          {allocationRequired && (
+            <div className="mt-2 pt-2 border-t border-gray-200/50">
+              <p className="text-xs text-orange-600 font-medium">מספר הקצאה נדרש עבור הזמנה זו</p>
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Payment Method */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              אמצעי תשלום
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => {
+                setPaymentMethod(e.target.value as 'CREDIT_CARD' | 'CASH');
+                setCreditCardLast4('');
+                setError('');
+              }}
+              className="glass-select w-full pl-3 pr-10 py-2.5 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+              dir="rtl"
+              disabled={isSubmitting}
+              required
+            >
+              <option value="CASH">מזומן</option>
+              <option value="CREDIT_CARD">כרטיס אשראי</option>
+            </select>
+          </div>
+
+          {/* Credit Card Last 4 Digits - Only shown when CREDIT_CARD is selected */}
+          {paymentMethod === 'CREDIT_CARD' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                4 הספרות האחרונות של כרטיס האשראי
+              </label>
+              <input
+                type="text"
+                value={creditCardLast4}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  setCreditCardLast4(value);
+                  setError('');
+                }}
+                placeholder="1234"
+                className="glass-input w-full px-4 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                dir="ltr"
+                disabled={isSubmitting}
+                required
+                maxLength={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">הזן 4 ספרות בלבד</p>
+            </div>
+          )}
+
+          {/* Allocation Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              מספר הקצאה {allocationRequired && <span className="text-red-500">*</span>}
+            </label>
+            <input
+              type="text"
+              value={allocationNumber}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 9);
+                setAllocationNumber(value);
+                setError('');
+              }}
+              placeholder={allocationRequired ? "הזן 9 ספרות" : ""}
+              className={`glass-input w-full px-4 py-2.5 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                !allocationRequired ? 'bg-gray-100/50 cursor-not-allowed' : ''
+              }`}
+              dir="ltr"
+              disabled={isSubmitting || !allocationRequired}
+              required={allocationRequired}
+              maxLength={9}
+            />
+            {!allocationRequired && (
+              <p className="text-xs text-gray-500 mt-1">מספר הקצאה לא נדרש עבור הזמנה זו</p>
+            )}
+            {allocationRequired && (
+              <p className="text-xs text-gray-500 mt-1">הזן 9 ספרות בדיוק</p>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="btn-cancel flex-1"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>ביטול</span>
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-save flex-1"
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner size="sm" />
+                  <span>יוצר...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>צור חשבונית</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
