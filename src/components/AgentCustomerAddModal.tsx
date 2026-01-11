@@ -23,6 +23,7 @@ const INITIAL_FORM: CustomerRequest = {
   email: '',
   streetAddress: '',
   city: '',
+  stateId: '',
   discountPercentage: 0,
 };
 
@@ -67,6 +68,9 @@ export default function AgentCustomerAddModal({
         break;
       case 'city':
         sanitized = value.slice(0, MAX_CUSTOMER_CITY_LENGTH);
+        break;
+      case 'stateId':
+        sanitized = value.replace(/\D/g, '').slice(0, 20);
         break;
       case 'discountPercentage':
         const numValue = value === '' ? 0 : Math.max(0, Math.min(100, parseInt(value, 10) || 0));
@@ -117,6 +121,15 @@ export default function AgentCustomerAddModal({
     
     const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
     if (cityError) errors.city = cityError;
+    
+    const stateIdError = validatePhoneNumberDigitsOnly(
+      formData.stateId,
+      20,
+      'Customer state ID'
+    );
+    if (stateIdError) {
+      errors.stateId = stateIdError;
+    }
     
     const discountError = validateDiscountPercentage(
       formData.discountPercentage ?? 0,
@@ -259,6 +272,26 @@ export default function AgentCustomerAddModal({
               />
               {showErrors && fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
             </div>
+          </div>
+
+          <div>
+            <label className="form-label">ח.פ / ע.מ *</label>
+            <input
+              name="stateId"
+              type="text"
+              value={formData.stateId}
+              onChange={handleChange}
+              maxLength={20}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
+              placeholder="123456789"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.stateId && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
           </div>
 
           <div>

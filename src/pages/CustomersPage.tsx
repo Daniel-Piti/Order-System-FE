@@ -40,6 +40,7 @@ export default function CustomersPage() {
     email: '',
     streetAddress: '',
     city: '',
+    stateId: '',
     discountPercentage: 0,
   });
   const [editFormData, setEditFormData] = useState({
@@ -48,6 +49,7 @@ export default function CustomersPage() {
     email: '',
     streetAddress: '',
     city: '',
+    stateId: '',
     discountPercentage: 0,
   });
   const [formError, setFormError] = useState('');
@@ -174,7 +176,7 @@ export default function CustomersPage() {
 
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
-    setFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', discountPercentage: 0 });
+    setFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', stateId: '', discountPercentage: 0 });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -183,7 +185,7 @@ export default function CustomersPage() {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setCustomerToEdit(null);
-    setEditFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', discountPercentage: 0 });
+    setEditFormData({ name: '', phoneNumber: '', email: '', streetAddress: '', city: '', stateId: '', discountPercentage: 0 });
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -197,6 +199,7 @@ export default function CustomersPage() {
       email: customer.email,
       streetAddress: customer.streetAddress,
       city: customer.city,
+      stateId: customer.stateId,
       discountPercentage: customer.discountPercentage,
     });
     setIsEditModalOpen(true);
@@ -255,6 +258,8 @@ export default function CustomersPage() {
     
     if (name === 'phoneNumber') {
       sanitizedValue = value.replace(/\D/g, '').slice(0, MAX_CUSTOMER_PHONE_LENGTH);
+    } else if (name === 'stateId') {
+      sanitizedValue = value.replace(/\D/g, '').slice(0, 20);
     } else if (name === 'email') {
       sanitizedValue = value.slice(0, MAX_CUSTOMER_EMAIL_LENGTH);
     } else if (name === 'discountPercentage') {
@@ -307,6 +312,15 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
+    const stateIdError = validatePhoneNumberDigitsOnly(
+      formData.stateId,
+      20,
+      'ח.פ / ע.מ'
+    );
+    if (stateIdError) {
+      errors.stateId = stateIdError;
+    }
+
     const discountError = validateDiscountPercentage(formData.discountPercentage, 'אחוז הנחה');
     if (discountError) {
       errors.discountPercentage = discountError;
@@ -325,6 +339,7 @@ export default function CustomersPage() {
         email: formData.email,
         streetAddress: formData.streetAddress,
         city: formData.city,
+        stateId: formData.stateId,
         discountPercentage: formData.discountPercentage,
       };
       await customerAPI.createCustomer(payload);
@@ -376,6 +391,15 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
+    const stateIdError = validatePhoneNumberDigitsOnly(
+      editFormData.stateId,
+      20,
+      'ח.פ / ע.מ'
+    );
+    if (stateIdError) {
+      errors.stateId = stateIdError;
+    }
+
     const discountError = validateDiscountPercentage(editFormData.discountPercentage, 'אחוז הנחה');
     if (discountError) {
       errors.discountPercentage = discountError;
@@ -395,6 +419,7 @@ export default function CustomersPage() {
       editFormData.email !== customerToEdit.email ||
       editFormData.streetAddress !== customerToEdit.streetAddress ||
       editFormData.city !== customerToEdit.city ||
+      editFormData.stateId !== customerToEdit.stateId ||
       editFormData.discountPercentage !== customerToEdit.discountPercentage;
 
     // If nothing changed, just close the modal without making an API call
@@ -411,6 +436,7 @@ export default function CustomersPage() {
         email: editFormData.email,
         streetAddress: editFormData.streetAddress,
         city: editFormData.city,
+        stateId: editFormData.stateId,
         discountPercentage: editFormData.discountPercentage,
       };
       await customerAPI.updateCustomer(customerToEdit.id, payload);
@@ -812,6 +838,29 @@ export default function CustomersPage() {
               </div>
 
               <div>
+                <label htmlFor="stateId" className="form-label">
+                  ח.פ / ע.מ *
+                </label>
+                <input
+                  id="stateId"
+                  name="stateId"
+                  type="text"
+                  value={formData.stateId}
+                  onChange={handleInputChange}
+                  maxLength={20}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
+                  placeholder="123456789"
+                  dir="ltr"
+                />
+                {showErrors && fieldErrors.stateId && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
+              </div>
+
+              <div>
                 <label htmlFor="discountPercentage" className="block text-xs font-medium text-gray-700 mb-1.5">
                   אחוז הנחה
                 </label>
@@ -1011,6 +1060,29 @@ export default function CustomersPage() {
                 {showErrors && fieldErrors.city && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
                 )}
+              </div>
+
+              <div>
+                <label htmlFor="editStateId" className="form-label">
+                  ח.פ / ע.מ *
+                </label>
+                <input
+                  id="editStateId"
+                  name="stateId"
+                  type="text"
+                  value={editFormData.stateId}
+                  onChange={handleEditInputChange}
+                  maxLength={20}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
+                  placeholder="123456789"
+                  dir="ltr"
+                />
+                {showErrors && fieldErrors.stateId && (
+                  <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
+                )}
+                <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
               </div>
 
               <div>

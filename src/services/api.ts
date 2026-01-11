@@ -443,6 +443,7 @@ export interface Customer {
   email: string;
   streetAddress: string;
   city: string;
+  stateId: string;
 }
 
 export interface CustomerRequest {
@@ -451,6 +452,7 @@ export interface CustomerRequest {
   email: string;
   streetAddress: string;
   city: string;
+  stateId: string;
   discountPercentage?: number;
 }
 
@@ -468,6 +470,7 @@ export interface Order {
   customerEmail: string | null;
   customerStreetAddress: string | null;
   customerCity: string | null;
+  customerStateId: string | null;
   status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
   products: ProductDataForOrder[];
   productsVersion: number;
@@ -717,6 +720,7 @@ export interface PlaceOrderRequest {
   customerEmail?: string;
   customerStreetAddress: string;
   customerCity: string;
+  customerStateId?: string;
   pickupLocationId: number;
   products: ProductDataForOrder[];
   notes?: string;

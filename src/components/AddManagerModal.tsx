@@ -4,8 +4,6 @@ import type { ValidationErrors } from '../utils/validation';
 import { managerAPI, businessAPI } from '../services/api';
 import Spinner from './Spinner';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
 interface AddManagerModalProps {
   isOpen: boolean;
   onClose: () => void;

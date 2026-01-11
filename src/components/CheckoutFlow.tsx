@@ -39,6 +39,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerStreetAddress, setCustomerStreetAddress] = useState('');
   const [customerCity, setCustomerCity] = useState('');
+  const [customerStateId, setCustomerStateId] = useState('');
 
   // Pickup location
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
@@ -65,6 +66,11 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
   const handleCustomerCityChange = (value: string) => {
     setCustomerCity(value.slice(0, MAX_CHECKOUT_CITY_LENGTH));
+  };
+
+  const handleCustomerStateIdChange = (value: string) => {
+    const sanitized = value.replace(/\D/g, '').slice(0, 9);
+    setCustomerStateId(sanitized);
   };
 
   // Fetch locations and pre-fill location/notes in edit mode
@@ -120,6 +126,14 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
     }
     if (!customerCity.trim()) {
       setError('עיר נדרשת');
+      return false;
+    }
+    if (!customerStateId.trim()) {
+      setError('ח.פ / ע.מ נדרש');
+      return false;
+    }
+    if (customerStateId.trim().length !== 9) {
+      setError('ח.פ / ע.מ חייב להיות 9 ספרות בדיוק');
       return false;
     }
     setError('');
@@ -214,6 +228,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
         customerEmail: isCustomerLinked ? undefined : (trimmedEmail || undefined),
         customerStreetAddress: isCustomerLinked ? '' : trimmedStreet,
         customerCity: isCustomerLinked ? '' : trimmedCity,
+        customerStateId: isCustomerLinked ? undefined : (customerStateId.trim() || undefined),
         pickupLocationId: selectedLocationId!,
         products,
         notes: notes || undefined,
@@ -440,6 +455,22 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                   dir="rtl"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">ח.פ / ע.מ *</label>
+              <input
+                type="text"
+                value={customerStateId}
+                onChange={(e) => handleCustomerStateIdChange(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none"
+                placeholder="123456789"
+                maxLength={9}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                dir="ltr"
+              />
+              <p className="text-xs text-gray-500 mt-1">הזן 9 ספרות בדיוק</p>
             </div>
 
             <div className="mt-16">
