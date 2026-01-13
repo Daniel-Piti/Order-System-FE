@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
-import CloseButton from './CloseButton';
+import AccessibleModal from './AccessibleModal';
 import { agentAPI, type CustomerRequest, type Customer } from '../services/api';
 import { validateEmail, validatePhoneNumberDigitsOnly, validateRequiredWithMaxLength, validateDiscountPercentage, type ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
@@ -131,11 +131,16 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
     const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
     if (cityError) errors.city = cityError;
     
-    const stateIdError = validatePhoneNumberDigitsOnly(
-      formData.stateId,
-      20,
-      'Customer state ID'
-    );
+    // Validate state ID: exactly 9 digits
+    let stateIdError: string | null = null;
+    const trimmedStateId = formData.stateId.trim();
+    if (!trimmedStateId) {
+      stateIdError = 'ח.פ / ע.מ הוא שדה חובה';
+    } else if (!/^\d+$/.test(trimmedStateId)) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל ספרות בלבד';
+    } else if (trimmedStateId.length !== 9) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל בדיוק 9 ספרות';
+    }
     if (stateIdError) {
       errors.stateId = stateIdError;
     }
@@ -202,21 +207,23 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-      <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="modal-header">
-          <div>
-            <h2 className="modal-header-title">ערוך לקוח</h2>
-            <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {customer.name}</p>
-          </div>
-          <CloseButton onClick={handleClose} ariaLabel="סגור חלון" />
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="ערוך לקוח"
+      description={`עדכן פרטי קשר עבור ${customer?.name || ''}`}
+      size="lg"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           <div>
@@ -307,7 +314,7 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
               type="text"
               value={formData.stateId}
               onChange={handleChange}
-              maxLength={20}
+              maxLength={9}
               inputMode="numeric"
               pattern="[0-9]*"
               className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
@@ -317,7 +324,7 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
             {showErrors && fieldErrors.stateId && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
+            <p className="text-xs text-gray-500 mt-1">הזן בדיוק 9 ספרות</p>
           </div>
 
           <div>
@@ -394,8 +401,7 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

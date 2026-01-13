@@ -1,34 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { useAriaLive } from '../components/AriaLiveRegionContext';
 
 export default function AgentLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
+  const { announce } = useAriaLive();
+
+  // Announce errors to screen readers
+  useEffect(() => {
+    if (error) {
+      announce(error, 'assertive');
+    }
+  }, [error, announce]);
+
+  useEffect(() => {
+    if (emailError) {
+      announce(emailError, 'polite');
+    }
+  }, [emailError, announce]);
+
+  useEffect(() => {
+    if (passwordError) {
+      announce(passwordError, 'polite');
+    }
+  }, [passwordError, announce]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setEmailError('');
+    setPasswordError('');
 
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
-    if (!trimmedEmail) {
-      setError('אנא הזן את כתובת האימייל שלך');
-      return;
-    }
+    let hasError = false;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setError('אנא הזן כתובת אימייל תקינה');
-      return;
+    if (!trimmedEmail) {
+      setEmailError('אנא הזן את כתובת האימייל שלך');
+      hasError = true;
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        setEmailError('אנא הזן כתובת אימייל תקינה');
+        hasError = true;
+      }
     }
 
     if (!trimmedPassword) {
-      setError('אנא הזן את הסיסמה שלך');
+      setPasswordError('אנא הזן את הסיסמה שלך');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -38,9 +69,12 @@ export default function AgentLoginPage() {
       const response = await authAPI.loginAgent({ email: trimmedEmail, password: trimmedPassword });
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userRole', 'agent');
+      announce('התחברות בוצעה בהצלחה', 'polite');
       navigate('/agent/dashboard/profile');
     } catch (err: any) {
-      setError('אימייל או סיסמה לא תקינים');
+      const errorMsg = 'אימייל או סיסמה לא תקינים';
+      setError(errorMsg);
+      announce(errorMsg, 'assertive');
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +99,7 @@ export default function AgentLoginPage() {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -78,43 +113,73 @@ export default function AgentLoginPage() {
           <p className="text-gray-600">התחבר כדי לראות את המשימות שלך</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on">
+        <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on" noValidate>
           {error && (
-            <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm">
+            <div 
+              role="alert"
+              className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm"
+              aria-live="assertive"
+            >
               {error}
             </div>
           )}
 
           <div>
             <label htmlFor="agent-email" className="block text-sm font-medium text-gray-700 mb-2">
-              אימייל
+              אימייל <span className="text-red-500" aria-label="שדה חובה">*</span>
             </label>
             <input
               id="agent-email"
-              type="text"
+              type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 text-center ${
+                emailError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-sky-500'
+              }`}
               placeholder="agent@example.com"
               autoComplete="email"
               dir="ltr"
+              aria-required="true"
+              aria-invalid={emailError ? 'true' : 'false'}
+              aria-describedby={emailError ? 'agent-email-error' : undefined}
             />
+            {emailError && (
+              <div id="agent-email-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {emailError}
+              </div>
+            )}
           </div>
 
           <div>
             <label htmlFor="agent-password" className="block text-sm font-medium text-gray-700 mb-2">
-              סיסמה
+              סיסמה <span className="text-red-500" aria-label="שדה חובה">*</span>
             </label>
             <input
               id="agent-password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500 text-center"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 text-center ${
+                passwordError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-sky-500'
+              }`}
               placeholder="••••••••"
               autoComplete="current-password"
               dir="ltr"
+              aria-required="true"
+              aria-invalid={passwordError ? 'true' : 'false'}
+              aria-describedby={passwordError ? 'agent-password-error' : undefined}
             />
+            {passwordError && (
+              <div id="agent-password-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {passwordError}
+              </div>
+            )}
           </div>
 
           <button
@@ -122,7 +187,8 @@ export default function AgentLoginPage() {
             disabled={isLoading}
             className="glass-button w-full py-3 px-4 rounded-xl font-semibold text-gray-800 
                      hover:shadow-sky-200 disabled:opacity-50 disabled:cursor-not-allowed
-                     flex items-center justify-center space-x-2"
+                     flex items-center justify-center space-x-2 focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+            aria-label={isLoading ? 'מתחבר...' : 'התחבר לחשבון סוכן'}
           >
             {isLoading ? (
               <>
@@ -131,6 +197,7 @@ export default function AgentLoginPage() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"
@@ -157,7 +224,11 @@ export default function AgentLoginPage() {
         <div className="mt-6 text-center text-sm text-gray-600">
           <div>
             חזרה להתחברות מנהל?{' '}
-            <Link to="/login/manager" className="text-sky-600 hover:text-sky-700 font-medium">
+            <Link 
+              to="/login/manager" 
+              className="text-sky-600 hover:text-sky-700 font-medium focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+              aria-label="חזרה להתחברות מנהל"
+            >
               התחבר כאן
             </Link>
           </div>

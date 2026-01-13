@@ -451,6 +451,7 @@ export default function AgentOrdersPage() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -459,7 +460,7 @@ export default function AgentOrdersPage() {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">אין הזמנות עדיין</h3>
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">אין הזמנות עדיין</h2>
           <p className="text-gray-600 mb-6">צור את ההזמנה הראשונה שלך כדי להתחיל</p>
           <button
             onClick={openCreateModal}
@@ -496,7 +497,7 @@ export default function AgentOrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
                   {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
                 </span>
-                <p className="text-xs font-mono text-gray-500/70 font-medium">#{order.id.slice(0, 8)}</p>
+                <p className="text-xs font-mono text-gray-600 font-medium">#{order.id.slice(0, 8)}</p>
               </div>
 
               {/* Customer Info - Fixed height */}
@@ -563,12 +564,12 @@ export default function AgentOrdersPage() {
                 ) : order.status === 'EMPTY' ? (
                   <div className="w-full flex items-center justify-center h-full">
                     <div className="text-center space-y-1">
-                      <p className="text-sm font-medium text-gray-400">אין פרטי לקוח עדיין</p>
-                      <p className="text-xs text-gray-400">ממתין לפרטי ההזמנה</p>
+                      <p className="text-sm font-medium text-gray-600">אין פרטי לקוח עדיין</p>
+                      <p className="text-xs text-gray-600">ממתין לפרטי ההזמנה</p>
                     </div>
                   </div>
                 ) : (
-                  !linkedCustomer && <p className="text-sm text-gray-400 italic font-medium text-center">אין פרטי לקוח</p>
+                  !linkedCustomer && <p className="text-sm text-gray-600 italic font-medium text-center">אין פרטי לקוח</p>
                 )}
 
               </div>
@@ -662,8 +663,20 @@ export default function AgentOrdersPage() {
 
       {/* Create Order Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" dir="rtl">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              closeCreateModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" 
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-800">צור הזמנה חדשה</h2>
               <button
@@ -765,7 +778,7 @@ export default function AgentOrdersPage() {
                   <div className="space-y-1.5 max-h-52 overflow-y-auto">
                     {filteredCustomers.length === 0 && customerSearchQuery ? (
                       <div className="text-center py-6 text-gray-500">
-                        <svg className="w-10 h-10 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-10 h-10 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <p className="text-xs">לא נמצאו לקוחות</p>

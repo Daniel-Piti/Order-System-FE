@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type UpdateAgentRequest, type Agent } from '../services/api';
-import CloseButton from './CloseButton';
+import AccessibleModal from './AccessibleModal';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm, AGENT_FIELD_LIMITS } from '../utils/validation';
 import Spinner from './Spinner';
@@ -129,21 +129,23 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-      <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="modal-header">
-          <div>
-            <h2 className="modal-header-title">ערוך סוכן</h2>
-            <p className="text-xs text-gray-500 mt-1">עדכן פרטי קשר עבור {agent.firstName} {agent.lastName}</p>
-          </div>
-          <CloseButton onClick={handleClose} ariaLabel="Close modal" />
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="ערוך סוכן"
+      description={`עדכן פרטי קשר עבור ${agent?.firstName || ''} ${agent?.lastName || ''}`}
+      size="lg"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -253,8 +255,7 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

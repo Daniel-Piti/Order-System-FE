@@ -71,6 +71,75 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Global Focus Styles - WCAG 2.2 AA Compliant */
+  /* Focus-visible only shows for keyboard navigation, not mouse clicks */
+  
+  /* Remove default outline and add custom focus styles */
+  *:focus {
+    outline: none;
+  }
+
+  /* High contrast focus indicator for keyboard navigation */
+  *:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Buttons - High contrast focus */
+  button:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc;
+  }
+
+  /* Links - High contrast focus */
+  a:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    text-decoration: underline;
+  }
+
+  /* Form inputs - High contrast focus */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc;
+  }
+
+  /* Interactive elements - High contrast focus */
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+  }
+
+  /* Skip links - Already have custom styles, but ensure focus is visible */
+  .skip-link:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion support - Respect user preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* Keep focus transitions for accessibility */
+    *:focus-visible {
+      transition: outline 0.1s ease;
+    }
+  }
 }
 
 @layer components {
@@ -89,7 +158,7 @@
     @apply backdrop-blur-xl bg-white/10 border border-white/20 
            focus:bg-white/20 focus:border-white/40 
            transition-all duration-200
-           placeholder:text-gray-400;
+           placeholder:text-gray-500;
   }
 
   /* Form Components */
@@ -102,8 +171,21 @@
            focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all;
   }
 
+  /* Ensure form inputs have accessible focus-visible styles */
+  .form-input:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
+  }
+
   .form-input-error {
     @apply border-red-400 focus:ring-red-400/50;
+  }
+
+  .form-input-error:focus-visible {
+    outline: 3px solid #cc0000 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #cc0000 !important;
   }
 
   .form-select {
@@ -111,9 +193,21 @@
            focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-center;
   }
 
+  .form-select:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
+  }
+
   .form-textarea {
     @apply glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 
            focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all resize-none;
+  }
+
+  .form-textarea:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
   }
 
   /* Button Components */
@@ -130,6 +224,12 @@
            transition-all duration-300 ease-out
            hover:scale-[1.02] active:scale-[0.98]
            relative overflow-hidden;
+  }
+
+  .btn-save:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
   }
 
   .btn-save::before {
@@ -177,6 +277,12 @@
     transform: translateX(100%);
   }
 
+  .btn-save-indigo:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
+  }
+
   .btn-cancel {
     @apply flex-1 py-3 px-6 rounded-2xl text-sm font-semibold text-gray-700
            bg-gradient-to-r from-slate-100 to-gray-100
@@ -207,6 +313,12 @@
     transform: translateX(100%);
   }
 
+  .btn-cancel:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
+  }
+
   .btn-add-indigo {
     @apply py-3 px-6 rounded-2xl text-sm font-semibold text-white
            bg-gradient-to-r from-indigo-500 to-indigo-600
@@ -232,6 +344,12 @@
   .btn-add-indigo:hover::before {
     opacity: 1;
     transform: translateX(100%);
+  }
+
+  .btn-add-indigo:focus-visible {
+    outline: 3px solid #0066cc !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 5px #0066cc !important;
   }
 
   /* Loading Spinner Components */
@@ -396,5 +514,139 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari, Opera */
+  }
+
+  /* Screen Reader Only - Hide visually but keep for screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Skip Links - Accessibility */
+  .skip-links {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 9999;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    right: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #000;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 0 0 0.5rem 0.5rem;
+    transition: top 0.2s ease;
+    z-index: 10000;
+  }
+
+  .skip-link:focus {
+    top: 0;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .skip-link:hover {
+    background-color: #333;
+  }
+
+  /* Accessibility Widget Styles */
+  
+  /* Font Size Adjustments */
+  html.font-size-small {
+    font-size: 87.5%; /* 14px base (16px * 0.875) */
+  }
+  
+  html.font-size-normal {
+    font-size: 100%; /* 16px base - default */
+  }
+  
+  html.font-size-large {
+    font-size: 112.5%; /* 18px base (16px * 1.125) */
+  }
+  
+  html.font-size-extra-large {
+    font-size: 125%; /* 20px base (16px * 1.25) */
+  }
+  
+  /* Contrast Adjustments */
+  html.contrast-high {
+    filter: contrast(1.15) brightness(0.95);
+  }
+  
+  html.contrast-high img,
+  html.contrast-high video {
+    filter: contrast(1.1);
+  }
+  
+  /* Spacing Adjustments */
+  html.spacing-increased {
+    --spacing-multiplier: 1.3;
+  }
+  
+  html.spacing-increased * {
+    letter-spacing: 0.03em;
+  }
+  
+  html.spacing-normal {
+    --spacing-multiplier: 1;
+  }
+  
+  html.spacing-increased button,
+  html.spacing-increased input,
+  html.spacing-increased textarea,
+  html.spacing-increased select,
+  html.spacing-increased a {
+    padding-top: calc(var(--spacing-multiplier, 1) * 0.75rem);
+    padding-bottom: calc(var(--spacing-multiplier, 1) * 0.75rem);
+    padding-left: calc(var(--spacing-multiplier, 1) * 1rem);
+    padding-right: calc(var(--spacing-multiplier, 1) * 1rem);
+  }
+  
+  html.spacing-increased .glass-card {
+    padding: calc(var(--spacing-multiplier, 1) * 1.5rem);
+  }
+  
+  html.spacing-increased .space-y-2 > * + * {
+    margin-top: calc(0.5rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .space-y-3 > * + * {
+    margin-top: calc(0.75rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .space-y-4 > * + * {
+    margin-top: calc(1rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .space-y-6 > * + * {
+    margin-top: calc(1.5rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .gap-2 {
+    gap: calc(0.5rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .gap-3 {
+    gap: calc(0.75rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .gap-4 {
+    gap: calc(1rem * var(--spacing-multiplier, 1));
+  }
+  
+  html.spacing-increased .gap-6 {
+    gap: calc(1.5rem * var(--spacing-multiplier, 1));
   }
 }

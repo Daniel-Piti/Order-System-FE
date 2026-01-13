@@ -1402,8 +1402,21 @@ export default function ProductsPage() {
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף מוצר חדש</h2>
               <CloseButton onClick={handleCloseModal} />
@@ -1602,7 +1615,7 @@ export default function ProductsPage() {
                           <div className="relative group bg-gray-100 rounded-lg border-2 border-gray-200 p-2 flex items-center justify-center">
                             <img
                               src={URL.createObjectURL(image)}
-                              alt={`Preview ${index + 1}`}
+                              alt={formData.name ? `תצוגה מקדימה של תמונת המוצר ${formData.name} - תמונה ${index + 1}` : `תצוגה מקדימה של תמונת מוצר - תמונה ${index + 1}`}
                               className="max-w-full max-h-24 object-contain rounded-lg"
                             />
                             <button
@@ -1672,8 +1685,21 @@ export default function ProductsPage() {
 
       {/* Edit Product Modal */}
       {isEditModalOpen && productToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseEditModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך מוצר</h2>
               <CloseButton onClick={handleCloseEditModal} />
@@ -1849,7 +1875,7 @@ export default function ProductsPage() {
                             <div className="relative group bg-gray-100 rounded-lg border-2 border-gray-200 p-2 flex items-center justify-center">
                               <img
                                 src={image.url}
-                                alt={image.fileName}
+                                alt={productToEdit ? `תמונת המוצר ${productToEdit.name} - ${image.fileName}` : `תמונת מוצר - ${image.fileName}`}
                                 className="max-w-full max-h-24 object-contain rounded-lg"
                               />
                               <button
@@ -1884,7 +1910,7 @@ export default function ProductsPage() {
                             <div key={imageId} className="relative opacity-50 border-2 border-red-300 rounded-lg p-1">
                               <img
                                 src={deletedImage.url}
-                                alt={deletedImage.fileName}
+                                alt={productToEdit ? `תמונת המוצר ${productToEdit.name} למחיקה - ${deletedImage.fileName}` : `תמונת מוצר למחיקה - ${deletedImage.fileName}`}
                                 className="w-16 h-16 object-cover rounded"
                               />
                               <button
@@ -1914,7 +1940,7 @@ export default function ProductsPage() {
                             <div className="relative group bg-gray-100 rounded-lg border-2 border-green-200 p-2 flex items-center justify-center">
                               <img
                                 src={URL.createObjectURL(image)}
-                                alt={`New ${index + 1}`}
+                                alt={productToEdit ? `תצוגה מקדימה של תמונת המוצר ${productToEdit.name} - תמונה חדשה ${index + 1}` : `תצוגה מקדימה של תמונת מוצר - תמונה חדשה ${index + 1}`}
                                 className="max-w-full max-h-24 object-contain rounded-lg"
                               />
                               <button
@@ -2022,8 +2048,21 @@ export default function ProductsPage() {
 
       {/* Delete Confirmation Modal */}
       {productToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90" dir="rtl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              setProductToDelete(null);
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90" 
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק מוצר</h2>
               <button

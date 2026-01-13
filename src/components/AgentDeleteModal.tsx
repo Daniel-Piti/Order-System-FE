@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AccessibleModal from './AccessibleModal';
 import { agentAPI } from '../services/api';
 
 interface AgentDeleteModalProps {
@@ -48,26 +49,17 @@ export default function AgentDeleteModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/90" dir="rtl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-800">מחק סוכן</h2>
-          <button
-            onClick={handleCancel}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-            aria-label="Close delete agent modal"
-            type="button"
-            disabled={isSubmitting}
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <AccessibleModal
+      isOpen={isOpen && !!agentId}
+      onClose={handleCancel}
+      title="מחק סוכן"
+      size="sm"
+      dir="rtl"
+    >
 
         <div className="flex items-center gap-4 mb-4">
           <div className="p-3 rounded-full bg-red-100">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -88,18 +80,22 @@ export default function AgentDeleteModal({
           </div>
         </div>
 
-        {error && (
-          <div className="glass-card bg-red-50/70 border border-red-200 rounded-xl p-3 text-red-600 text-sm mb-4">
-            {error}
-          </div>
-        )}
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/70 border border-red-200 rounded-xl p-3 text-red-600 text-sm mb-4"
+          aria-live="assertive"
+        >
+          {error}
+        </div>
+      )}
 
         <div className="flex gap-3">
           <button
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-700 bg-gray-100/80 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors"
+            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-gray-700 bg-gray-100/80 hover:bg-gray-200/80 border border-gray-300 hover:border-gray-400 disabled:opacity-50 transition-colors focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
           >
             ביטול
           </button>
@@ -107,11 +103,12 @@ export default function AgentDeleteModal({
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-red-500/90 hover:bg-red-500 border border-red-500/60 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+            className="glass-button flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-red-500/90 hover:bg-red-500 border border-red-500/60 hover:border-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+            aria-label="מחק סוכן"
           >
             {isSubmitting ? (
               <>
-                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path
                     className="opacity-75"
@@ -123,7 +120,7 @@ export default function AgentDeleteModal({
               </>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -136,8 +133,7 @@ export default function AgentDeleteModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

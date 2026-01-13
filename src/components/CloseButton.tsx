@@ -4,11 +4,17 @@ interface CloseButtonProps {
   className?: string;
 }
 
-export default function CloseButton({ onClick, ariaLabel = "Close modal", className = "" }: CloseButtonProps) {
+export default function CloseButton({ onClick, ariaLabel = "סגור חלון", className = "" }: CloseButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`modal-close-button ${className}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className={`modal-close-button ${className} focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2`}
       aria-label={ariaLabel}
     >
       <svg
@@ -16,6 +22,7 @@ export default function CloseButton({ onClick, ariaLabel = "Close modal", classN
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"

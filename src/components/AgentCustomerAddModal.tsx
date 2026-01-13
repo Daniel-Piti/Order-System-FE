@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type CustomerRequest } from '../services/api';
-import CloseButton from './CloseButton';
+import AccessibleModal from './AccessibleModal';
 import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
@@ -122,11 +122,16 @@ export default function AgentCustomerAddModal({
     const cityError = validateRequiredWithMaxLength(formData.city, 'City', MAX_CUSTOMER_CITY_LENGTH);
     if (cityError) errors.city = cityError;
     
-    const stateIdError = validatePhoneNumberDigitsOnly(
-      formData.stateId,
-      20,
-      'Customer state ID'
-    );
+    // Validate state ID: exactly 9 digits
+    let stateIdError: string | null = null;
+    const trimmedStateId = formData.stateId.trim();
+    if (!trimmedStateId) {
+      stateIdError = 'ח.פ / ע.מ הוא שדה חובה';
+    } else if (!/^\d+$/.test(trimmedStateId)) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל ספרות בלבד';
+    } else if (trimmedStateId.length !== 9) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל בדיוק 9 ספרות';
+    }
     if (stateIdError) {
       errors.stateId = stateIdError;
     }
@@ -179,18 +184,22 @@ export default function AgentCustomerAddModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-      <div className="glass-card rounded-3xl p-6 w-full max-w-xl max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="modal-header">
-          <h2 className="modal-header-title">הוסף לקוח חדש</h2>
-          <CloseButton onClick={handleClose} ariaLabel="סגור חלון" />
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="הוסף לקוח חדש"
+      size="lg"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 text-red-600 text-sm mb-4"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 text-red-600 text-sm mb-4">
-            {error}
-          </div>
-        )}
+      )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
           <div>
@@ -281,7 +290,7 @@ export default function AgentCustomerAddModal({
               type="text"
               value={formData.stateId}
               onChange={handleChange}
-              maxLength={20}
+              maxLength={9}
               inputMode="numeric"
               pattern="[0-9]*"
               className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
@@ -291,14 +300,14 @@ export default function AgentCustomerAddModal({
             {showErrors && fieldErrors.stateId && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
+            <p className="text-xs text-gray-600 mt-1">הזן בדיוק 9 ספרות</p>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">אחוז הנחה</label>
             <div className="space-y-2">
               <div className="flex items-center gap-2.5">
-                <span className="text-xs font-medium text-gray-500 w-5">0%</span>
+                <span className="text-xs font-medium text-gray-600 w-5">0%</span>
                 <input
                   name="discountPercentage"
                   type="range"
@@ -311,7 +320,7 @@ export default function AgentCustomerAddModal({
                     background: `linear-gradient(to left, #0ea5e9 0%, #0ea5e9 ${formData.discountPercentage ?? 0}%, #d1d5db ${formData.discountPercentage ?? 0}%, #d1d5db 100%)`
                   }}
                 />
-                <span className="text-xs font-medium text-gray-500 w-7 text-left">100%</span>
+                <span className="text-xs font-medium text-gray-600 w-7 text-left">100%</span>
                 <div className="flex items-center gap-1.5 bg-sky-50 px-2.5 py-1.5 rounded-lg border border-sky-200 min-w-[4rem]">
                   <span className="text-xs font-medium text-sky-600">%</span>
                   <input
@@ -368,7 +377,6 @@ export default function AgentCustomerAddModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }

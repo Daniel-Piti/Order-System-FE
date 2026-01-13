@@ -901,7 +901,7 @@ export default function StorePage() {
         {filteredProducts.length === 0 ? (
           <div className="glass-card p-12 rounded-3xl text-center">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">לא נמצאו מוצרים</h3>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">לא נמצאו מוצרים</h2>
             <p className="text-gray-600">
               {selectedCategories.length > 0 || selectedBrands.length > 0
                 ? 'נסה להתאים את המסננים שלך'

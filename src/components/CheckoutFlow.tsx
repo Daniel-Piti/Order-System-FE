@@ -275,8 +275,20 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" dir="rtl">
-      <div className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" 
+      dir="rtl"
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-center mb-6 relative">
           <h2 className="text-2xl font-bold text-gray-800">תשלום</h2>
@@ -470,7 +482,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
                 pattern="[0-9]*"
                 dir="ltr"
               />
-              <p className="text-xs text-gray-500 mt-1">הזן 9 ספרות בדיוק</p>
+              <p className="text-xs text-gray-600 mt-1">הזן 9 ספרות בדיוק</p>
             </div>
 
             <div className="mt-16">

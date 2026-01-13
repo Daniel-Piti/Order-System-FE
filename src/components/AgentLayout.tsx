@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const menuItems = [
@@ -10,8 +10,25 @@ const menuItems = [
 ];
 
 export default function AgentLayout() {
+  // On desktop, sidebar is always open. On mobile, it starts closed.
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  
+  // Ensure sidebar state matches screen size on mount and resize
+  useEffect(() => {
+    const handleResize = () => {
+      // On large screens, sidebar should be open
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true);
+      }
+    };
+    
+    // Set initial state based on screen size
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -26,8 +43,16 @@ export default function AgentLayout() {
         <div className="flex items-center justify-between gap-3">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-2 rounded-lg hover:bg-white/20 transition-colors"
-            aria-label="Toggle navigation"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsSidebarOpen(!isSidebarOpen);
+              }
+            }}
+            className="p-2 rounded-lg hover:bg-white/20 transition-colors focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+            aria-label={isSidebarOpen ? 'סגור תפריט' : 'פתח תפריט'}
+            aria-expanded={isSidebarOpen}
+            aria-controls="agent-navigation"
           >
             <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isSidebarOpen ? (
@@ -37,7 +62,7 @@ export default function AgentLayout() {
               )}
             </svg>
           </button>
-          <h1 className="text-xl font-bold text-gray-800 flex-1">תפריט</h1>
+          <h2 className="text-xl font-bold text-gray-800 flex-1">תפריט</h2>
         </div>
       </div>
 
@@ -46,27 +71,52 @@ export default function AgentLayout() {
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsSidebarOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setIsSidebarOpen(false);
+            }
+          }}
+          role="button"
+          tabIndex={-1}
+          aria-label="סגור תפריט"
         />
       )}
 
       {/* Sidebar */}
       <aside
+        id="agent-navigation"
+        aria-label="ניווט סוכן"
         className={`
           fixed top-0 right-0 h-screen w-64 backdrop-blur-xl bg-white/70 border-l-2 border-white/40 shadow-2xl z-50 transition-transform duration-300
           lg:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
+        onKeyDown={(e) => {
+          // Close sidebar on Escape key (only on mobile)
+          if (e.key === 'Escape' && isSidebarOpen) {
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile) {
+              setIsSidebarOpen(false);
+              // Return focus to menu toggle button
+              const toggleButton = document.querySelector('[aria-controls="agent-navigation"]') as HTMLElement;
+              toggleButton?.focus();
+            }
+          }
+        }}
       >
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="flex-shrink-0 p-6 pb-4">
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-gray-800">
               תפריט
-            </h1>
+            </h2>
           </div>
 
           {/* Scrollable Menu */}
-          <nav className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide">
+          <nav 
+            className="flex-1 overflow-y-auto px-6 pb-6 scrollbar-hide"
+            aria-label="תפריט ניווט"
+          >
             <div className="space-y-2 pt-2">
               {menuItems.map((item) => (
                 <NavLink
@@ -74,14 +124,15 @@ export default function AgentLayout() {
                   to={item.path}
                   onClick={() => setIsSidebarOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none ${
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 ${
                       isActive
                         ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
                         : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
                     }`
                   }
+                  aria-current={({ isActive }) => isActive ? 'page' : undefined}
                 >
-                  <span className="text-xl" aria-hidden>{item.icon}</span>
+                  <span className="text-xl" aria-hidden="true">{item.icon}</span>
                   <span>{item.name}</span>
                 </NavLink>
               ))}
@@ -89,9 +140,16 @@ export default function AgentLayout() {
               {/* Logout Button as part of menu */}
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none backdrop-blur-xl bg-red-50/90 text-red-600 hover:bg-red-100/90 border border-red-200/70 hover:border-red-300/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60 font-semibold"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleLogout();
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none backdrop-blur-xl bg-red-50/90 text-red-600 hover:bg-red-100/90 border border-red-200/70 hover:border-red-300/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60 font-semibold focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                aria-label="התנתק מהמערכת"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -107,7 +165,11 @@ export default function AgentLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="lg:mr-64 min-h-screen pt-20 lg:pt-6 p-6">
+      <main 
+        id="main-content"
+        className="lg:mr-64 min-h-screen pt-20 lg:pt-6 p-6"
+        tabIndex={-1}
+      >
         <Outlet />
       </main>
     </div>

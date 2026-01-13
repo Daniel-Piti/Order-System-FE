@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AccessibleModal from './AccessibleModal';
 import { agentAPI } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm } from '../utils/validation';
@@ -106,35 +107,22 @@ export default function AgentEditProfileModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="glass-card rounded-3xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/85" dir="rtl">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-gray-800">ערוך פרטים אישיים</h2>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="ערוך פרטים אישיים"
+      size="md"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      )}
 
         <form onSubmit={handleSubmit} className="space-y-3" noValidate>
           <div className="grid grid-cols-2 gap-3">
@@ -272,8 +260,7 @@ export default function AgentEditProfileModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useModalFocus } from '../hooks/useFocusManagement';
 import type { Product, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -32,6 +33,39 @@ export default function ProductDetailModal({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantityInput, setQuantityInput] = useState('1');
   const isUpdatingCartRef = useRef(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Use focus management hook
+  useModalFocus(modalRef, isOpen);
+
+  // Handle Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     // Only sync from props when product changes (initial mount or product switch)
@@ -166,8 +200,15 @@ export default function ProductDetailModal({
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none" dir="rtl">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none" 
+        dir="rtl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-modal-title"
+      >
         <div
+          ref={modalRef}
           className="backdrop-blur-3xl bg-white/90 rounded-3xl shadow-2xl border-2 border-white/70 max-w-4xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto transform transition-all duration-300"
           style={{
             boxShadow: '0 20px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.8) inset, 0 1px 0 rgba(255, 255, 255, 0.9) inset',
@@ -177,13 +218,15 @@ export default function ProductDetailModal({
         >
           {/* Close Button */}
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md hover:bg-white transition-all shadow-lg flex items-center justify-center z-10 border border-white/60"
+            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md hover:bg-white transition-all shadow-lg flex items-center justify-center z-10 border border-white/60 focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
             style={{
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             }}
+            aria-label="סגור חלון"
           >
-            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -292,9 +335,9 @@ export default function ProductDetailModal({
                   </div>
 
                   {/* Product Name */}
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  <h2 id="product-modal-title" className="text-2xl md:text-3xl font-bold text-gray-900">
                     {product.name}
-                  </h1>
+                  </h2>
 
                   {/* Description */}
                   {product.description && (

@@ -1,15 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { useAriaLive } from '../components/AriaLiveRegionContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
+  const { announce } = useAriaLive();
 
   const ADMIN_PHONE = '050-5566979';
   const ADMIN_PHONE_TEL = '0505566979'; // Without dashes for tel: link
@@ -68,29 +72,56 @@ export default function LoginPage() {
     }
   };
 
+  // Announce errors to screen readers
+  useEffect(() => {
+    if (error) {
+      announce(error, 'assertive');
+    }
+  }, [error, announce]);
+
+  useEffect(() => {
+    if (emailError) {
+      announce(emailError, 'polite');
+    }
+  }, [emailError, announce]);
+
+  useEffect(() => {
+    if (passwordError) {
+      announce(passwordError, 'polite');
+    }
+  }, [passwordError, announce]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setEmailError('');
+    setPasswordError('');
 
     // Trim inputs
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
     // Validate inputs
-    if (!trimmedEmail) {
-      setError('אנא הזן את כתובת האימייל שלך');
-      return;
-    }
+    let hasError = false;
     
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setError('אנא הזן כתובת אימייל תקינה');
-      return;
+    if (!trimmedEmail) {
+      setEmailError('אנא הזן את כתובת האימייל שלך');
+      hasError = true;
+    } else {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        setEmailError('אנא הזן כתובת אימייל תקינה');
+        hasError = true;
+      }
     }
     
     if (!trimmedPassword) {
-      setError('אנא הזן את הסיסמה שלך');
+      setPasswordError('אנא הזן את הסיסמה שלך');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -100,10 +131,13 @@ export default function LoginPage() {
       const response = await authAPI.loginManager({ email: trimmedEmail, password: trimmedPassword });
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userRole', 'manager');
+      announce('התחברות בוצעה בהצלחה', 'polite');
       navigate('/dashboard');
     } catch (err: any) {
       // Always show the same message for security (prevent user enumeration)
-      setError('אימייל או סיסמה לא תקינים');
+      const errorMsg = 'אימייל או סיסמה לא תקינים';
+      setError(errorMsg);
+      announce(errorMsg, 'assertive');
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +162,7 @@ export default function LoginPage() {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -141,50 +176,81 @@ export default function LoginPage() {
           <p className="text-gray-600">התחבר לחשבון</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on">
+        <form onSubmit={handleLogin} className="space-y-5" method="post" autoComplete="on" noValidate>
           {error && (
-            <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm">
+            <div 
+              role="alert"
+              className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm"
+              aria-live="assertive"
+            >
               {error}
             </div>
           )}
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              אימייל
+              אימייל <span className="text-red-500" aria-label="שדה חובה">*</span>
             </label>
             <input
               id="email"
-              type="text"
+              type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 text-center ${
+                emailError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+              }`}
               placeholder="you@example.com"
               autoComplete="email"
               dir="ltr"
+              aria-required="true"
+              aria-invalid={emailError ? 'true' : 'false'}
+              aria-describedby={emailError ? 'email-error' : undefined}
             />
+            {emailError && (
+              <div id="email-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {emailError}
+              </div>
+            )}
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              סיסמה
+              סיסמה <span className="text-red-500" aria-label="שדה חובה">*</span>
             </label>
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 text-center ${
+                passwordError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+              }`}
               placeholder="••••••••"
               autoComplete="current-password"
               dir="ltr"
+              aria-required="true"
+              aria-invalid={passwordError ? 'true' : 'false'}
+              aria-describedby={passwordError ? 'password-error' : undefined}
             />
+            {passwordError && (
+              <div id="password-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {passwordError}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center text-sm">
-            <label className="flex items-center">
+            <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                id="remember-me"
+                className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
               />
               <span className="mr-2 text-gray-600">זכור אותי</span>
             </label>
@@ -195,7 +261,8 @@ export default function LoginPage() {
             disabled={isLoading}
             className="glass-button w-full py-3 px-4 rounded-xl font-semibold text-gray-800 
                      hover:shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed
-                     flex items-center justify-center space-x-2"
+                     flex items-center justify-center space-x-2 focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+            aria-label={isLoading ? 'מתחבר...' : 'התחבר לחשבון'}
           >
             {isLoading ? (
               <>
@@ -204,6 +271,7 @@ export default function LoginPage() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"
@@ -233,14 +301,19 @@ export default function LoginPage() {
             <a 
               href={`tel:${ADMIN_PHONE_TEL}`}
               onClick={handleContactAdmin}
-              className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer"
+              className="text-purple-600 hover:text-purple-700 font-medium cursor-pointer focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+              aria-label={`צור קשר עם מנהל המערכת בטלפון ${ADMIN_PHONE}`}
             >
               צור קשר
             </a>
           </div>
           <div>
             סוכן?{' '}
-            <Link to="/login/agent" className="text-purple-600 hover:text-purple-700 font-medium">
+            <Link 
+              to="/login/agent" 
+              className="text-purple-600 hover:text-purple-700 font-medium focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+              aria-label="התחברות לסוכן"
+            >
               התחבר כאן
             </Link>
           </div>
@@ -249,13 +322,18 @@ export default function LoginPage() {
 
       {/* Fixed notification at bottom of page */}
       {showCopiedMessage && (
-        <div className={`fixed bottom-8 left-1/2 px-4 py-2.5 backdrop-blur-xl bg-green-500/90 border-2 border-green-700 text-white text-sm font-semibold rounded-xl shadow-2xl shadow-green-500/50 z-50 ${isFadingOut ? 'animate-fade-out' : 'animate-slide-up-bottom'}`}>
+        <div 
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={`fixed bottom-8 left-1/2 px-4 py-2.5 backdrop-blur-xl bg-green-500/90 border-2 border-green-700 text-white text-sm font-semibold rounded-xl shadow-2xl shadow-green-500/50 z-50 ${isFadingOut ? 'animate-fade-out' : 'animate-slide-up-bottom'}`}
+        >
           <div className="flex items-center space-x-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <span>מספר טלפון הועתק!</span>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
           </div>

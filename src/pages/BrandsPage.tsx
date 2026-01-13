@@ -775,8 +775,21 @@ export default function BrandsPage() {
 
       {/* Add Brand Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף מותג חדש</h2>
               <CloseButton onClick={handleCloseModal} />
@@ -858,7 +871,7 @@ export default function BrandsPage() {
                         <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
                           <img
                             src={previewImage}
-                            alt="Preview"
+                            alt={brandName ? `תצוגה מקדימה של תמונת המותג ${brandName}` : "תצוגה מקדימה של תמונת מותג"}
                             className="max-h-full max-w-full object-contain"
                           />
                         </div>
@@ -924,8 +937,21 @@ export default function BrandsPage() {
 
       {/* Edit Brand Modal */}
       {isEditModalOpen && brandToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseEditModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך מותג</h2>
               <CloseButton onClick={handleCloseEditModal} />
@@ -1034,7 +1060,7 @@ export default function BrandsPage() {
                         <div className="w-full max-w-xs h-48 flex items-center justify-center bg-white rounded-lg border-2 border-gray-200 p-2">
                           <img
                             src={previewImage}
-                            alt="Preview"
+                            alt={brandToEdit ? `תצוגה מקדימה של תמונת המותג ${brandToEdit.name}` : "תצוגה מקדימה של תמונת מותג"}
                             className="max-h-full max-w-full object-contain"
                           />
                         </div>
@@ -1100,8 +1126,21 @@ export default function BrandsPage() {
 
       {/* Delete Brand Modal */}
       {brandToDelete && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ position: 'fixed' }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+        <div 
+          className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ position: 'fixed' }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              setBrandToDelete(null);
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק מותג</h2>
               <button

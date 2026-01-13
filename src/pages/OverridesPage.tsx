@@ -589,29 +589,36 @@ export default function OverridesPage() {
       ) : (
         <div className="glass-card rounded-3xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table 
+              className="w-full"
+              aria-label="טבלת מחירים מיוחדים"
+              role="table"
+            >
+              <caption className="sr-only">
+                טבלת מחירים מיוחדים עם פרטי לקוח, סוכן, מוצר, מחיר מינימלי, מחיר מותאם ופעולות
+              </caption>
               <thead className="bg-white/30 border-b border-gray-200/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">לקוח</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">סוכן</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מוצר</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מינימלי</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מותאם</th>
-                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">פעולות</th>
+                  <th scope="col" id="override-customer" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-64">לקוח</th>
+                  <th scope="col" id="override-agent" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 w-48">סוכן</th>
+                  <th scope="col" id="override-product" className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מוצר</th>
+                  <th scope="col" id="override-min-price" className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מינימלי</th>
+                  <th scope="col" id="override-override-price" className="px-6 py-4 text-left text-sm font-semibold text-gray-700">מחיר מותאם</th>
+                  <th scope="col" id="override-actions" className="px-6 py-4 text-right text-sm font-semibold text-gray-700">פעולות</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200/50">
                 {overrides.map((override) => (
                   <tr key={override.id} className="hover:bg-white/20 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-800 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-800 font-medium" headers="override-customer">
                       <span className="inline-block max-w-[200px] truncate" title={getCustomerName(override.customerId)}>
                       {getCustomerName(override.customerId)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
+                    <td className="px-6 py-4 text-sm text-gray-700" headers="override-agent">
                       {getAgentLabel(override.agentId)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-800">
+                    <td className="px-6 py-4 text-sm text-gray-800" headers="override-product">
                       <span
                         className="inline-block max-w-[220px] truncate align-middle"
                         title={getProductName(override.productId)}
@@ -619,29 +626,29 @@ export default function OverridesPage() {
                         {getProductName(override.productId)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-800">
+                    <td className="px-6 py-4 text-sm text-gray-800" headers="override-min-price">
                       {formatPrice(override.productMinimumPrice ?? override.productPrice)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-800 font-semibold">
+                    <td className="px-6 py-4 text-sm text-gray-800 font-semibold" headers="override-override-price">
                       {formatPrice(override.overridePrice)}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-6 py-4 text-right" headers="override-actions">
+                      <div className="flex items-center justify-end gap-2" role="group" aria-label={`פעולות עבור מחיר מיוחד עבור ${getCustomerName(override.customerId)}`}>
                         <button
                           onClick={() => handleEditOverride(override)}
-                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
-                          title="ערוך מחיר מיוחד"
+                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                          aria-label={`ערוך מחיר מיוחד עבור ${getCustomerName(override.customerId)} - ${getProductName(override.productId)}`}
                         >
-                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
                         <button
                           onClick={() => setOverrideToDelete(override)}
-                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
-                          title="מחק מחיר מיוחד"
+                          className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600 focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
+                          aria-label={`מחק מחיר מיוחד עבור ${getCustomerName(override.customerId)} - ${getProductName(override.productId)}`}
                         >
-                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
@@ -666,8 +673,21 @@ export default function OverridesPage() {
 
       {/* Add Override Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף מחיר מיוחד</h2>
               <CloseButton onClick={handleCloseModal} />
@@ -841,8 +861,21 @@ export default function OverridesPage() {
 
       {/* Edit Override Modal */}
       {isEditModalOpen && overrideToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseEditModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך מחיר מיוחד</h2>
               <CloseButton onClick={handleCloseEditModal} />
@@ -953,8 +986,19 @@ export default function OverridesPage() {
 
       {/* Delete Confirmation Modal */}
       {overrideToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              setOverrideToDelete(null);
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-800">מחק מחיר מיוחד</h2>
               <button

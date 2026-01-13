@@ -3,6 +3,7 @@ import { validateUserCreationForm, validateBusinessForm } from '../utils/validat
 import type { ValidationErrors } from '../utils/validation';
 import { managerAPI, businessAPI } from '../services/api';
 import Spinner from './Spinner';
+import AccessibleModal from './AccessibleModal';
 
 interface AddManagerModalProps {
   isOpen: boolean;
@@ -192,55 +193,31 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
   };
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
-        isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-      }`}
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Create Manager & Business"
+      description="Fill in both forms to complete registration"
+      size="xl"
+      dir="ltr"
     >
-      <div 
-        className={`glass-card rounded-3xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20 transform transition-all duration-500 ${
-          isOpen ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-1">Create Manager & Business</h2>
-            <p className="text-sm text-gray-500">Fill in both forms to complete registration</p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-white/30 rounded-xl transition-all duration-200 hover:rotate-90"
-          >
-            <svg
-              className="w-6 h-6 text-gray-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+      {/* Progress Indicator */}
+      <div className="mb-6 flex items-center justify-center space-x-2">
+        <div className={`h-2 w-24 rounded-full transition-all duration-500 ${
+          step === 'manager' ? 'bg-blue-500' : 'bg-green-500'
+        }`} />
+        <div className={`h-2 w-24 rounded-full transition-all duration-500 ${
+          step === 'business' || step === 'complete' ? 'bg-green-500' : 'bg-gray-300'
+        }`} />
+      </div>
 
-        {/* Progress Indicator */}
-        <div className="mb-6 flex items-center justify-center space-x-2">
-          <div className={`h-2 w-24 rounded-full transition-all duration-500 ${
-            step === 'manager' ? 'bg-blue-500' : 'bg-green-500'
-          }`} />
-          <div className={`h-2 w-24 rounded-full transition-all duration-500 ${
-            step === 'business' || step === 'complete' ? 'bg-green-500' : 'bg-gray-300'
-          }`} />
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="glass-card bg-red-50/70 border-red-200 rounded-xl p-4 mb-6 text-red-600 text-sm animate-shake">
+      {/* Error Message */}
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/70 border-red-200 rounded-xl p-4 mb-6 text-red-600 text-sm animate-shake"
+          aria-live="assertive"
+        >
             {error}
           </div>
         )}
@@ -623,7 +600,6 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }

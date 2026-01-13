@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { validatePasswordChangeForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
-import CloseButton from './CloseButton';
+import AccessibleModal from './AccessibleModal';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -90,15 +90,19 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-      <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="modal-header">
-          <h2 className="modal-header-title">שנה סיסמה</h2>
-          <CloseButton onClick={handleClose} />
-        </div>
-
-        {error && (
-          <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="שנה סיסמה"
+      size="sm"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm"
+          aria-live="assertive"
+        >
             {error}
           </div>
         )}
@@ -140,7 +144,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
             {showErrors && fieldErrors.newPassword ? (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.newPassword}</p>
             ) : (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-600 mt-1">
                 חייבת להכיל אותיות גדולות, אותיות קטנות, מספרים ותווים מיוחדים
               </p>
             )}
@@ -198,8 +202,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

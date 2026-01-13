@@ -223,25 +223,32 @@ export default function AgentsPage() {
       ) : (
         <div className="glass-card rounded-3xl p-0 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-indigo-100/70">
+            <table 
+              className="min-w-full divide-y divide-indigo-100/70"
+              aria-label="טבלת סוכנים"
+              role="table"
+            >
+              <caption className="sr-only">
+                טבלת סוכנים עם פרטי שם, אימייל, טלפון, מיקום, תאריך הוספה ופעולות
+              </caption>
               <thead className="bg-purple-200/95 text-gray-700">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                  <th scope="col" id="agent-name" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
                     שם
                   </th>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                  <th scope="col" id="agent-email" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
                     אימייל
                   </th>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                  <th scope="col" id="agent-phone" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
                     טלפון
                   </th>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                  <th scope="col" id="agent-location" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
                     מיקום
                   </th>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
+                  <th scope="col" id="agent-added" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">
                     נוסף
                   </th>
-                  <th scope="col" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200 w-24">
+                  <th scope="col" id="agent-actions" className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200 w-24">
                     פעולות
                   </th>
                 </tr>
@@ -259,43 +266,43 @@ export default function AgentsPage() {
                       key={agent.id}
                       className="transition-colors bg-white hover:bg-indigo-50/50"
                     >
-                      <td className="px-6 py-4 text-right border-l border-gray-200">
+                      <td className="px-6 py-4 text-right border-l border-gray-200" headers="agent-name">
                         <p className="text-sm font-semibold text-gray-800">
                           {agent.firstName} {agent.lastName}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-right border-l border-gray-200">
+                      <td className="px-6 py-4 text-right border-l border-gray-200" headers="agent-email">
                         <p className="text-sm text-gray-800 break-words truncate max-w-[16rem]" title={agent.email}>{agent.email}</p>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right border-l border-gray-200">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right border-l border-gray-200" headers="agent-phone">
                         {agent.phoneNumber}
                       </td>
-                      <td className="px-6 py-4 text-right border-l border-gray-200">
+                      <td className="px-6 py-4 text-right border-l border-gray-200" headers="agent-location">
                         <p className="text-sm text-gray-800 break-words truncate max-w-[12rem]" title={agent.streetAddress}>{agent.streetAddress}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{agent.city}</p>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center border-l border-gray-200">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center border-l border-gray-200" headers="agent-added">
                         {new Date(agent.createdAt).toLocaleDateString('he-IL')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200">
-                        <div className="inline-flex items-center gap-2">
+                      <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200" headers="agent-actions">
+                        <div className="inline-flex items-center gap-2" role="group" aria-label={`פעולות עבור סוכן ${agent.firstName} ${agent.lastName}`}>
                           <button
                             type="button"
                             onClick={() => handleEditAgent(agent)}
-                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                            title="ערוך סוכן"
+                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                            aria-label={`ערוך סוכן ${agent.firstName} ${agent.lastName}`}
                           >
-                            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
                             </svg>
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteAgent(agent)}
-                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                            title="מחק סוכן"
+                            className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
+                            aria-label={`מחק סוכן ${agent.firstName} ${agent.lastName}`}
                           >
-                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>

@@ -1,4 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import SkipLinks from './components/SkipLinks';
+import CookieConsent from './components/CookieConsent';
+import AccessibilityWidget from './components/AccessibilityWidget';
+import { AriaLiveProvider } from './components/AriaLiveRegionContext';
 import LoginPage from './pages/LoginPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AgentLoginPage from './pages/AgentLoginPage';
@@ -26,8 +30,12 @@ import BusinessDataPage from './pages/BusinessDataPage';
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <AriaLiveProvider>
+      <Router>
+        <SkipLinks />
+        <CookieConsent />
+        <AccessibilityWidget />
+        <Routes>
         <Route path="/" element={<Navigate to="/login/manager" replace />} />
         <Route path="/login/manager" element={<LoginPage />} />
         <Route path="/login/agent" element={<AgentLoginPage />} />
@@ -87,7 +95,8 @@ function App() {
 
         <Route path="*" element={<Navigate to="/login/manager" replace />} />
       </Routes>
-    </Router>
+      </Router>
+    </AriaLiveProvider>
   );
 }
 

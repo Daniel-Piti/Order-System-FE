@@ -148,7 +148,7 @@ export default function LocationsPage() {
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-lg font-semibold mb-2">שגיאה בטעינת הסניפים</p>
+          <h2 className="text-lg font-semibold mb-2">שגיאה בטעינת הסניפים</h2>
           <p className="text-gray-600">{error}</p>
           <button
             onClick={fetchLocations}
@@ -210,7 +210,7 @@ export default function LocationsPage() {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <p className="text-lg font-semibold text-gray-800 mb-2">אין סניפים עדיין</p>
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">אין סניפים עדיין</h2>
           <p className="text-gray-600 mb-4">
             התחל בהוספת סניף העסק הראשון שלך
           </p>
@@ -306,8 +306,22 @@ export default function LocationsPage() {
 
       {/* Delete Confirmation Modal */}
       {locationToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              setLocationToDelete(null);
+              setDeleteError('');
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק סניף</h2>
               <button

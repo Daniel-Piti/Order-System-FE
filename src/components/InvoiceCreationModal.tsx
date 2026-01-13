@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Spinner from './Spinner';
+import AccessibleModal from './AccessibleModal';
 import { invoiceAPI, type CreateInvoiceRequest } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 import type { Order } from '../services/api';
@@ -91,32 +92,24 @@ export default function InvoiceCreationModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" dir="rtl">
-      <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800">צור חשבונית</h2>
-            <p className="text-sm text-gray-600 mt-1">הזמנה #{order.id.slice(0, 8)}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-            disabled={isSubmitting}
-          >
-            <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="צור חשבונית"
+      description={`הזמנה #${order.id.slice(0, 8)}`}
+      size="md"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      )}
 
         {/* Order Summary */}
         <div className="mb-6 glass-card rounded-xl p-4 border border-gray-200/50">
@@ -216,7 +209,7 @@ export default function InvoiceCreationModal({
               disabled={isSubmitting}
               className="btn-cancel flex-1"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span>ביטול</span>
@@ -233,7 +226,7 @@ export default function InvoiceCreationModal({
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <span>צור חשבונית</span>
@@ -242,8 +235,7 @@ export default function InvoiceCreationModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

@@ -312,11 +312,16 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
-    const stateIdError = validatePhoneNumberDigitsOnly(
-      formData.stateId,
-      20,
-      'ח.פ / ע.מ'
-    );
+    // Validate state ID: exactly 9 digits
+    let stateIdError: string | null = null;
+    const trimmedStateId = formData.stateId.trim();
+    if (!trimmedStateId) {
+      stateIdError = 'ח.פ / ע.מ הוא שדה חובה';
+    } else if (!/^\d+$/.test(trimmedStateId)) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל ספרות בלבד';
+    } else if (trimmedStateId.length !== 9) {
+      stateIdError = 'ח.פ / ע.מ חייב להכיל בדיוק 9 ספרות';
+    }
     if (stateIdError) {
       errors.stateId = stateIdError;
     }
@@ -391,13 +396,14 @@ export default function CustomersPage() {
       errors.city = cityError;
     }
 
-    const stateIdError = validatePhoneNumberDigitsOnly(
-      editFormData.stateId,
-      20,
-      'ח.פ / ע.מ'
-    );
-    if (stateIdError) {
-      errors.stateId = stateIdError;
+    // Validate state ID: exactly 9 digits
+    const trimmedEditStateId = editFormData.stateId.trim();
+    if (!trimmedEditStateId) {
+      errors.stateId = 'ח.פ / ע.מ הוא שדה חובה';
+    } else if (!/^\d+$/.test(trimmedEditStateId)) {
+      errors.stateId = 'ח.פ / ע.מ חייב להכיל ספרות בלבד';
+    } else if (trimmedEditStateId.length !== 9) {
+      errors.stateId = 'ח.פ / ע.מ חייב להכיל בדיוק 9 ספרות';
     }
 
     const discountError = validateDiscountPercentage(editFormData.discountPercentage, 'אחוז הנחה');
@@ -633,69 +639,76 @@ export default function CustomersPage() {
         <>
           <div className="glass-card rounded-3xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table 
+                className="min-w-full divide-y divide-gray-200"
+                aria-label="טבלת לקוחות"
+                role="table"
+              >
+                <caption className="sr-only">
+                  טבלת לקוחות עם פרטי שם, אימייל, טלפון, עיר, סוכן, אחוז הנחה ופעולות
+                </caption>
                 <thead className="bg-indigo-50/70 backdrop-blur-sm">
                   <tr>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-48 border-l border-gray-200">שם</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-64 border-l border-gray-200">אימייל</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">טלפון</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">עיר</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">סוכן</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-28 border-l border-gray-200">אחוז הנחה</th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">פעולות</th>
+                    <th scope="col" id="customer-name" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-48 border-l border-gray-200">שם</th>
+                    <th scope="col" id="customer-email" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-64 border-l border-gray-200">אימייל</th>
+                    <th scope="col" id="customer-phone" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">טלפון</th>
+                    <th scope="col" id="customer-city" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">עיר</th>
+                    <th scope="col" id="customer-agent" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-40 border-l border-gray-200">סוכן</th>
+                    <th scope="col" id="customer-discount" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-28 border-l border-gray-200">אחוז הנחה</th>
+                    <th scope="col" id="customer-actions" className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide w-32 border-l border-gray-200">פעולות</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {paginatedCustomers.map((customer) => {
                     return (
                       <tr key={customer.id} className="hover:bg-indigo-50/50 transition-colors">
-                        <td className="px-6 py-4 text-right border-l border-gray-200">
+                        <td className="px-6 py-4 text-right border-l border-gray-200" headers="customer-name">
                           <span className="text-sm font-semibold text-gray-900 truncate block max-w-[12rem]" title={customer.name}>
                             {customer.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200" headers="customer-email">
                           <span className="truncate block max-w-[16rem]" title={customer.email}>
                             {customer.email}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right border-l border-gray-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right border-l border-gray-200" headers="customer-phone">
                           {formatPhoneNumber(customer.phoneNumber)}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200" headers="customer-city">
                           <span className="truncate block max-w-[10rem]" title={customer.city}>
                             {customer.city}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 text-right border-l border-gray-200" headers="customer-agent">
                           <span className="truncate block max-w-[10rem]" title={customer.agentId != null ? (agentNameMap.get(customer.agentId) ?? 'סוכן לא ידוע') : 'אני'}>
                             {customer.agentId != null
                               ? agentNameMap.get(customer.agentId) ?? 'סוכן לא ידוע'
                               : 'אני'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium border-l border-gray-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium border-l border-gray-200" headers="customer-discount">
                           {customer.discountPercentage}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200">
-                          <div className="inline-flex items-center gap-2">
+                        <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200" headers="customer-actions">
+                          <div className="inline-flex items-center gap-2" role="group" aria-label={`פעולות עבור לקוח ${customer.name}`}>
                             <button
                               type="button"
                               onClick={() => handleEditCustomer(customer)}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                              title="ערוך לקוח"
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                              aria-label={`ערוך לקוח ${customer.name}`}
                             >
-                              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
                               </svg>
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteCustomer(customer)}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                              title="מחק לקוח"
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
+                              aria-label={`מחק לקוח ${customer.name}`}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
                               </svg>
                             </button>
@@ -723,8 +736,21 @@ export default function CustomersPage() {
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף לקוח חדש</h2>
               <CloseButton onClick={handleCloseModal} />
@@ -847,7 +873,7 @@ export default function CustomersPage() {
                   type="text"
                   value={formData.stateId}
                   onChange={handleInputChange}
-                  maxLength={20}
+                  maxLength={9}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
@@ -857,7 +883,7 @@ export default function CustomersPage() {
                 {showErrors && fieldErrors.stateId && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
+                <p className="text-xs text-gray-500 mt-1">הזן בדיוק 9 ספרות</p>
               </div>
 
               <div>
@@ -948,8 +974,21 @@ export default function CustomersPage() {
 
       {/* Edit Customer Modal */}
       {isEditModalOpen && customerToEdit && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+          dir="rtl" 
+          style={{ margin: 0, top: 0 }}
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseEditModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך לקוח</h2>
               <CloseButton onClick={handleCloseEditModal} />
@@ -1072,7 +1111,7 @@ export default function CustomersPage() {
                   type="text"
                   value={editFormData.stateId}
                   onChange={handleEditInputChange}
-                  maxLength={20}
+                  maxLength={9}
                   inputMode="numeric"
                   pattern="[0-9]*"
                   className={`form-input text-center ${showErrors && fieldErrors.stateId ? 'form-input-error' : ''}`}
@@ -1082,7 +1121,7 @@ export default function CustomersPage() {
                 {showErrors && fieldErrors.stateId && (
                   <p className="text-red-500 text-xs mt-1">{fieldErrors.stateId}</p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">הזן עד 20 ספרות</p>
+                <p className="text-xs text-gray-500 mt-1">הזן בדיוק 9 ספרות</p>
               </div>
 
               <div>
@@ -1173,8 +1212,20 @@ export default function CustomersPage() {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && customerToDelete && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20" dir="rtl">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseDeleteModal();
+            }
+          }}
+        >
+          <div 
+            className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20" 
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-2xl font-bold text-gray-800 mb-4">מחק לקוח</h2>
             
             <div className="space-y-4">

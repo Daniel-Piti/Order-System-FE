@@ -3,7 +3,7 @@ import { validateUserProfileForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import { managerAPI } from '../services/api';
 import Spinner from './Spinner';
-import CloseButton from './CloseButton';
+import AccessibleModal from './AccessibleModal';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -145,18 +145,22 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" dir="rtl" style={{ margin: 0, top: 0 }}>
-      <div className="glass-card rounded-3xl p-6 w-full max-w-lg max-h-[85vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl">
-        <div className="modal-header">
-          <h2 className="modal-header-title">ערוך פרטים אישיים</h2>
-          <CloseButton onClick={handleClose} />
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="ערוך פרטים אישיים"
+      size="md"
+      dir="rtl"
+    >
+      {error && (
+        <div 
+          role="alert"
+          className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm"
+          aria-live="assertive"
+        >
+          {error}
         </div>
-
-        {error && (
-          <div className="glass-card bg-red-50/80 border border-red-200/60 rounded-xl p-3 mb-4 text-red-600 text-sm">
-            {error}
-          </div>
-        )}
+      )}
 
         <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
           <div className="grid grid-cols-2 gap-2.5">
@@ -313,8 +317,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </AccessibleModal>
   );
 }
 

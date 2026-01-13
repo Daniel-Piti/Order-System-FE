@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { useAriaLive } from '../components/AriaLiveRegionContext';
 
 export default function AdminLoginPage() {
   const [adminUserName, setAdminUserName] = useState('');
@@ -8,11 +9,43 @@ export default function AdminLoginPage() {
   const [userEmail, setUserEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [adminUserNameError, setAdminUserNameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [userEmailError, setUserEmailError] = useState('');
   const navigate = useNavigate();
+  const { announce } = useAriaLive();
+
+  // Announce errors to screen readers
+  useEffect(() => {
+    if (error) {
+      announce(error, 'assertive');
+    }
+  }, [error, announce]);
+
+  useEffect(() => {
+    if (adminUserNameError) {
+      announce(adminUserNameError, 'polite');
+    }
+  }, [adminUserNameError, announce]);
+
+  useEffect(() => {
+    if (passwordError) {
+      announce(passwordError, 'polite');
+    }
+  }, [passwordError, announce]);
+
+  useEffect(() => {
+    if (userEmailError) {
+      announce(userEmailError, 'polite');
+    }
+  }, [userEmailError, announce]);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setAdminUserNameError('');
+    setPasswordError('');
+    setUserEmailError('');
 
     // Trim inputs
     const trimmedAdminUserName = adminUserName.trim();
@@ -20,22 +53,29 @@ export default function AdminLoginPage() {
     const trimmedUserEmail = userEmail.trim();
 
     // Validate inputs
+    let hasError = false;
+
     if (!trimmedAdminUserName) {
-      setError('Please enter your admin username');
-      return;
+      setAdminUserNameError('Please enter your admin username');
+      hasError = true;
     }
+    
     if (!trimmedPassword) {
-      setError('Please enter your admin password');
-      return;
+      setPasswordError('Please enter your admin password');
+      hasError = true;
     }
     
     // Validate email format if provided
     if (trimmedUserEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedUserEmail)) {
-        setError('Please enter a valid user email address');
-        return;
+        setUserEmailError('Please enter a valid user email address');
+        hasError = true;
       }
+    }
+
+    if (hasError) {
+      return;
     }
 
     setIsLoading(true);
@@ -48,10 +88,13 @@ export default function AdminLoginPage() {
       });
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userRole', 'admin');
+      announce('Login successful', 'polite');
       navigate('/admin/dashboard');
     } catch (err: any) {
       // Always show the same message for security (prevent user enumeration)
-      setError('Invalid admin credentials');
+      const errorMsg = 'Invalid admin credentials';
+      setError(errorMsg);
+      announce(errorMsg, 'assertive');
     } finally {
       setIsLoading(false);
     }
@@ -75,6 +118,7 @@ export default function AdminLoginPage() {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -88,41 +132,71 @@ export default function AdminLoginPage() {
           <p className="text-gray-600">Sign in with administrator credentials</p>
         </div>
 
-        <form onSubmit={handleAdminLogin} className="space-y-5" method="post" autoComplete="on">
+        <form onSubmit={handleAdminLogin} className="space-y-5" method="post" autoComplete="on" noValidate>
           {error && (
-            <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm">
+            <div 
+              role="alert"
+              className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 text-red-600 text-sm"
+              aria-live="assertive"
+            >
               {error}
             </div>
           )}
 
           <div>
             <label htmlFor="adminUserName" className="block text-sm font-medium text-gray-700 mb-2">
-              Admin Username
+              Admin Username <span className="text-red-500" aria-label="required">*</span>
             </label>
             <input
               id="adminUserName"
               type="text"
               value={adminUserName}
-              onChange={(e) => setAdminUserName(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => {
+                setAdminUserName(e.target.value);
+                if (adminUserNameError) setAdminUserNameError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 ${
+                adminUserNameError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-indigo-500'
+              }`}
               placeholder="admin"
               autoComplete="username"
+              aria-required="true"
+              aria-invalid={adminUserNameError ? 'true' : 'false'}
+              aria-describedby={adminUserNameError ? 'adminUserName-error' : undefined}
             />
+            {adminUserNameError && (
+              <div id="adminUserName-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {adminUserNameError}
+              </div>
+            )}
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Admin Password
+              Admin Password <span className="text-red-500" aria-label="required">*</span>
             </label>
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 ${
+                passwordError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-indigo-500'
+              }`}
               placeholder="••••••••"
               autoComplete="current-password"
+              aria-required="true"
+              aria-invalid={passwordError ? 'true' : 'false'}
+              aria-describedby={passwordError ? 'password-error' : undefined}
             />
+            {passwordError && (
+              <div id="password-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {passwordError}
+              </div>
+            )}
           </div>
 
           <div>
@@ -131,16 +205,30 @@ export default function AdminLoginPage() {
             </label>
             <input
               id="userEmail"
-              type="text"
+              type="email"
               value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
-              className="glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onChange={(e) => {
+                setUserEmail(e.target.value);
+                if (userEmailError) setUserEmailError('');
+              }}
+              className={`glass-input w-full px-4 py-3 rounded-xl text-gray-800 focus:outline-none focus:ring-2 ${
+                userEmailError ? 'border-red-500 focus:ring-red-500' : 'focus:ring-indigo-500'
+              }`}
               placeholder="user@example.com"
               autoComplete="email"
+              aria-required="false"
+              aria-invalid={userEmailError ? 'true' : 'false'}
+              aria-describedby={userEmailError ? 'userEmail-error' : 'userEmail-help'}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Leave empty to login as pure admin, or enter a user email to login as that user with admin privileges
-            </p>
+            {userEmailError ? (
+              <div id="userEmail-error" role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
+                {userEmailError}
+              </div>
+            ) : (
+              <p id="userEmail-help" className="text-xs text-gray-500 mt-1">
+                Leave empty to login as pure admin, or enter a user email to login as that user with admin privileges
+              </p>
+            )}
           </div>
 
           <button
@@ -148,7 +236,8 @@ export default function AdminLoginPage() {
             disabled={isLoading}
             className="glass-button w-full py-3 px-4 rounded-xl font-semibold text-gray-800 
                      hover:shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed
-                     flex items-center justify-center space-x-2"
+                     flex items-center justify-center space-x-2 focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+            aria-label={isLoading ? 'Signing in...' : 'Sign in as admin'}
           >
             {isLoading ? (
               <>
@@ -157,6 +246,7 @@ export default function AdminLoginPage() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <circle
                     className="opacity-25"

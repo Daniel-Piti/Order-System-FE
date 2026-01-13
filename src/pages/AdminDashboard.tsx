@@ -265,17 +265,24 @@ export default function AdminDashboard() {
           ) : (
             <div className="glass-card rounded-3xl overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table 
+                  className="min-w-full divide-y divide-gray-200"
+                  aria-label="Managers table"
+                  role="table"
+                >
+                  <caption className="sr-only">
+                    Table of managers with details including ID, name, email, phone, business ID, business name, creation date, and actions
+                  </caption>
                   <thead className="bg-indigo-50/70 backdrop-blur-sm">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Manager ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Phone</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Created</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Actions</th>
+                      <th scope="col" id="manager-id" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Manager ID</th>
+                      <th scope="col" id="manager-name" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Name</th>
+                      <th scope="col" id="manager-email" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Email</th>
+                      <th scope="col" id="manager-phone" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Phone</th>
+                      <th scope="col" id="manager-business-id" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business ID</th>
+                      <th scope="col" id="manager-business-name" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Business Name</th>
+                      <th scope="col" id="manager-created" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Created</th>
+                      <th scope="col" id="manager-actions" className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide border-l border-gray-200">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
@@ -285,43 +292,44 @@ export default function AdminDashboard() {
                         onClick={(e) => handleRowClick(manager, e)}
                         className="hover:bg-indigo-50/50 transition-colors cursor-pointer"
                       >
-                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200">{manager.id}</td>
-                        <td className="px-6 py-4 border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200" headers="manager-id">{manager.id}</td>
+                        <td className="px-6 py-4 border-l border-gray-200" headers="manager-name">
                           <span className="text-sm font-semibold text-gray-900">
                             {manager.firstName} {manager.lastName}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200" headers="manager-email">
                           <span className="truncate block max-w-[16rem]" title={manager.email}>
                             {manager.email}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200" headers="manager-phone">
                           {formatPhoneNumber(manager.phoneNumber)}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 font-mono border-l border-gray-200" headers="manager-business-id">
                           {manager.business?.id || '-'}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200">
+                        <td className="px-6 py-4 text-sm text-gray-700 border-l border-gray-200" headers="manager-business-name">
                           <span className="truncate block max-w-[12rem]" title={manager.business?.name || ''}>
                             {manager.business?.name || '-'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-l border-gray-200" headers="manager-created">
                           {formatDate(manager.createdAt)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap border-l border-gray-200">
-                          <div className="inline-flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-6 py-4 whitespace-nowrap border-l border-gray-200" headers="manager-actions">
+                          <div className="inline-flex items-center gap-2" role="group" aria-label={`Actions for manager ${manager.firstName} ${manager.lastName}`} onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => setManagerToResetPassword(manager)}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center"
-                              title="Reset password"
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                              aria-label={`Reset password for manager ${manager.firstName} ${manager.lastName}`}
                             >
                               <svg
                                 className="w-4 h-4 text-indigo-600"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                               >
                                 <path
                                   strokeLinecap="round"
@@ -333,14 +341,15 @@ export default function AdminDashboard() {
                             </button>
                             <button
                               onClick={() => setManagerToDelete(manager)}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center"
-                              title="Delete manager"
+                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
+                              aria-label={`Delete manager ${manager.firstName} ${manager.lastName}`}
                             >
                               <svg
                                 className="w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                aria-hidden="true"
                               >
                                 <path
                                   strokeLinecap="round"
@@ -364,8 +373,19 @@ export default function AdminDashboard() {
 
       {/* Manager & Business Detail Modal */}
       {selectedManager && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              setSelectedManager(null);
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Manager & Business Details</h2>
               <button
@@ -531,8 +551,19 @@ export default function AdminDashboard() {
 
       {/* Delete Confirmation Modal */}
       {managerToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseDeleteModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-red-100">
                 <svg
@@ -626,8 +657,19 @@ export default function AdminDashboard() {
 
       {/* Reset Password Confirmation Modal */}
       {managerToResetPassword && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            // Close on backdrop click
+            if (e.target === e.currentTarget) {
+              handleCloseResetPasswordModal();
+            }
+          }}
+        >
+          <div 
+            className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-indigo-100">
                 <svg
