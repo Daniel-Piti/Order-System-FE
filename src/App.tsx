@@ -27,6 +27,8 @@ import LocationsPage from './pages/LocationsPage';
 import StorePage from './pages/StorePage';
 import BusinessInfoPage from './pages/BusinessInfoPage';
 import BusinessDataPage from './pages/BusinessDataPage';
+import AccessibilityStatementPage from './pages/AccessibilityStatementPage';
+import CookiesPolicyPage from './pages/CookiesPolicyPage';
 
 function App() {
   return (
@@ -55,6 +57,10 @@ function App() {
           <Route path="products" element={<AgentProductsPage />} />
           <Route path="overrides" element={<AgentOverridesPage />} />
         </Route>
+        
+        {/* Public Pages */}
+        <Route path="/accessibility-statement" element={<AccessibilityStatementPage />} />
+        <Route path="/cookies-policy" element={<CookiesPolicyPage />} />
         
         {/* Public Store Routes - more specific route first */}
         <Route path="/store/edit/:orderId" element={<StorePage />} />

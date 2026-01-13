@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 
 const COOKIE_CONSENT_KEY = 'cookie-consent';
 const COOKIE_CONSENT_EXPIRY_DAYS = 365; // Consent valid for 1 year
@@ -173,7 +174,14 @@ export default function CookieConsent() {
               id="cookie-consent-description"
               className="text-sm text-gray-700 leading-relaxed"
             >
-              אנו משתמשים בעוגיות כדי לשפר את החוויה שלך באתר. על ידי המשך השימוש באתר, אתה מסכים לשימוש בעוגיות בהתאם למדיניות הפרטיות שלנו.
+              אנו משתמשים בעוגיות כדי לשפר את החוויה שלך באתר. על ידי המשך השימוש באתר, אתה מסכים לשימוש בעוגיות בהתאם ל{' '}
+              <Link 
+                to="/cookies-policy" 
+                className="text-indigo-600 hover:text-indigo-700 underline focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+                onClick={(e) => e.stopPropagation()}
+              >
+                מדיניות העוגיות שלנו
+              </Link>.
             </p>
           </div>
 

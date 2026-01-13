@@ -337,42 +337,21 @@ export default function AccessibilityWidget() {
             
             {/* Accessibility Statement & Contact */}
             <div className="space-y-2">
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  // Show accessibility statement in a modal/alert
-                  const statement = `
-הצהרת נגישות
-
-האתר עומד בתקן WCAG 2.2 Level AA.
-
-האתר כולל:
-• ניווט מקלדת מלא
-• תמיכה בקוראי מסך
-• התאמת גודל גופן
-• התאמת ניגודיות
-• התאמת מרווחים
-• קישורי דילוג לתוכן
-
-לשאלות או דיווח על בעיות נגישות:
-support@order-it-app.com
-
-תאריך עדכון אחרון: ${new Date().toLocaleDateString('he-IL')}
-                  `.trim();
-                  alert(statement);
-                }}
+              <a
+                href="/accessibility-statement"
+                onClick={() => setIsOpen(false)}
                 className="block w-full text-xs text-indigo-600 hover:text-indigo-700 underline text-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
                 role="menuitem"
               >
                 הצהרת נגישות
-              </button>
+              </a>
               <a
-                href="mailto:support@order-it-app.com?subject=דיווח על בעיית נגישות&body=שלום,%0D%0A%0D%0Aאני מעוניין/ת לדווח על בעיית נגישות באתר.%0D%0A%0D%0Aתיאור הבעיה:%0D%0A%0D%0A%0D%0Aדף/מסך שבו נתקלתי בבעיה:%0D%0A%0D%0A%0D%0Aתודה"
+                href="tel:0505566979"
                 className="block text-xs text-indigo-600 hover:text-indigo-700 underline text-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
                 role="menuitem"
                 onClick={() => setIsOpen(false)}
               >
-                דיווח על בעיית נגישות
+                דיווח על בעיית נגישות: 050-5566979
               </a>
             </div>
           </div>
