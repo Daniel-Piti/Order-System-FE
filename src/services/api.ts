@@ -348,6 +348,10 @@ export const agentAPI = {
   updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
     await api.put(`/agent/orders/${orderId}`, data);
   },
+
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
+    await api.put(`/agent/orders/${orderId}/discount`, { discount });
+  },
 };
 
 export interface Location {
@@ -475,6 +479,7 @@ export interface Order {
   products: ProductDataForOrder[];
   productsVersion: number;
   totalPrice: number;
+  discount: number;
   linkExpiresAt: string;
   notes: string;
   placedAt: string | null;
@@ -561,6 +566,10 @@ export const orderAPI = {
 
   updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
     await api.put(`/orders/${orderId}`, data);
+  },
+
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
+    await api.put(`/orders/${orderId}/discount`, { discount });
   },
 
   getBusinessStats: async (year?: number, month?: number): Promise<BusinessStats> => {

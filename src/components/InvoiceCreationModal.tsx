@@ -54,6 +54,25 @@ export default function InvoiceCreationModal({
     setIsSubmitting(true);
 
     try {
+      // Validate allocation number if required
+      if (allocationRequired) {
+        if (!allocationNumber.trim()) {
+          setError('מספר הקצאה הוא שדה חובה');
+          setIsSubmitting(false);
+          return;
+        }
+        if (allocationNumber.trim().length !== 9) {
+          setError('מספר הקצאה חייב להכיל 9 ספרות בדיוק');
+          setIsSubmitting(false);
+          return;
+        }
+        if (!/^\d{9}$/.test(allocationNumber.trim())) {
+          setError('מספר הקצאה חייב להכיל ספרות בלבד');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Build payment proof based on payment method
       let paymentProof = '';
       if (paymentMethod === 'CREDIT_CARD') {
@@ -191,7 +210,6 @@ export default function InvoiceCreationModal({
               }`}
               dir="ltr"
               disabled={isSubmitting || !allocationRequired}
-              required={allocationRequired}
               maxLength={9}
             />
             {!allocationRequired && (

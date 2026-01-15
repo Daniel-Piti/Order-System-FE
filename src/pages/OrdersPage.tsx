@@ -27,6 +27,9 @@ export default function OrdersPage() {
   const [orderInvoiceUrls, setOrderInvoiceUrls] = useState<Map<string, string>>(new Map());
   const [checkedOrders, setCheckedOrders] = useState<Set<string>>(new Set()); // Track which orders we've checked (even if no invoice)
   const [loadingInvoiceUrls, setLoadingInvoiceUrls] = useState<Set<string>>(new Set());
+  const [discountOrder, setDiscountOrder] = useState<Order | null>(null);
+  const [discountValue, setDiscountValue] = useState<string>('');
+  const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -275,6 +278,53 @@ export default function OrdersPage() {
       setError(err.response?.data?.userMessage || 'נכשל בסימון ההזמנה כהושלמה');
     } finally {
       setUpdatingOrderId(null);
+    }
+  };
+
+  const handleUpdateDiscount = async () => {
+    if (!discountOrder) return;
+
+    // Calculate products total
+    const productsTotal = discountOrder.products.reduce((sum, product) => {
+      return sum + (product.pricePerUnit * product.quantity);
+    }, 0);
+
+    const discountNum = parseFloat(discountValue);
+    if (isNaN(discountNum) || discountNum < 0) {
+      setError('הנחה חייבת להיות מספר חיובי');
+      return;
+    }
+
+    // Validate discount doesn't exceed products total
+    if (discountNum > productsTotal) {
+      setError(`הנחה לא יכולה לעלות על סכום ההזמנה (${formatPrice(productsTotal)})`);
+      return;
+    }
+
+    // Validate max 2 decimal places
+    const decimalParts = discountValue.split('.');
+    if (decimalParts.length > 1 && decimalParts[1].length > 2) {
+      setError('הנחה יכולה לכלול עד 2 ספרות אחרי הנקודה');
+      return;
+    }
+
+    setIsUpdatingDiscount(true);
+    setError('');
+    try {
+      await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
+      await fetchOrders(currentPage);
+      setViewingOrder((prev) => {
+        if (prev && prev.id === discountOrder.id) {
+          return { ...prev, discount: discountNum };
+        }
+        return prev;
+      });
+      setDiscountOrder(null);
+      setDiscountValue('');
+    } catch (err: any) {
+      setError(err.response?.data?.userMessage || 'נכשל בעדכון ההנחה');
+    } finally {
+      setIsUpdatingDiscount(false);
     }
   };
 
@@ -750,11 +800,19 @@ export default function OrdersPage() {
 
               {/* Total Price - Prominent */}
               <div className="mt-3 pb-2 border-t border-gray-200/50 border-b border-gray-200/30 pt-3">
-                <div className="flex items-baseline justify-between gap-2 min-w-0">
-                  <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
-                    {formatPrice(order.totalPrice)}
-                  </span>
+                <div className="flex flex-col gap-1">
+                  {order.discount > 0 && (
+                    <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                      <span>הנחה:</span>
+                      <span className="text-red-600 font-semibold">{order.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪</span>
+                    </div>
+                  )}
+                  <div className="flex items-baseline justify-between gap-2 min-w-0">
+                    <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
+                      {formatPrice(order.totalPrice)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1263,6 +1321,12 @@ export default function OrdersPage() {
                     {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
                   </span>
                 </div>
+                {viewingOrder.discount > 0 && (
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                    <span className="text-sm text-gray-600">הנחה</span>
+                    <span className="text-sm font-semibold text-red-600">{viewingOrder.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
                   <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
                   <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
@@ -1334,6 +1398,18 @@ export default function OrdersPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     <span>ערוך הזמנה</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDiscountOrder(viewingOrder);
+                      setDiscountValue(viewingOrder.discount > 0 ? viewingOrder.discount.toString() : '');
+                    }}
+                    className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-purple-100 text-purple-700 border-purple-700 hover:shadow-lg"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>הוסף הנחה</span>
                   </button>
                   <button
                     onClick={() => handleMarkOrderDone(viewingOrder.id)}
@@ -1416,6 +1492,135 @@ export default function OrdersPage() {
               >
                 {cancellingOrderId ? 'מבטל...' : 'בטל הזמנה'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Discount Modal */}
+      {discountOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+        >
+          <div
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-purple-100"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">הוסף הנחה</h2>
+                <p className="text-sm text-gray-600 mt-1">הזמנה #{discountOrder.id.slice(0, 8)}</p>
+              </div>
+              <button
+                onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+                disabled={isUpdatingDiscount}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Order Total Display */}
+              {(() => {
+                const productsTotal = discountOrder.products.reduce((sum, product) => {
+                  return sum + (product.pricePerUnit * product.quantity);
+                }, 0);
+                return (
+                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-indigo-700">סכום הזמנה:</span>
+                      <span className="text-lg font-bold text-indigo-900">{formatPrice(productsTotal)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label htmlFor="discount-input" className="block text-sm font-medium text-gray-700 mb-2">
+                  סכום הנחה (₪)
+                </label>
+                <input
+                  id="discount-input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max={discountOrder.products.reduce((sum, product) => {
+                    return sum + (product.pricePerUnit * product.quantity);
+                  }, 0)}
+                  value={discountValue}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const productsTotal = discountOrder.products.reduce((sum, product) => {
+                      return sum + (product.pricePerUnit * product.quantity);
+                    }, 0);
+                    // Allow empty, numbers, and one decimal point
+                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                      const num = parseFloat(value);
+                      // Prevent entering value larger than products total
+                      if (value === '' || isNaN(num) || num <= productsTotal) {
+                        setDiscountValue(value);
+                        setError('');
+                      } else {
+                        setError(`הנחה לא יכולה לעלות על סכום ההזמנה (${formatPrice(productsTotal)})`);
+                      }
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Format to max 2 decimal places on blur
+                    const num = parseFloat(e.target.value);
+                    if (!isNaN(num)) {
+                      setDiscountValue(num.toFixed(2).replace(/\.?0+$/, ''));
+                    }
+                  }}
+                  placeholder="0.00"
+                  disabled={isUpdatingDiscount}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  dir="ltr"
+                />
+                <p className="text-xs text-gray-500 mt-1">עד 2 ספרות אחרי הנקודה, מקסימום {formatPrice(discountOrder.products.reduce((sum, product) => sum + (product.pricePerUnit * product.quantity), 0))}</p>
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              <div className="flex justify-start gap-3">
+                <button
+                  onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+                  disabled={isUpdatingDiscount}
+                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:shadow-md transition-all disabled:opacity-50"
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={handleUpdateDiscount}
+                  disabled={isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0}
+                  className={`glass-button px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
+                    isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0
+                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                      : 'text-purple-600 border-purple-600 bg-purple-50 hover:shadow-lg'
+                  }`}
+                >
+                  {isUpdatingDiscount ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
+                      </svg>
+                      <span>שומר...</span>
+                    </>
+                  ) : (
+                    'שמור'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
