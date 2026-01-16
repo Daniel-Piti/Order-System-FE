@@ -29,6 +29,7 @@ export default function OrdersPage() {
   const [loadingInvoiceUrls, setLoadingInvoiceUrls] = useState<Set<string>>(new Set());
   const [discountOrder, setDiscountOrder] = useState<Order | null>(null);
   const [discountValue, setDiscountValue] = useState<string>('');
+  const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
   const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
 
   // Pagination state
@@ -282,35 +283,30 @@ export default function OrdersPage() {
   };
 
   const handleUpdateDiscount = async () => {
-    if (!discountOrder) return;
+    if (!discountOrder || !discountValue) return;
 
-    // Calculate products total
-    const productsTotal = discountOrder.products.reduce((sum, product) => {
-      return sum + (product.pricePerUnit * product.quantity);
-    }, 0);
-
-    const discountNum = parseFloat(discountValue);
-    if (isNaN(discountNum) || discountNum < 0) {
-      setError('הנחה חייבת להיות מספר חיובי');
+    const productsTotal = discountOrder.products.reduce((sum, product) => 
+      sum + (product.pricePerUnit * product.quantity), 0
+    );
+    const inputValue = parseFloat(discountValue);
+    
+    if (isNaN(inputValue) || inputValue < 0) {
+      setError('אנא הזן ערך תקין');
       return;
     }
 
-    // Validate discount doesn't exceed products total
-    if (discountNum > productsTotal) {
-      setError(`הנחה לא יכולה לעלות על סכום ההזמנה (${formatPrice(productsTotal)})`);
-      return;
-    }
+    // Calculate discount amount (values are already capped in onChange)
+    let discountNum = discountMode === 'percentage'
+      ? (inputValue / 100) * productsTotal
+      : inputValue;
 
-    // Validate max 2 decimal places
-    const decimalParts = discountValue.split('.');
-    if (decimalParts.length > 1 && decimalParts[1].length > 2) {
-      setError('הנחה יכולה לכלול עד 2 ספרות אחרי הנקודה');
-      return;
-    }
+    // Round to 2 decimal places before sending to backend
+    discountNum = Math.round(discountNum * 100) / 100;
 
     setIsUpdatingDiscount(true);
     setError('');
     try {
+      // Always send the discount as a number to the backend (rounded to 2 decimal places)
       await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
       await fetchOrders(currentPage);
       setViewingOrder((prev) => {
@@ -321,8 +317,18 @@ export default function OrdersPage() {
       });
       setDiscountOrder(null);
       setDiscountValue('');
+      setDiscountMode('number');
     } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל בעדכון ההנחה');
+      const errorMessage = err.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
+      // Translate common backend error messages to Hebrew
+      const translatedMessage = errorMessage.includes('can have at most 2 decimal places')
+        ? 'הנחה יכולה לכלול עד 2 ספרות אחרי הנקודה'
+        : errorMessage.includes('cannot exceed the total price')
+        ? 'הנחה לא יכולה לעלות על סכום ההזמנה'
+        : errorMessage.includes('must be greater than or equal to 0')
+        ? 'הנחה חייבת להיות מספר חיובי'
+        : errorMessage;
+      setError(translatedMessage);
     } finally {
       setIsUpdatingDiscount(false);
     }
@@ -801,12 +807,22 @@ export default function OrdersPage() {
               {/* Total Price - Prominent */}
               <div className="mt-3 pb-2 border-t border-gray-200/50 border-b border-gray-200/30 pt-3">
                 <div className="flex flex-col gap-1">
-                  {order.discount > 0 && (
-                    <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
-                      <span>הנחה:</span>
-                      <span className="text-red-600 font-semibold">{order.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪</span>
-                    </div>
-                  )}
+                  {order.discount > 0 && (() => {
+                    const productsTotal = order.products.reduce((sum, product) => 
+                      sum + (product.pricePerUnit * product.quantity), 0
+                    );
+                    const discountPercentage = productsTotal > 0 
+                      ? ((order.discount / productsTotal) * 100).toFixed(1)
+                      : '0.0';
+                    return (
+                      <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                        <span>הנחה:</span>
+                        <span className="text-red-600 font-semibold">
+                          {order.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪ ({discountPercentage}%)
+                        </span>
+                      </div>
+                    );
+                  })()}
                   <div className="flex items-baseline justify-between gap-2 min-w-0">
                     <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
                     <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
@@ -1321,12 +1337,33 @@ export default function OrdersPage() {
                     {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
                   </span>
                 </div>
-                {viewingOrder.discount > 0 && (
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                    <span className="text-sm text-gray-600">הנחה</span>
-                    <span className="text-sm font-semibold text-red-600">{viewingOrder.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪</span>
-                  </div>
-                )}
+                {(() => {
+                  const productsTotal = viewingOrder.products.reduce((sum, p) => 
+                    sum + (p.pricePerUnit * p.quantity), 0
+                  );
+                  return (
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                      <span className="text-sm text-gray-600">מחיר</span>
+                      <span className="text-sm font-medium text-gray-800">{formatPrice(productsTotal)}</span>
+                    </div>
+                  );
+                })()}
+                {viewingOrder.discount > 0 && (() => {
+                  const productsTotal = viewingOrder.products.reduce((sum, p) => 
+                    sum + (p.pricePerUnit * p.quantity), 0
+                  );
+                  const discountPercentage = productsTotal > 0 
+                    ? ((viewingOrder.discount / productsTotal) * 100).toFixed(1)
+                    : '0.0';
+                  return (
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                      <span className="text-sm text-gray-600">הנחה</span>
+                      <span className="text-sm font-semibold text-red-600">
+                        {viewingOrder.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪ ({discountPercentage}%)
+                      </span>
+                    </div>
+                  );
+                })()}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
                   <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
                   <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
@@ -1403,6 +1440,7 @@ export default function OrdersPage() {
                     onClick={() => {
                       setDiscountOrder(viewingOrder);
                       setDiscountValue(viewingOrder.discount > 0 ? viewingOrder.discount.toString() : '');
+                      setDiscountMode('number');
                     }}
                     className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-purple-100 text-purple-700 border-purple-700 hover:shadow-lg"
                   >
@@ -1501,7 +1539,13 @@ export default function OrdersPage() {
       {discountOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+          onClick={() => {
+            if (!isUpdatingDiscount) {
+              setDiscountOrder(null);
+              setDiscountValue('');
+              setDiscountMode('number');
+            }
+          }}
         >
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-purple-100"
@@ -1514,7 +1558,13 @@ export default function OrdersPage() {
                 <p className="text-sm text-gray-600 mt-1">הזמנה #{discountOrder.id.slice(0, 8)}</p>
               </div>
               <button
-                onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+                onClick={() => {
+                  if (!isUpdatingDiscount) {
+                    setDiscountOrder(null);
+                    setDiscountValue('');
+                    setDiscountMode('number');
+                  }
+                }}
                 disabled={isUpdatingDiscount}
                 className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
               >
@@ -1527,9 +1577,9 @@ export default function OrdersPage() {
             <div className="space-y-4">
               {/* Order Total Display */}
               {(() => {
-                const productsTotal = discountOrder.products.reduce((sum, product) => {
-                  return sum + (product.pricePerUnit * product.quantity);
-                }, 0);
+                const productsTotal = discountOrder.products.reduce((sum, product) => 
+                  sum + (product.pricePerUnit * product.quantity), 0
+                );
                 return (
                   <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
                     <div className="flex items-center justify-between">
@@ -1540,49 +1590,128 @@ export default function OrdersPage() {
                 );
               })()}
 
+              {/* Discount Mode Toggle */}
+              <div className="flex items-center justify-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDiscountMode('number');
+                    setDiscountValue('');
+                    setError('');
+                  }}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    discountMode === 'number'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  סכום (₪)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDiscountMode('percentage');
+                    setDiscountValue('');
+                    setError('');
+                  }}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    discountMode === 'percentage'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  אחוז (%)
+                </button>
+              </div>
+
               <div>
                 <label htmlFor="discount-input" className="block text-sm font-medium text-gray-700 mb-2">
-                  סכום הנחה (₪)
+                  {discountMode === 'number' ? 'סכום הנחה (₪)' : 'אחוז הנחה (%)'}
                 </label>
-                <input
-                  id="discount-input"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={discountOrder.products.reduce((sum, product) => {
-                    return sum + (product.pricePerUnit * product.quantity);
-                  }, 0)}
-                  value={discountValue}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const productsTotal = discountOrder.products.reduce((sum, product) => {
-                      return sum + (product.pricePerUnit * product.quantity);
-                    }, 0);
-                    // Allow empty, numbers, and one decimal point
-                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-                      const num = parseFloat(value);
-                      // Prevent entering value larger than products total
-                      if (value === '' || isNaN(num) || num <= productsTotal) {
-                        setDiscountValue(value);
-                        setError('');
+                <div className="relative">
+                  <input
+                    id="discount-input"
+                    type="number"
+                    step={discountMode === 'number' ? '0.01' : '0.1'}
+                    min="0"
+                    value={discountValue}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const productsTotal = discountOrder.products.reduce((sum, product) => 
+                        sum + (product.pricePerUnit * product.quantity), 0
+                      );
+                      
+                      if (discountMode === 'number') {
+                        // Number mode: Allow empty, numbers, and one decimal point
+                        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                          const num = parseFloat(value);
+                          if (value === '' || isNaN(num)) {
+                            setDiscountValue(value);
+                          } else if (num > productsTotal) {
+                            // Cap at maximum order total
+                            setDiscountValue(productsTotal.toFixed(2));
+                          } else if (num < 0) {
+                            setDiscountValue('0');
+                          } else {
+                            setDiscountValue(value);
+                          }
+                          setError('');
+                        }
                       } else {
-                        setError(`הנחה לא יכולה לעלות על סכום ההזמנה (${formatPrice(productsTotal)})`);
+                        // Percentage mode: Allow 0-100 with up to 2 decimal places
+                        if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                          const num = parseFloat(value);
+                          if (value === '' || isNaN(num)) {
+                            setDiscountValue(value);
+                          } else if (num > 100) {
+                            // Cap at 100%
+                            setDiscountValue('100');
+                          } else if (num < 0) {
+                            setDiscountValue('0');
+                          } else {
+                            setDiscountValue(value);
+                          }
+                          setError('');
+                        }
                       }
-                    }
-                  }}
-                  onBlur={(e) => {
-                    // Format to max 2 decimal places on blur
-                    const num = parseFloat(e.target.value);
-                    if (!isNaN(num)) {
-                      setDiscountValue(num.toFixed(2).replace(/\.?0+$/, ''));
-                    }
-                  }}
-                  placeholder="0.00"
-                  disabled={isUpdatingDiscount}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  dir="ltr"
-                />
-                <p className="text-xs text-gray-500 mt-1">עד 2 ספרות אחרי הנקודה, מקסימום {formatPrice(discountOrder.products.reduce((sum, product) => sum + (product.pricePerUnit * product.quantity), 0))}</p>
+                    }}
+                    onBlur={(e) => {
+                      const num = parseFloat(e.target.value);
+                      if (!isNaN(num)) {
+                        setDiscountValue(num.toFixed(2).replace(/\.?0+$/, ''));
+                      }
+                    }}
+                    placeholder={discountMode === 'number' ? '0.00' : '0.0'}
+                    disabled={isUpdatingDiscount}
+                    className="w-full px-4 py-2 pl-12 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                    dir="ltr"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium pointer-events-none">
+                    {discountMode === 'number' ? '₪' : '%'}
+                  </span>
+                </div>
+                {(() => {
+                  const productsTotal = discountOrder.products.reduce((sum, product) => 
+                    sum + (product.pricePerUnit * product.quantity), 0
+                  );
+                  return (
+                    <>
+                      {discountMode === 'number' ? (
+                        <p className="text-xs text-gray-500 mt-1">עד 2 ספרות אחרי הנקודה, מקסימום {formatPrice(productsTotal)}</p>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-1">עד 2 ספרות אחרי הנקודה, מקסימום 100%</p>
+                      )}
+                      {/* Show calculated discount amount when in percentage mode */}
+                      {discountMode === 'percentage' && discountValue && !isNaN(parseFloat(discountValue)) && (
+                        <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded-lg">
+                          <p className="text-xs text-purple-700">
+                            סכום הנחה: <span className="font-bold">{formatPrice((parseFloat(discountValue) / 100) * productsTotal)}</span>
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {error && (
@@ -1593,7 +1722,13 @@ export default function OrdersPage() {
 
               <div className="flex justify-start gap-3">
                 <button
-                  onClick={() => !isUpdatingDiscount && setDiscountOrder(null)}
+                  onClick={() => {
+                    if (!isUpdatingDiscount) {
+                      setDiscountOrder(null);
+                      setDiscountValue('');
+                      setDiscountMode('number');
+                    }
+                  }}
                   disabled={isUpdatingDiscount}
                   className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-700 hover:shadow-md transition-all disabled:opacity-50"
                 >
@@ -1601,9 +1736,9 @@ export default function OrdersPage() {
                 </button>
                 <button
                   onClick={handleUpdateDiscount}
-                  disabled={isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0}
+                  disabled={isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0 || (discountMode === 'percentage' && parseFloat(discountValue) > 100)}
                   className={`glass-button px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
-                    isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0
+                    isUpdatingDiscount || !discountValue || parseFloat(discountValue) < 0 || (discountMode === 'percentage' && parseFloat(discountValue) > 100)
                       ? 'text-gray-400 border-gray-300 cursor-not-allowed'
                       : 'text-purple-600 border-purple-600 bg-purple-50 hover:shadow-lg'
                   }`}
