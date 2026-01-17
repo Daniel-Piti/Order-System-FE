@@ -221,7 +221,7 @@ export default function AgentLoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 space-y-2 text-center text-sm text-gray-600 -mb-4">
           <div>
             חזרה להתחברות מנהל?{' '}
             <Link 
@@ -230,6 +230,15 @@ export default function AgentLoginPage() {
               aria-label="חזרה להתחברות מנהל"
             >
               התחבר כאן
+            </Link>
+          </div>
+          <div className="pt-3 border-t border-gray-300/50">
+            <Link 
+              to="/home" 
+              className="text-sky-600 hover:text-sky-700 font-medium focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+              aria-label="חזרה לדף הבית"
+            >
+              ← חזרה לדף הבית
             </Link>
           </div>
         </div>

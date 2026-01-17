@@ -29,6 +29,7 @@ import BusinessInfoPage from './pages/BusinessInfoPage';
 import BusinessDataPage from './pages/BusinessDataPage';
 import AccessibilityStatementPage from './pages/AccessibilityStatementPage';
 import CookiesPolicyPage from './pages/CookiesPolicyPage';
+import HomePage from './pages/HomePage';
 
 function App() {
   return (
@@ -38,7 +39,8 @@ function App() {
         <CookieConsent />
         <AccessibilityWidget />
         <Routes>
-        <Route path="/" element={<Navigate to="/login/manager" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/login/manager" element={<LoginPage />} />
         <Route path="/login/agent" element={<AgentLoginPage />} />
         <Route path="/admin" element={<AdminLoginPage />} />
@@ -99,7 +101,7 @@ function App() {
           <Route path="locations" element={<LocationsPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login/manager" replace />} />
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
       </Router>
     </AriaLiveProvider>
