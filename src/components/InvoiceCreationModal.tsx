@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 import { invoiceAPI, type CreateInvoiceRequest } from '../services/api';
@@ -23,6 +23,8 @@ export default function InvoiceCreationModal({
   const [allocationNumber, setAllocationNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showAllocationHelp, setShowAllocationHelp] = useState(false);
+  const helpTooltipRef = useRef<HTMLDivElement>(null);
 
   // Check if allocation number is required
   const isAllocationNumberRequired = (): boolean => {
@@ -45,8 +47,30 @@ export default function InvoiceCreationModal({
       setCreditCardLast4('');
       setAllocationNumber('');
       setError('');
+      setShowAllocationHelp(false);
     }
   }, [isOpen]);
+
+  // Handle clicks outside the help tooltip
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showAllocationHelp && helpTooltipRef.current && !helpTooltipRef.current.contains(event.target as Node)) {
+        setShowAllocationHelp(false);
+      }
+    };
+
+    if (showAllocationHelp) {
+      // Use a small delay to avoid immediate closing when opening
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showAllocationHelp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,9 +217,59 @@ export default function InvoiceCreationModal({
 
           {/* Allocation Number */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              מספר הקצאה {allocationRequired && <span className="text-red-500">*</span>}
-            </label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                מספר הקצאה {allocationRequired && <span className="text-red-500">*</span>}
+              </label>
+              <div ref={helpTooltipRef} className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowAllocationHelp(!showAllocationHelp);
+                  }}
+                  className="w-5 h-5 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-600 flex items-center justify-center text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                  aria-label="מידע נוסף על מספר הקצאה"
+                  aria-expanded={showAllocationHelp}
+                >
+                  ?
+                </button>
+                {showAllocationHelp && (
+                  <>
+                    {/* Bridge area to prevent gap */}
+                    <div className="absolute right-0 top-5 w-full h-2" />
+                    <div 
+                      className="absolute right-0 top-6 z-50 w-72 p-3 bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-gray-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {(() => {
+                        const doneDate = order.doneAt ? new Date(order.doneAt) : new Date();
+                        const year = doneDate.getFullYear();
+                        const month = doneDate.getMonth() + 1;
+                        const threshold = (year < 2026 || (year === 2026 && month < 6)) ? 10000 : 5000;
+                        return (
+                          <>
+                            <p className="mb-2 text-gray-700">
+                              הזמנות עם סכום כולל של {formatPrice(threshold)} ומעלה נדרשות למספר הקצאה.
+                            </p>
+                            <a
+                              href="https://www.youtube.com/watch?v=rQKsFJ9ug1g&t=139s"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 hover:text-indigo-800 underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              קישור לתהליך הנפקת מספר הקצאה
+                            </a>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
             <input
               type="text"
               value={allocationNumber}

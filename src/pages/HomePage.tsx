@@ -18,7 +18,7 @@ export default function HomePage() {
             <img 
               src="/logo.png" 
               alt="אורדרית - מערכת ניהול הזמנות" 
-              className="h-40 w-auto rounded-3xl shadow-2xl shadow-purple-500/20"
+              className="h-48 md:h-56 w-auto rounded-3xl shadow-2xl shadow-purple-500/20 px-8"
             />
           </div>
           <h1 className="text-5xl font-bold text-gray-800 mb-4">מערכת ניהול הזמנות</h1>
