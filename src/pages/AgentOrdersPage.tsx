@@ -772,6 +772,15 @@ export default function AgentOrdersPage() {
               </button>
             </div>
 
+            <div className="glass-card bg-blue-50/50 border-blue-200 rounded-xl p-3 mb-4 text-blue-700 text-sm">
+              <div className="flex items-start gap-2">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>קישור להזמנה יהיה תקף למשך שבוע אחד ויפקע לאחר מכן</span>
+              </div>
+            </div>
+
             {error && (
               <div className="glass-card bg-red-50/50 border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
                 {error}
