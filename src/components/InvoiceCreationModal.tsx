@@ -140,7 +140,7 @@ export default function InvoiceCreationModal({
       isOpen={isOpen}
       onClose={onClose}
       title="צור חשבונית"
-      description={`הזמנה #${order.id}`}
+      description={`הזמנה #${order.id.slice(0, 8)}`}
       size="md"
       dir="rtl"
     >

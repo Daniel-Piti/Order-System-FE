@@ -128,11 +128,9 @@ export default function StorePage() {
   useEffect(() => {
     const fetchManagerId = async () => {
       setError('');
-      const orderIdNum = orderId ? parseInt(orderId, 10) : undefined;
-      if (orderId && (orderIdNum === undefined || isNaN(orderIdNum))) return;
       
       // Edit mode: Load order via authenticated API
-      if (isEditMode && orderIdNum) {
+      if (isEditMode && orderId) {
         try {
           setIsLoading(true);
           const token = localStorage.getItem('authToken');
@@ -148,9 +146,9 @@ export default function StorePage() {
           // Load order based on user role
           let fetchedOrder: Order;
           if (userRole === 'agent') {
-            fetchedOrder = await agentAPI.getOrderById(orderIdNum);
+            fetchedOrder = await agentAPI.getOrderById(orderId);
           } else if (userRole === 'manager') {
-            fetchedOrder = await orderAPI.getOrderById(orderIdNum);
+            fetchedOrder = await orderAPI.getOrderById(orderId);
           } else {
             setError('אין הרשאה לערוך הזמנות');
             navigate('/login/manager');
@@ -207,10 +205,10 @@ export default function StorePage() {
       } else if (managerIdParam) {
         setManagerId(managerIdParam);
         // Don't set loading to false here - fetchProducts will handle loading state
-      } else if (orderIdNum) {
+      } else if (orderId) {
         try {
           setIsLoading(true);
-          const fetchedOrder = await publicAPI.orders.getById(orderIdNum);
+          const fetchedOrder = await publicAPI.orders.getById(orderId);
           setOrder(fetchedOrder);
           setManagerId(fetchedOrder.managerId);
           // Don't set loading to false here - fetchProducts will handle loading state
@@ -259,9 +257,8 @@ export default function StorePage() {
       
       // If orderId exists, use order-specific endpoint (with price overrides) - returns all products
       // Otherwise use regular store endpoint with pagination
-      const orderIdNum = orderId ? parseInt(orderId, 10) : undefined;
-      if (orderIdNum && !isNaN(orderIdNum)) {
-        const allProducts = await publicAPI.products.getAllByOrderId(orderIdNum);
+      if (orderId) {
+        const allProducts = await publicAPI.products.getAllByOrderId(orderId);
         
         // In edit mode, update cart items with new product prices
         if (isEditMode) {

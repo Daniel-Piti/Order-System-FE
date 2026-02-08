@@ -15,11 +15,11 @@ export default function AgentOrdersPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState('');
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
-  const [copiedOrderId, setCopiedOrderId] = useState<number | null>(null);
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
   const [copiedPhoneNumber, setCopiedPhoneNumber] = useState<string | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<number | null>(null);
+  const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
   const [discountOrder, setDiscountOrder] = useState<Order | null>(null);
   const [discountValue, setDiscountValue] = useState('');
   const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
@@ -94,10 +94,8 @@ export default function AgentOrdersPage() {
   useEffect(() => {
     const orderIdFromUrl = searchParams.get('orderId');
     if (orderIdFromUrl && !viewingOrder) {
-      const orderIdNum = parseInt(orderIdFromUrl, 10);
-      if (isNaN(orderIdNum)) return;
       // First check if order is in current page
-      const orderToView = orders.find(o => o.id === orderIdNum);
+      const orderToView = orders.find(o => o.id === orderIdFromUrl);
       if (orderToView) {
         setViewingOrder(orderToView);
         // Clear the URL parameter after opening
@@ -106,7 +104,7 @@ export default function AgentOrdersPage() {
         setSearchParams(newSearchParams, { replace: true });
       } else if (orders.length > 0) {
         // Order not in current page, fetch it by ID
-        agentAPI.getOrderById(orderIdNum)
+        agentAPI.getOrderById(orderIdFromUrl)
           .then((fetchedOrder) => {
             setViewingOrder(fetchedOrder);
             // Clear the URL parameter after opening
@@ -160,7 +158,7 @@ export default function AgentOrdersPage() {
     setError('');
   };
 
-  const handleCopyLink = async (orderId: number) => {
+  const handleCopyLink = async (orderId: string) => {
     try {
       // Get base URL from environment or use current origin
       const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
@@ -191,7 +189,7 @@ export default function AgentOrdersPage() {
     }
   };
 
-  const handleCancelOrder = async (orderId: number) => {
+  const handleCancelOrder = async (orderId: string) => {
     setCancellingOrderId(orderId);
     setError('');
     try {
@@ -556,7 +554,7 @@ export default function AgentOrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
                   {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
                 </span>
-                <p className="text-xs font-mono text-gray-600 font-medium">#{order.id}</p>
+                <p className="text-xs font-mono text-gray-600 font-medium">#{order.id.slice(0, 8)}</p>
               </div>
 
               {/* Customer Info - Fixed height */}
@@ -956,7 +954,7 @@ export default function AgentOrdersPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-gray-800">פרטי הזמנה</h2>
-                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.id}</p>
+                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.id.slice(0, 8)}</p>
               </div>
               <button
                 onClick={closeViewModal}

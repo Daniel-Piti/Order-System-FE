@@ -331,25 +331,25 @@ export const agentAPI = {
     return response.data;
   },
 
-  getOrderById: async (orderId: number): Promise<Order> => {
+  getOrderById: async (orderId: string): Promise<Order> => {
     const response = await api.get<Order>(`/agent/orders/${orderId}`);
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<number> => {
-    const response = await api.post<number>('/agent/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<string> => {
+    const response = await api.post<string>('/agent/orders', data);
     return response.data;
   },
 
-  markOrderCancelled: async (orderId: number): Promise<void> => {
+  markOrderCancelled: async (orderId: string): Promise<void> => {
     await api.put(`/agent/orders/${orderId}/status/cancelled`);
   },
 
-  updateOrder: async (orderId: number, data: UpdateOrderRequest): Promise<void> => {
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
     await api.put(`/agent/orders/${orderId}`, data);
   },
 
-  updateOrderDiscount: async (orderId: number, discount: number): Promise<void> => {
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
     await api.put(`/agent/orders/${orderId}/discount`, { discount });
   },
 };
@@ -461,7 +461,7 @@ export interface CustomerRequest {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   orderSource: 'MANAGER' | 'AGENT' | 'PUBLIC';
   managerId: string;
   agentId: number | null;
@@ -546,29 +546,29 @@ export const orderAPI = {
     return response.data;
   },
 
-  getOrderById: async (orderId: number): Promise<Order> => {
+  getOrderById: async (orderId: string): Promise<Order> => {
     const response = await api.get<Order>(`/orders/${orderId}`);
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<number> => {
-    const response = await api.post<number>('/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<string> => {
+    const response = await api.post<string>('/orders', data);
     return response.data;
   },
 
-  markOrderDone: async (orderId: number): Promise<void> => {
+  markOrderDone: async (orderId: string): Promise<void> => {
     await api.put(`/orders/${orderId}/status/done`);
   },
 
-  markOrderCancelled: async (orderId: number): Promise<void> => {
+  markOrderCancelled: async (orderId: string): Promise<void> => {
     await api.put(`/orders/${orderId}/status/cancelled`);
   },
 
-  updateOrder: async (orderId: number, data: UpdateOrderRequest): Promise<void> => {
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
     await api.put(`/orders/${orderId}`, data);
   },
 
-  updateOrderDiscount: async (orderId: number, discount: number): Promise<void> => {
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
     await api.put(`/orders/${orderId}/discount`, { discount });
   },
 
@@ -664,7 +664,7 @@ export const publicAPI = {
     },
 
     // Get all products for a specific order (with overrides applied) - no pagination, no category filter
-    getAllByOrderId: async (orderId: number): Promise<Product[]> => {
+    getAllByOrderId: async (orderId: string): Promise<Product[]> => {
       const response = await axios.get<Product[]>(
         `${API_BASE_URL}/public/products/order/${orderId}`
       );
@@ -696,20 +696,20 @@ export const publicAPI = {
 
   orders: {
     // Get minimal order info (for customer viewing via link)
-    getById: async (orderId: number): Promise<OrderPublic> => {
+    getById: async (orderId: string): Promise<OrderPublic> => {
       const response = await axios.get<OrderPublic>(`${API_BASE_URL}/public/orders/${orderId}`);
       return response.data;
     },
 
     // Place an order (for existing orders)
-    placeOrder: async (orderId: number, request: PlaceOrderRequest): Promise<string> => {
+    placeOrder: async (orderId: string, request: PlaceOrderRequest): Promise<string> => {
       const response = await axios.put<string>(`${API_BASE_URL}/public/orders/${orderId}/place`, request);
       return response.data;
     },
 
     // Create and place a public order (for public store - no existing order)
-    createAndPlacePublicOrder: async (managerId: string, request: PlaceOrderRequest): Promise<number> => {
-      const response = await axios.post<number>(`${API_BASE_URL}/public/orders/manager/${managerId}/create`, request);
+    createAndPlacePublicOrder: async (managerId: string, request: PlaceOrderRequest): Promise<string> => {
+      const response = await axios.post<string>(`${API_BASE_URL}/public/orders/manager/${managerId}/create`, request);
       return response.data;
     },
   },
@@ -747,14 +747,14 @@ export const invoiceAPI = {
     return response.data;
   },
 
-  getInvoicesByOrderIds: async (orderIds: number[]): Promise<Record<string, string>> => {
+  getInvoicesByOrderIds: async (orderIds: string[]): Promise<Record<string, string>> => {
     const response = await api.post<Record<string, string>>('/invoices/by-order-ids', orderIds);
     return response.data;
   },
 };
 
 export interface CreateInvoiceRequest {
-  orderId: number;
+  orderId: string;
   paymentMethod: 'CREDIT_CARD' | 'CASH';
   paymentProof: string;
   allocationNumber?: string | null;

@@ -194,8 +194,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
       }));
 
       // Edit mode: Update existing order (only location, products, notes)
-      const orderIdNum = orderId ? parseInt(orderId, 10) : undefined;
-      if (isEditMode && orderIdNum && !isNaN(orderIdNum)) {
+      if (isEditMode && orderId) {
         const userRole = localStorage.getItem('userRole');
         const updateRequest: UpdateOrderRequest = {
           pickupLocationId: selectedLocationId!,
@@ -204,9 +203,9 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
         };
 
         if (userRole === 'agent') {
-          await agentAPI.updateOrder(orderIdNum, updateRequest);
+          await agentAPI.updateOrder(orderId, updateRequest);
         } else if (userRole === 'manager') {
-          await orderAPI.updateOrder(orderIdNum, updateRequest);
+          await orderAPI.updateOrder(orderId, updateRequest);
         } else {
           throw new Error('אין הרשאה לעדכן הזמנות');
         }
@@ -237,8 +236,8 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
 
       // If orderId exists, place existing order
       // Otherwise, create and place new public order
-      if (orderIdNum && !isNaN(orderIdNum)) {
-        await publicAPI.orders.placeOrder(orderIdNum, orderRequest);
+      if (orderId) {
+        await publicAPI.orders.placeOrder(orderId, orderRequest);
       } else {
         // Public store - create and place new order with PUBLIC source
         await publicAPI.orders.createAndPlacePublicOrder(userId, orderRequest);
