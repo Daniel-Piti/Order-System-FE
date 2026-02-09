@@ -727,7 +727,7 @@ export default function OrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
                   {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
                 </span>
-                <p className="text-xs font-mono text-gray-600 font-medium">#{order.id.slice(0, 8)}</p>
+                <p className="text-xs font-mono text-gray-600 font-medium">#{order.referenceId}</p>
               </div>
 
               {/* Customer Info - Fixed height */}
@@ -1204,7 +1204,7 @@ export default function OrdersPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-gray-800">פרטי הזמנה</h2>
-                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.id.slice(0, 8)}</p>
+                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.referenceId} <span className="text-gray-500">(מספר אסמכתא)</span></p>
               </div>
               <button
                 onClick={closeViewModal}
@@ -1385,8 +1385,8 @@ export default function OrdersPage() {
               <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע נוסף</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">מספר הזמנה</span>
-                  <span className="text-xs font-mono font-bold text-gray-800">{viewingOrder.id}</span>
+                  <span className="text-sm text-gray-600">מספר אסמכתא</span>
+                  <span className="text-xs font-mono font-bold text-gray-800">{viewingOrder.referenceId}</span>
                 </div>
                 <div className="pt-2 border-t border-gray-200/50 space-y-2">
                 <div className="flex items-center justify-between">

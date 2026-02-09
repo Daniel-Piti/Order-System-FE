@@ -462,6 +462,7 @@ export interface CustomerRequest {
 
 export interface Order {
   id: string;
+  referenceId: number;
   orderSource: 'MANAGER' | 'AGENT' | 'PUBLIC';
   managerId: string;
   agentId: number | null;
@@ -491,6 +492,7 @@ export interface Order {
 // Minimal public order DTO (for order links)
 export interface OrderPublic {
   managerId: string;
+  referenceId: number;
   status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
   customerId: string | null;
 }
