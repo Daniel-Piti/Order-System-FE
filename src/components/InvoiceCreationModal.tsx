@@ -206,7 +206,8 @@ export default function InvoiceCreationModal({
                     month: '2-digit',
                     day: '2-digit'
                   });
-                  const priceWithoutVat = (order.totalPrice / 1.18).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                  const vatRate = (100 + order.vat) / 100;
+                  const priceWithoutVat = (order.totalPrice / vatRate).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                   return `מספר אסמכתה: ${order.referenceId}\nמספר מזהה של לקוח: ${order.customerStateId || 'לא זמין'}\nתאריך: ${currentDate}\nסכום העסקה ללא מעמ: ${priceWithoutVat} ₪`;
                 })()}
                 className="w-full px-3 py-2 text-sm font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg font-mono resize-none focus:outline-none"

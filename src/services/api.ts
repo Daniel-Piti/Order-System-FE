@@ -481,6 +481,7 @@ export interface Order {
   productsVersion: number;
   totalPrice: number;
   discount: number;
+  vat: number;
   linkExpiresAt: string;
   notes: string;
   placedAt: string | null;
