@@ -5,6 +5,7 @@ import { agentAPI, publicAPI, type Customer, type Agent } from '../services/api'
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import type { ProductListItem, CustomerListItem, ProductOverride, ProductOverrideWithPrice } from '../utils/types';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 const MAX_PRICE = 1_000_000;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -46,6 +47,9 @@ export default function AgentOverridesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
+  const { backdropProps: addModalBackdropProps, contentProps: addModalContentProps } = useModalBackdrop(() => setIsAddModalOpen(false));
+  const { backdropProps: editModalBackdropProps, contentProps: editModalContentProps } = useModalBackdrop(() => setIsEditModalOpen(false));
+  const { backdropProps: deleteModalBackdropProps, contentProps: deleteModalContentProps } = useModalBackdrop(() => setOverrideToDelete(null));
 
   useEffect(() => {
     fetchAgentInfo();
@@ -568,16 +572,11 @@ export default function AgentOverridesPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseModal();
-            }
-          }}
+          {...addModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...addModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף מחיר מיוחד</h2>
@@ -761,16 +760,11 @@ export default function AgentOverridesPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseEditModal();
-            }
-          }}
+          {...editModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...editModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">עדכן מחיר מיוחד</h2>
@@ -907,16 +901,11 @@ export default function AgentOverridesPage() {
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              setOverrideToDelete(null);
-            }
-          }}
+          {...deleteModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteModalContentProps}
           >
             <h2 className="text-lg font-bold text-gray-800 mb-3">מחק מחיר מיוחד</h2>
             <p className="text-sm text-gray-600">

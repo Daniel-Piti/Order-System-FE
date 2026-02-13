@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AddLocationModal from '../components/AddLocationModal';
 import EditLocationModal from '../components/EditLocationModal';
 import { managerAPI, publicAPI } from '../services/api';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -26,6 +27,10 @@ export default function LocationsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const navigate = useNavigate();
+  const { backdropProps: deleteModalBackdropProps, contentProps: deleteModalContentProps } = useModalBackdrop(() => {
+    setLocationToDelete(null);
+    setDeleteError('');
+  });
 
   useEffect(() => {
     fetchLocations();
@@ -310,17 +315,11 @@ export default function LocationsPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              setLocationToDelete(null);
-              setDeleteError('');
-            }
-          }}
+          {...deleteModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteModalContentProps}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק סניף</h2>

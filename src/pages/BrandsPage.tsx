@@ -7,6 +7,7 @@ import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
 import SparkMD5 from 'spark-md5';
 import Spinner from '../components/Spinner';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 // Helper function to calculate MD5 hash of a file and return as Base64
 async function calculateFileMD5(file: File): Promise<string> {
@@ -81,6 +82,9 @@ export default function BrandsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [managerId, setManagerId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { backdropProps: addModalBackdropProps, contentProps: addModalContentProps } = useModalBackdrop(() => setIsAddModalOpen(false));
+  const { backdropProps: editModalBackdropProps, contentProps: editModalContentProps } = useModalBackdrop(() => setIsEditModalOpen(false));
+  const { backdropProps: deleteModalBackdropProps, contentProps: deleteModalContentProps } = useModalBackdrop(() => setBrandToDelete(null));
 
   useEffect(() => {
     fetchManagerId();
@@ -779,16 +783,11 @@ export default function BrandsPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseModal();
-            }
-          }}
+          {...addModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...addModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף מותג חדש</h2>
@@ -941,16 +940,11 @@ export default function BrandsPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseEditModal();
-            }
-          }}
+          {...editModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...editModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך מותג</h2>
@@ -1130,16 +1124,11 @@ export default function BrandsPage() {
           className="fixed top-0 left-0 right-0 bottom-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
           dir="rtl" 
           style={{ position: 'fixed' }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              setBrandToDelete(null);
-            }
-          }}
+          {...deleteModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteModalContentProps}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק מותג</h2>

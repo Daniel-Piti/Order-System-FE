@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { managerAPI, businessAPI } from '../services/api';
 import type { Manager, Business } from '../services/api';
 import AddManagerModal from '../components/AddManagerModal';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 interface ManagerWithBusiness extends Manager {
   business?: Business;
@@ -115,6 +116,10 @@ export default function AdminDashboard() {
     setShowResetConfirmation(false);
     setResetConfirmText('');
   };
+
+  const { backdropProps: viewManagerBackdropProps, contentProps: viewManagerContentProps } = useModalBackdrop(() => setSelectedManager(null));
+  const { backdropProps: deleteManagerBackdropProps, contentProps: deleteManagerContentProps } = useModalBackdrop(handleCloseDeleteModal);
+  const { backdropProps: resetPasswordBackdropProps, contentProps: resetPasswordContentProps } = useModalBackdrop(handleCloseResetPasswordModal);
 
   const handleBackToPasswordInput = () => {
     setShowResetConfirmation(false);
@@ -375,16 +380,11 @@ export default function AdminDashboard() {
       {selectedManager && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              setSelectedManager(null);
-            }
-          }}
+          {...viewManagerBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20"
-            onClick={(e) => e.stopPropagation()}
+            {...viewManagerContentProps}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Manager & Business Details</h2>
@@ -553,16 +553,11 @@ export default function AdminDashboard() {
       {managerToDelete && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseDeleteModal();
-            }
-          }}
+          {...deleteManagerBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteManagerContentProps}
           >
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-red-100">
@@ -659,16 +654,11 @@ export default function AdminDashboard() {
       {managerToResetPassword && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseResetPasswordModal();
-            }
-          }}
+          {...resetPasswordBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 w-full max-w-md bg-white/85"
-            onClick={(e) => e.stopPropagation()}
+            {...resetPasswordContentProps}
           >
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-indigo-100">

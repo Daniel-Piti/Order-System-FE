@@ -11,6 +11,7 @@ import {
   validatePhoneNumberDigitsOnly,
   validateDiscountPercentage,
 } from '../utils/validation';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 const MAX_CUSTOMER_NAME_LENGTH = 50;
 const MAX_CUSTOMER_PHONE_LENGTH = 10;
@@ -57,6 +58,9 @@ export default function CustomersPage() {
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { backdropProps: addModalBackdropProps, contentProps: addModalContentProps } = useModalBackdrop(() => setIsAddModalOpen(false));
+  const { backdropProps: editModalBackdropProps, contentProps: editModalContentProps } = useModalBackdrop(() => setIsEditModalOpen(false));
+  const { backdropProps: deleteModalBackdropProps, contentProps: deleteModalContentProps } = useModalBackdrop(() => setIsDeleteModalOpen(false));
 
   useEffect(() => {
     fetchCustomers();
@@ -740,16 +744,11 @@ export default function CustomersPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseModal();
-            }
-          }}
+          {...addModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...addModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף לקוח חדש</h2>
@@ -978,16 +977,11 @@ export default function CustomersPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseEditModal();
-            }
-          }}
+          {...editModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...editModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך לקוח</h2>
@@ -1214,17 +1208,12 @@ export default function CustomersPage() {
       {isDeleteModalOpen && customerToDelete && (
         <div 
           className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseDeleteModal();
-            }
-          }}
+          {...deleteModalBackdropProps}
         >
           <div 
             className="bg-white/85 backdrop-blur-xl rounded-3xl p-6 max-w-md w-full shadow-2xl border border-white/20" 
             dir="rtl"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteModalContentProps}
           >
             <h2 className="text-2xl font-bold text-gray-800 mb-4">מחק לקוח</h2>
             

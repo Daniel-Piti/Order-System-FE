@@ -1,5 +1,6 @@
 import { useEffect, useRef, ReactNode } from 'react';
 import { useModalFocus } from '../hooks/useFocusManagement';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 interface AccessibleModalProps {
   isOpen: boolean;
@@ -36,6 +37,9 @@ export default function AccessibleModal({
 
   // Use focus management hook - trap focus when modal is open
   useModalFocus(modalRef, isOpen);
+
+  // Use backdrop click handler hook
+  const { backdropProps, contentProps } = useModalBackdrop(onClose);
 
   // Focus close button when modal opens
   useEffect(() => {
@@ -93,17 +97,12 @@ export default function AccessibleModal({
       aria-modal="true"
       aria-labelledby="modal-title"
       aria-describedby={description ? 'modal-description' : undefined}
-      onClick={(e) => {
-        // Close on backdrop click
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      {...backdropProps}
     >
       <div
         ref={modalRef}
         className={`glass-card rounded-3xl p-6 w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-2xl border border-white/20 ${className}`}
-        onClick={(e) => e.stopPropagation()}
+        {...contentProps}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

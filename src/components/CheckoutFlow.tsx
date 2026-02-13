@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { publicAPI, orderAPI, agentAPI } from '../services/api';
 import type { Location, ProductDataForOrder, OrderPublic, Order, UpdateOrderRequest } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 interface CheckoutFlowProps {
   orderId?: string; // Optional - if not provided, we'll create a new order
@@ -27,6 +28,7 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
   const isCustomerLinked = order?.customerId != null;
   // In edit mode, start with pickup-location step (no customer info editing)
   const [step, setStep] = useState<Step>(isEditMode || isCustomerLinked ? 'pickup-location' : 'customer-info');
+  const { backdropProps, contentProps } = useModalBackdrop(onClose);
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -278,16 +280,11 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" 
       dir="rtl"
-      onClick={(e) => {
-        // Close on backdrop click
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      {...backdropProps}
     >
       <div 
         className="backdrop-blur-xl bg-white/95 rounded-3xl p-6 md:p-8 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/40"
-        onClick={(e) => e.stopPropagation()}
+        {...contentProps}
       >
         {/* Header */}
         <div className="flex items-center justify-center mb-6 relative">

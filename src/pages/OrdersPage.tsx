@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Spinner from '../components/Spinner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer, type Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -31,6 +32,11 @@ export default function OrdersPage() {
   const [discountValue, setDiscountValue] = useState<string>('');
   const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
   const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
+  const modalBackdropRef = useRef<HTMLDivElement>(null);
+  const mousedownOnBackdropRef = useRef(false);
+  const { backdropProps: createModalBackdropProps, contentProps: createModalContentProps } = useModalBackdrop(() => setShowCreateModal(false));
+  const { backdropProps: cancelConfirmBackdropProps, contentProps: cancelConfirmContentProps } = useModalBackdrop(() => setShowCancelConfirm(false));
+  const { backdropProps: discountModalBackdropProps, contentProps: discountModalContentProps } = useModalBackdrop(() => setDiscountOrder(null));
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -727,7 +733,7 @@ export default function OrdersPage() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
                   {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
                 </span>
-                <p className="text-xs font-mono text-gray-600 font-medium">#{order.referenceId}</p>
+                <p className="text-xs font-mono text-gray-600 font-medium">#{order.id}</p>
               </div>
 
               {/* Customer Info - Fixed height */}
@@ -988,17 +994,12 @@ export default function OrdersPage() {
       {showCreateModal && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              closeCreateModal();
-            }
-          }}
+          {...createModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg bg-white/85" 
             dir="rtl"
-            onClick={(e) => e.stopPropagation()}
+            {...createModalContentProps}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-800">צור הזמנה חדשה</h2>
@@ -1193,18 +1194,39 @@ export default function OrdersPage() {
       {/* View Order Modal */}
       {viewingOrder && (
         <div
+          ref={modalBackdropRef}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={closeViewModal}
+          onMouseDown={(e) => {
+            // Track if mousedown started on the backdrop
+            if (e.target === e.currentTarget) {
+              mousedownOnBackdropRef.current = true;
+            } else {
+              mousedownOnBackdropRef.current = false;
+            }
+          }}
+          onClick={(e) => {
+            // Only close if clicking directly on the backdrop AND mousedown started on backdrop
+            if (e.target === e.currentTarget && mousedownOnBackdropRef.current) {
+              closeViewModal();
+            }
+            // Reset the flag after click
+            mousedownOnBackdropRef.current = false;
+          }}
         >
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white/85"
             onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              // Clear the backdrop flag if mousedown is on modal content
+              mousedownOnBackdropRef.current = false;
+            }}
             dir="rtl"
           >
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-gray-800">פרטי הזמנה</h2>
-                <p className="text-sm text-gray-600">הזמנה #{viewingOrder.referenceId} <span className="text-gray-500">(מספר אסמכתא)</span></p>
+                <p className="text-sm text-gray-600">מספר מזהה #{viewingOrder.id}</p>
               </div>
               <button
                 onClick={closeViewModal}
@@ -1380,6 +1402,18 @@ export default function OrdersPage() {
               </div>
             </div>
 
+            {/* Notes */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">הערות</h3>
+              <div className="glass-card rounded-xl p-4">
+                {viewingOrder.notes && viewingOrder.notes.trim() ? (
+                  <p className="text-sm font-bold text-orange-600 whitespace-pre-wrap break-words">{viewingOrder.notes}</p>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">אין הערות</p>
+                )}
+              </div>
+            </div>
+
             {/* Link Info & Dates */}
             <div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע נוסף</h3>
@@ -1494,11 +1528,11 @@ export default function OrdersPage() {
       {showCancelConfirm && orderIdPendingCancel && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
+          {...cancelConfirmBackdropProps}
         >
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-red-100"
-            onClick={(e) => e.stopPropagation()}
+            {...cancelConfirmContentProps}
             dir="rtl"
           >
             <div className="flex items-center justify-between mb-4">
@@ -1548,17 +1582,11 @@ export default function OrdersPage() {
       {discountOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onClick={() => {
-            if (!isUpdatingDiscount) {
-              setDiscountOrder(null);
-              setDiscountValue('');
-              setDiscountMode('number');
-            }
-          }}
+          {...discountModalBackdropProps}
         >
           <div
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 shadow-xl border border-purple-100"
-            onClick={(e) => e.stopPropagation()}
+            {...discountModalContentProps}
             dir="rtl"
           >
             <div className="flex items-center justify-between mb-4">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useModalFocus } from '../hooks/useFocusManagement';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import type { Product, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -33,6 +34,7 @@ export default function ProductDetailModal({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantityInput, setQuantityInput] = useState('1');
   const isUpdatingCartRef = useRef(false);
+  const { backdropProps, contentProps } = useModalBackdrop(onClose);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -196,7 +198,7 @@ export default function ProductDetailModal({
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-gradient-to-br from-black/40 via-black/50 to-black/40 backdrop-blur-xl z-50 transition-opacity duration-300"
-        onClick={onClose}
+        {...backdropProps}
       />
 
       {/* Modal */}
@@ -214,7 +216,7 @@ export default function ProductDetailModal({
             boxShadow: '0 20px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.8) inset, 0 1px 0 rgba(255, 255, 255, 0.9) inset',
             background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%)',
           }}
-          onClick={(e) => e.stopPropagation()}
+          {...contentProps}
         >
           {/* Close Button */}
           <button
@@ -395,7 +397,7 @@ export default function ProductDetailModal({
 
                     <button
                       onClick={handleAddToCart}
-                      className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
+                      className="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 hover:shadow-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

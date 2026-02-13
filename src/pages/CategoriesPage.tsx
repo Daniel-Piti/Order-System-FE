@@ -6,6 +6,7 @@ import type { Category } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithCategory } from '../utils/types';
 import Spinner from '../components/Spinner';
+import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,6 +30,9 @@ export default function CategoriesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [managerId, setManagerId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { backdropProps: addModalBackdropProps, contentProps: addModalContentProps } = useModalBackdrop(() => setIsAddModalOpen(false));
+  const { backdropProps: editModalBackdropProps, contentProps: editModalContentProps } = useModalBackdrop(() => setIsEditModalOpen(false));
+  const { backdropProps: deleteModalBackdropProps, contentProps: deleteModalContentProps } = useModalBackdrop(() => setCategoryToDelete(null));
 
   useEffect(() => {
     fetchManagerId();
@@ -529,16 +533,11 @@ export default function CategoriesPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseModal();
-            }
-          }}
+          {...addModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...addModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">הוסף קטגוריה חדשה</h2>
@@ -623,16 +622,11 @@ export default function CategoriesPage() {
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
           dir="rtl" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              handleCloseEditModal();
-            }
-          }}
+          {...editModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90 backdrop-blur-xl shadow-xl"
-            onClick={(e) => e.stopPropagation()}
+            {...editModalContentProps}
           >
             <div className="modal-header">
               <h2 className="modal-header-title">ערוך קטגוריה</h2>
@@ -716,17 +710,12 @@ export default function CategoriesPage() {
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" 
           style={{ margin: 0, top: 0 }}
-          onClick={(e) => {
-            // Close on backdrop click
-            if (e.target === e.currentTarget) {
-              setCategoryToDelete(null);
-            }
-          }}
+          {...deleteModalBackdropProps}
         >
           <div 
             className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/90" 
             dir="rtl"
-            onClick={(e) => e.stopPropagation()}
+            {...deleteModalContentProps}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">מחק קטגוריה</h2>

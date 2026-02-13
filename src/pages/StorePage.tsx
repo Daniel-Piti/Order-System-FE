@@ -1047,7 +1047,7 @@ export default function StorePage() {
                       <button
                         onClick={() => !showSuccess && addToCart(product, getPendingQuantity(product.id))}
                         disabled={showSuccess}
-                        className="flex-1 font-semibold py-1.5 px-2 sm:px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-purple-600 text-white hover:bg-purple-700 hover:shadow-xl hover:scale-105 transition-all duration-200 text-sm"
+                        className="flex-1 font-semibold py-1.5 px-2 sm:px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-purple-600 text-white hover:bg-purple-700 hover:shadow-xl transition-all duration-200 text-sm"
                       >
                         {/* Purple background (always there) */}
                         <div className="absolute inset-0 bg-purple-600 transition-opacity duration-500"></div>
