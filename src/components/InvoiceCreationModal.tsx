@@ -53,23 +53,27 @@ export default function InvoiceCreationModal({
 
   // Handle clicks outside the help tooltip
   useEffect(() => {
+    if (!showAllocationHelp) return;
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (showAllocationHelp && helpTooltipRef.current && !helpTooltipRef.current.contains(event.target as Node)) {
-        setShowAllocationHelp(false);
+      if (helpTooltipRef.current) {
+        const target = event.target as Node;
+        // Check if click is outside the tooltip container (button + popup)
+        if (!helpTooltipRef.current.contains(target)) {
+          setShowAllocationHelp(false);
+        }
       }
     };
 
-    if (showAllocationHelp) {
-      // Use a small delay to avoid immediate closing when opening
-      const timeoutId = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 100);
+    // Use a small delay to avoid immediate closing when opening
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside, true);
+    }, 100);
 
-      return () => {
-        clearTimeout(timeoutId);
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside, true);
+    };
   }, [showAllocationHelp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -190,6 +194,28 @@ export default function InvoiceCreationModal({
             </select>
           </div>
 
+          {/* Required Data for Tax Authority - Only shown when allocation is required */}
+          {allocationRequired && (
+            <div className="glass-card rounded-xl p-4 border border-gray-200/50">
+              <p className="text-sm font-bold text-gray-700 mb-2">נתונתים להנפקת מספר הקצאה</p>
+              <textarea
+                readOnly
+                value={(() => {
+                  const currentDate = new Date().toLocaleDateString('he-IL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                  });
+                  const priceWithoutVat = (order.totalPrice / 1.18).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                  return `מספר אסמכתה: ${order.referenceId}\nמספר מזהה של לקוח: ${order.customerStateId || 'לא זמין'}\nתאריך: ${currentDate}\nסכום העסקה ללא מעמ: ${priceWithoutVat} ₪`;
+                })()}
+                className="w-full px-3 py-2 text-sm font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg font-mono resize-none focus:outline-none"
+                rows={4}
+                dir="rtl"
+              />
+            </div>
+          )}
+
           {/* Credit Card Last 4 Digits - Only shown when CREDIT_CARD is selected */}
           {paymentMethod === 'CREDIT_CARD' && (
             <div>
@@ -242,6 +268,7 @@ export default function InvoiceCreationModal({
                     <div 
                       className="absolute right-0 top-6 z-50 w-72 p-3 bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-gray-700"
                       onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                     >
                       {(() => {
                         const doneDate = order.doneAt ? new Date(order.doneAt) : new Date();
@@ -260,7 +287,7 @@ export default function InvoiceCreationModal({
                               className="text-indigo-600 hover:text-indigo-800 underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              קישור לתהליך הנפקת מספר הקצאה
+                              קישור להסבר הנפקת מספר הקצאה
                             </a>
                           </>
                         );
