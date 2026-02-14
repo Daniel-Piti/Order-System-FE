@@ -61,6 +61,8 @@ export default function StorePage() {
   // Track which products just got added (for success animation)
   const [justAdded, setJustAdded] = useState<Set<string>>(new Set());
   const [hasLoadedCart, setHasLoadedCart] = useState(false);
+  // Store business (name + image) for header - from public API
+  const [storeBusiness, setStoreBusiness] = useState<{ name: string; imageUrl: string | null } | null>(null);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -245,6 +247,17 @@ export default function StorePage() {
       setBrands(data);
     } catch (err) {
       console.error('Failed to fetch brands:', err);
+    }
+  }, [managerId]);
+
+  const fetchStoreBusiness = useCallback(async () => {
+    if (!managerId) return;
+    try {
+      const data = await publicAPI.business.getByManagerId(managerId);
+      setStoreBusiness(data);
+    } catch (err: unknown) {
+      console.error('Failed to fetch store business:', err);
+      setStoreBusiness(null);
     }
   }, [managerId]);
 
@@ -434,8 +447,11 @@ export default function StorePage() {
       fetchProducts();
       fetchCategories();
       fetchBrands();
+      fetchStoreBusiness();
+    } else {
+      setStoreBusiness(null);
     }
-  }, [managerId, fetchProducts, fetchCategories, fetchBrands]);
+  }, [managerId, fetchProducts, fetchCategories, fetchBrands, fetchStoreBusiness]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -460,14 +476,14 @@ export default function StorePage() {
     // Show "Added!" feedback
     setJustAdded(prev => new Set(prev).add(product.id));
     
-    // Remove feedback after 2 seconds
+    // Remove feedback after a short moment
     setTimeout(() => {
       setJustAdded(prev => {
         const updated = new Set(prev);
         updated.delete(product.id);
         return updated;
       });
-    }, 2000);
+    }, 800);
   };
 
   const getPendingQuantity = (productId: string): number => {
@@ -666,120 +682,58 @@ export default function StorePage() {
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/40 border-b-2 border-white/40 shadow-lg">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center space-x-4">
-              <div className="text-4xl">🛍️</div>
-              <div>
-                <h1 className="text-2xl font-bold text-purple-600">
-                  החנות שלנו
-                </h1>
-                <p className="text-sm text-gray-600">עיין במוצרים שלנו</p>
-              </div>
-            </div>
-
-            {/* Cart Button */}
-            <button
-              onClick={() => setIsCartOpen(!isCartOpen)}
-              className="glass-button px-6 py-3 rounded-2xl font-semibold text-gray-800 flex items-center gap-2"
-            >
-              <span className="text-2xl">🛒</span>
-              <span>עגלה</span>
-              {getTotalItems() > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg">
-                  {getTotalItems()}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Filters and Controls Bar */}
-          <div className="mt-4 space-y-3">
-            {/* Mobile Filter Button - Full width on mobile */}
-            <div className="lg:hidden flex justify-center">
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-                className="glass-button px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-800 flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span>מסננים</span>
-              {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
-                <span className="bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {selectedCategories.length + selectedBrands.length}
-                </span>
-              )}
-            </button>
-            </div>
-
-            {/* Sort and Show Controls */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 items-center justify-center">
-            {/* Sort */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">מיין:</span>
+          <div className="grid grid-cols-3 items-center w-full gap-2 min-w-0">
+            {/* Burger (mobile only) - stick to right edge in RTL */}
+            <div className="flex justify-start min-w-0 lg:hidden">
               <button
-                onClick={() => handleSortChange('name')}
-                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
-                  sortBy === 'name'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'glass-button text-gray-800 hover:shadow-md'
-                }`}
+                onClick={() => setIsSidebarOpen(true)}
+                className="glass-button w-12 h-12 min-w-12 min-h-12 flex items-center justify-center rounded-xl text-gray-800 relative shrink-0"
+                aria-label="מסננים"
               >
-                <span>שם</span>
-                {sortBy === 'name' && (
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {sortDirection === 'ASC' ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    )}
-                  </svg>
-                )}
-              </button>
-              <button
-                onClick={() => handleSortChange('price')}
-                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1 ${
-                  sortBy === 'price'
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'glass-button text-gray-800 hover:shadow-md'
-                }`}
-              >
-                <span>מחיר</span>
-                {sortBy === 'price' && (
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    {sortDirection === 'ASC' ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    )}
-                  </svg>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {selectedCategories.length + selectedBrands.length}
+                  </span>
                 )}
               </button>
             </div>
-
-            {/* Show */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">הצג:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="glass-select pl-3 pr-8 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 cursor-pointer w-16 sm:w-20"
-                dir="ltr"
+            <div className="hidden lg:block" aria-hidden="true" />
+            {/* Logo - centered in middle column */}
+            <div className="flex items-center justify-center min-w-0">
+              {storeBusiness?.imageUrl ? (
+                <img
+                  src={storeBusiness.imageUrl}
+                  alt={storeBusiness.name}
+                  className="h-24 w-auto object-contain sm:h-28 max-w-full"
+                />
+              ) : (
+                <div className="text-3xl">🛍️</div>
+              )}
+            </div>
+            {/* Cart - stick to left edge in RTL */}
+            <div className="flex justify-end min-w-0">
+              <button
+                onClick={() => setIsCartOpen(!isCartOpen)}
+                className="glass-button w-12 h-12 min-w-12 min-h-12 flex items-center justify-center rounded-xl text-gray-800 relative shrink-0"
+                aria-label="עגלה"
               >
-                <option value={2}>2</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              </div>
+                <span className="text-xl leading-none">🛒</span>
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-7 w-7 flex items-center justify-center shadow-lg">
+                    {getTotalItems()}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Desktop Sidebar - Hidden on mobile */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 fixed right-0 top-[144px] bottom-[80px] z-30">
+      <aside className="hidden lg:block w-64 flex-shrink-0 fixed right-0 top-[10rem] bottom-[80px] z-30">
           <div className="h-full bg-purple-50/40 backdrop-blur-xl border-2 border-gray-300/60 border-t-0 border-r-0 pr-4 sm:pr-6 lg:pr-8 pl-6 overflow-y-auto pt-8 pb-6">
             {/* Clear Filters Button */}
             {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
@@ -790,6 +744,71 @@ export default function StorePage() {
                 נקה כל המסננים
               </button>
             )}
+
+            {/* Sort and Show */}
+            <div className="pt-4 mb-6 space-y-4">
+              <div>
+                <span className="text-sm font-semibold text-gray-700 block mb-2">מיין:</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleSortChange('name')}
+                    className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1 ${
+                      sortBy === 'name'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    <span>שם</span>
+                    {sortBy === 'name' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {sortDirection === 'ASC' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        )}
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleSortChange('price')}
+                    className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1 ${
+                      sortBy === 'price'
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'glass-button text-gray-800 hover:shadow-md'
+                    }`}
+                  >
+                    <span>מחיר</span>
+                    {sortBy === 'price' && (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {sortDirection === 'ASC' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        )}
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-gray-700 block mb-2">הצג:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                  dir="ltr"
+                >
+                  <option value={2}>2</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="mb-4 border-t border-gray-300/40"></div>
 
             {/* Filter Title */}
             <h2 className="text-xl font-bold text-gray-800 mb-4">מסננים</h2>
@@ -909,7 +928,7 @@ export default function StorePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 md:gap-6">
             {filteredProducts.map((product) => {
               const cartItem = cart.find(item => item.product.id === product.id);
               const inCart = !!cartItem;
@@ -919,7 +938,7 @@ export default function StorePage() {
                 <div
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}
-                  className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col cursor-pointer"
+                  className="glass-card rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 group border border-gray-200/50 flex flex-col cursor-pointer min-w-0"
                 >
                   {/* Product Image */}
                   <div className="relative h-32 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden flex-shrink-0 group/image">
@@ -1021,91 +1040,48 @@ export default function StorePage() {
                       {/* Quantity Selector */}
                       <div className="flex items-center glass-button rounded-lg overflow-hidden border border-gray-300">
                         <button
-                          onClick={() => inCart 
-                            ? updateQuantity(product.id, cartItem!.quantity - 1)
-                            : updatePendingQuantity(product.id, -1)
-                          }
+                          onClick={() => updatePendingQuantity(product.id, -1)}
                           className="px-2 py-1.5 hover:bg-white/80 transition-colors font-bold text-gray-700 text-sm"
                         >
                           −
                         </button>
                         <span className="px-2 py-1.5 font-bold text-gray-900 min-w-[2rem] text-center border-x border-gray-300 text-sm">
-                          {inCart ? cartItem!.quantity : getPendingQuantity(product.id)}
+                          {getPendingQuantity(product.id)}
                         </span>
                         <button
-                          onClick={() => inCart 
-                            ? updateQuantity(product.id, cartItem!.quantity + 1)
-                            : updatePendingQuantity(product.id, 1)
-                          }
+                          onClick={() => updatePendingQuantity(product.id, 1)}
                           className="px-2 py-1.5 hover:bg-white/80 transition-colors font-bold text-gray-700 text-sm"
                         >
                           +
                         </button>
                       </div>
 
-                      {/* Add/Success Button */}
+                      {/* Add/Success Button - min size; icon-only on mobile when space is tight */}
                       <button
                         onClick={() => !showSuccess && addToCart(product, getPendingQuantity(product.id))}
                         disabled={showSuccess}
-                        className="flex-1 font-semibold py-1.5 px-2 sm:px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-purple-600 text-white hover:bg-purple-700 hover:shadow-xl transition-all duration-200 text-sm"
+                        className="flex-1 min-w-[2.75rem] min-h-[2.25rem] font-semibold py-1.5 px-2 sm:px-3 rounded-lg flex items-center justify-center relative overflow-hidden bg-purple-600 text-white hover:bg-purple-700 hover:shadow-xl transition-all duration-200 text-sm"
+                        aria-label="הוסף לעגלה"
                       >
                         {/* Purple background (always there) */}
-                        <div className="absolute inset-0 bg-purple-600 transition-opacity duration-500"></div>
+                        <div className="absolute inset-0 bg-purple-600 transition-opacity duration-300 ease-in-out"></div>
                         
-                        {/* Green success overlay */}
+                        {/* Green success overlay - fades in over purple, then fades back out to reveal purple */}
                         <div 
-                          className={`absolute inset-0 bg-green-600 transition-opacity duration-500 ${
+                          className={`absolute inset-0 bg-green-600 transition-opacity duration-300 ease-in-out ${
                             showSuccess ? 'opacity-100' : 'opacity-0'
                           }`}
                         ></div>
 
-                        {/* Content */}
-                        <div className="relative z-10 flex items-center justify-center gap-0 sm:gap-1.5">
-                          {/* Icon Container - Hidden on mobile */}
-                          <div className="hidden sm:block relative w-4 h-4 flex items-center justify-center flex-shrink-0">
-                            {/* Add Icon */}
-                            <svg 
-                              className={`w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                                showSuccess ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-                              }`}
-                              fill="none" 
-                              stroke="currentColor" 
-                              viewBox="0 0 24 24"
-                            >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" 
-                              />
-                            </svg>
-
-                            {/* Success Icon */}
-                            <svg 
-                              className={`w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                                showSuccess ? 'opacity-100 scale-110' : 'opacity-0 scale-75'
-                              }`}
-                              fill="none" 
-                              stroke="currentColor" 
-                              viewBox="0 0 24 24"
-                            >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </div>
-
-                          {/* Text */}
+                        {/* Content - text only */}
+                        <div className="relative z-10 flex items-center justify-center">
                           <div className="relative inline-block min-w-[2.5rem] sm:min-w-[3rem]">
-                            <span className={`block transition-opacity duration-300 ${
+                            <span className={`block transition-opacity duration-300 ease-in-out ${
                               showSuccess ? 'opacity-0' : 'opacity-100'
                             }`}>
                               הוסף
                             </span>
-                            <span className={`absolute top-0 left-0 right-0 transition-opacity duration-300 ${
+                            <span className={`absolute top-0 left-0 right-0 transition-opacity duration-300 ease-in-out ${
                               showSuccess ? 'opacity-100' : 'opacity-0'
                             }`}>
                               נוסף!
@@ -1134,17 +1110,24 @@ export default function StorePage() {
         </main>
       </div>
 
-      {/* Mobile Sidebar Drawer */}
-      {isSidebarOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          ></div>
+      {/* Mobile Sidebar Drawer - slides in from the right like cart */}
+      <>
+        {/* Overlay */}
+        <div
+          className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
+            isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden={!isSidebarOpen}
+        />
 
-          {/* Drawer */}
-          <div className="fixed left-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-r-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col lg:hidden" dir="rtl">
+        {/* Drawer - slides in from the right */}
+        <div
+          className={`fixed right-0 top-0 h-full w-full sm:w-96 backdrop-blur-xl bg-white/95 border-l-2 border-white/40 z-50 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col lg:hidden ${
+            isSidebarOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+          }`}
+          dir="rtl"
+        >
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="p-6 border-b border-gray-200/50 flex-shrink-0">
@@ -1170,6 +1153,68 @@ export default function StorePage() {
                     נקה כל המסננים
                   </button>
                 )}
+
+                {/* Sort and Show */}
+                <div className="pt-4 mb-6 space-y-4">
+                  <div>
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">מיין:</span>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleSortChange('name')}
+                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1 ${
+                          sortBy === 'name'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'glass-button text-gray-800 hover:shadow-md'
+                        }`}
+                      >
+                        <span>שם</span>
+                        {sortBy === 'name' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {sortDirection === 'ASC' ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            )}
+                          </svg>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleSortChange('price')}
+                        className={`px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1 ${
+                          sortBy === 'price'
+                            ? 'bg-indigo-600 text-white shadow-md'
+                            : 'glass-button text-gray-800 hover:shadow-md'
+                        }`}
+                      >
+                        <span>מחיר</span>
+                        {sortBy === 'price' && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {sortDirection === 'ASC' ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            )}
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-gray-700 block mb-2">הצג:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                      className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
+                      dir="ltr"
+                    >
+                      <option value={2}>2</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
 
                 {/* Divider */}
                 <div className="mb-4 border-t border-gray-300/40"></div>
@@ -1268,8 +1313,7 @@ export default function StorePage() {
               </div>
             </div>
           </div>
-        </>
-      )}
+      </>
 
       {/* Shopping Cart Sidebar */}
       <>

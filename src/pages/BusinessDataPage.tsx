@@ -130,13 +130,25 @@ export default function BusinessDataPage() {
       {/* Header */}
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between gap-4 md:gap-6">
-          <div className="max-w-full md:flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words leading-tight max-w-full">
-              {business.name}
-            </h1>
-            <p className="text-gray-600 text-sm">
-              פרטי העסק
-            </p>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1">
+            {/* Business Image */}
+            {business.imageUrl && (
+              <div className="flex-shrink-0">
+                <img
+                  src={business.imageUrl}
+                  alt={business.name}
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover border-2 border-indigo-100 shadow-md"
+                />
+              </div>
+            )}
+            <div className="max-w-full md:flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words leading-tight max-w-full">
+                {business.name}
+              </h1>
+              <p className="text-gray-600 text-sm">
+                פרטי העסק
+              </p>
+            </div>
           </div>
           <div className="mt-4 md:mt-0 w-full md:w-auto">
             <button 
@@ -252,6 +264,7 @@ export default function BusinessDataPage() {
             phoneNumber: business.phoneNumber,
             streetAddress: business.streetAddress,
             city: business.city,
+            imageUrl: business.imageUrl,
           }}
         />
       )}

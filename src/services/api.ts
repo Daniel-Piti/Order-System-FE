@@ -190,8 +190,23 @@ export interface Business {
   phoneNumber: string;
   streetAddress: string;
   city: string;
+  imageUrl: string | null;
+  fileName: string | null;
+  mimeType: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ImageMetadata {
+  fileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  fileMd5Base64: string;
+}
+
+export interface BusinessUpdateResponse {
+  businessId: string;
+  preSignedUrl: string | null;
 }
 
 export const businessAPI = {
@@ -212,8 +227,9 @@ export const businessAPI = {
     phoneNumber: string;
     streetAddress: string;
     city: string;
-  }): Promise<Business> => {
-    const response = await api.put<Business>('/businesses/me', data);
+    imageMetadata?: ImageMetadata;
+  }): Promise<BusinessUpdateResponse> => {
+    const response = await api.put<BusinessUpdateResponse>('/businesses/me', data);
     return response.data;
   },
 
@@ -693,6 +709,16 @@ export const publicAPI = {
     // Get all brands for a manager (seller)
     getAllByManagerId: async (managerId: string): Promise<Brand[]> => {
       const response = await axios.get<Brand[]>(`${API_BASE_URL}/public/brands/manager/${managerId}`);
+      return response.data;
+    },
+  },
+
+  business: {
+    // Get store header info (name + imageUrl) for a manager
+    getByManagerId: async (managerId: string): Promise<{ name: string; imageUrl: string | null }> => {
+      const response = await axios.get<{ name: string; imageUrl: string | null }>(
+        `${API_BASE_URL}/public/business/manager/${managerId}`
+      );
       return response.data;
     },
   },
