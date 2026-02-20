@@ -19,6 +19,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CustomersPage from './pages/CustomersPage';
+import CustomerDetailPage from './pages/CustomerDetailPage';
+import AgentCustomerDetailPage from './pages/AgentCustomerDetailPage';
 import ProductsPage from './pages/ProductsPage';
 import OverridesPage from './pages/OverridesPage';
 import CategoriesPage from './pages/CategoriesPage';
@@ -56,6 +58,7 @@ function App() {
           <Route path="profile" element={<AgentProfilePage />} />
           <Route path="orders" element={<AgentOrdersPage />} />
           <Route path="customers" element={<AgentCustomersPage />} />
+          <Route path="customers/:customerId" element={<AgentCustomerDetailPage />} />
           <Route path="products" element={<AgentProductsPage />} />
           <Route path="overrides" element={<AgentOverridesPage />} />
         </Route>
@@ -93,6 +96,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="business-info" element={<BusinessInfoPage />} />
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="customers/:customerId" element={<CustomerDetailPage />} />
           <Route path="agents" element={<AgentsPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="overrides" element={<OverridesPage />} />

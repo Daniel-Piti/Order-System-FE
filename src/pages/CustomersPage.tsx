@@ -665,7 +665,11 @@ export default function CustomersPage() {
                 <tbody className="bg-white divide-y divide-gray-100">
                   {paginatedCustomers.map((customer) => {
                     return (
-                      <tr key={customer.id} className="hover:bg-indigo-50/50 transition-colors">
+                      <tr
+                        key={customer.id}
+                        className="hover:bg-indigo-50/50 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/dashboard/customers/${customer.id}`)}
+                      >
                         <td className="px-6 py-4 text-right border-l border-gray-200" headers="customer-name">
                           <span className="text-sm font-semibold text-gray-900 truncate block max-w-[12rem]" title={customer.name}>
                             {customer.name}
@@ -698,7 +702,7 @@ export default function CustomersPage() {
                           <div className="inline-flex items-center gap-2" role="group" aria-label={`פעולות עבור לקוח ${customer.name}`}>
                             <button
                               type="button"
-                              onClick={() => handleEditCustomer(customer)}
+                              onClick={(e) => { e.stopPropagation(); handleEditCustomer(customer); }}
                               className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
                               aria-label={`ערוך לקוח ${customer.name}`}
                             >
@@ -708,7 +712,7 @@ export default function CustomersPage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDeleteCustomer(customer)}
+                              onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(customer); }}
                               className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
                               aria-label={`מחק לקוח ${customer.name}`}
                             >

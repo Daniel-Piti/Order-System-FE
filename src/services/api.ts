@@ -337,12 +337,12 @@ export const agentAPI = {
     size: number = 20,
     sortBy: string = 'createdAt',
     sortDirection: string = 'DESC',
-    status?: string
+    status?: string,
+    customerId?: string | null
   ): Promise<PageResponse<Order>> => {
-    const params: any = { page, size, sortBy, sortDirection };
-    if (status) {
-      params.status = status;
-    }
+    const params: Record<string, unknown> = { page, size, sortBy, sortDirection };
+    if (status) params.status = status;
+    if (customerId != null) params.customerId = customerId;
     const response = await api.get<PageResponse<Order>>('/agent/orders', { params });
     return response.data;
   },
@@ -552,15 +552,13 @@ export const orderAPI = {
     sortDirection: string = 'DESC',
     status?: string,
     filterAgent: boolean = false,
-    agentId?: number | null
+    agentId?: number | null,
+    customerId?: string | null
   ): Promise<PageResponse<Order>> => {
-    const params: any = { page, size, sortBy, sortDirection, filterAgent };
-    if (status) {
-      params.status = status;
-    }
-    if (agentId !== undefined && agentId !== null) {
-      params.agentId = agentId;
-    }
+    const params: Record<string, unknown> = { page, size, sortBy, sortDirection, filterAgent };
+    if (status) params.status = status;
+    if (agentId !== undefined && agentId !== null) params.agentId = agentId;
+    if (customerId != null) params.customerId = customerId;
     const response = await api.get<PageResponse<Order>>('/orders', { params });
     return response.data;
   },

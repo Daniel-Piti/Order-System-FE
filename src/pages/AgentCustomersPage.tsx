@@ -315,7 +315,11 @@ export default function AgentCustomersPage() {
               </thead>
               <tbody className="divide-y divide-gray-200/50">
                 {paginatedCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-white/20 transition-colors">
+                  <tr
+                    key={customer.id}
+                    className="hover:bg-white/20 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/agent/dashboard/customers/${customer.id}`)}
+                  >
                     <td className="px-6 py-4 text-sm text-gray-800 font-medium">
                       <span className="inline-block max-w-[200px] truncate" title={customer.name}>
                         {customer.name}
@@ -343,7 +347,7 @@ export default function AgentCustomersPage() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleStartEdit(customer)}
+                          onClick={(e) => { e.stopPropagation(); handleStartEdit(customer); }}
                           className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
                           aria-label={`ערוך ${customer.name}`}
                           title="ערוך לקוח"
@@ -359,7 +363,7 @@ export default function AgentCustomersPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleStartDelete(customer)}
+                          onClick={(e) => { e.stopPropagation(); handleStartDelete(customer); }}
                           className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
                           aria-label={`מחק ${customer.name}`}
                           title="מחק לקוח"

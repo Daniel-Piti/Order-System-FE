@@ -14,18 +14,16 @@ export default function AgentLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   
-  // Ensure sidebar state matches screen size on mount and resize
+  // Set initial sidebar state on mount only; on resize to narrow, close drawer (do not auto-open when widening)
   useEffect(() => {
     const handleResize = () => {
-      // On large screens, sidebar should be open
       if (window.innerWidth >= 1024) {
         setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
       }
     };
-    
-    // Set initial state based on screen size
     handleResize();
-    
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);

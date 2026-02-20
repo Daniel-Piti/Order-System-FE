@@ -139,9 +139,10 @@ export default function AgentOrdersPage() {
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
       // Translate specific error messages to Hebrew
-      const translatedMessage = errorMessage === 'Cannot create order. Please add at least one location first.'
-        ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד תחילה.'
-        : errorMessage;
+      const translatedMessage =
+        errorMessage === 'Cannot create order. Please add at least one location first.'
+          ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.'
+          : errorMessage;
       setError(translatedMessage);
     } finally {
       setIsCreating(false);
@@ -274,9 +275,7 @@ export default function AgentOrdersPage() {
     }
   };
 
-  const closeViewModal = () => {
-    setViewingOrder(null);
-  };
+  const closeViewModal = () => setViewingOrder(null);
 
   const toggleSortDirection = () => {
     setSortDirection(prev => prev === 'ASC' ? 'DESC' : 'ASC');
@@ -1250,7 +1249,7 @@ export default function AgentOrdersPage() {
       {/* Discount Modal */}
       {discountOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={() => {
             if (!isUpdatingDiscount) {
               setDiscountOrder(null);
@@ -1475,7 +1474,7 @@ export default function AgentOrdersPage() {
 
       {showCancelConfirm && orderIdPendingCancel && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={() => !cancellingOrderId && setShowCancelConfirm(false)}
         >
           <div

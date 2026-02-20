@@ -3,6 +3,7 @@ import Spinner from '../components/Spinner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer, type Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
+import OrderViewModal from '../components/OrderViewModal';
 import { formatPrice } from '../utils/formatPrice';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
@@ -32,8 +33,6 @@ export default function OrdersPage() {
   const [discountValue, setDiscountValue] = useState<string>('');
   const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
   const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
-  const modalBackdropRef = useRef<HTMLDivElement>(null);
-  const mousedownOnBackdropRef = useRef(false);
   const { backdropProps: createModalBackdropProps, contentProps: createModalContentProps } = useModalBackdrop(() => setShowCreateModal(false));
   const { backdropProps: cancelConfirmBackdropProps, contentProps: cancelConfirmContentProps } = useModalBackdrop(() => setShowCancelConfirm(false));
   const { backdropProps: discountModalBackdropProps, contentProps: discountModalContentProps } = useModalBackdrop(() => setDiscountOrder(null));
@@ -215,11 +214,11 @@ export default function OrdersPage() {
       setCurrentPage(0); // Reset to first page
       await fetchOrders(0);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || 'Failed to create order';
-      // Translate specific error messages to Hebrew
-      const translatedMessage = errorMessage === 'Cannot create order. Please add at least one location first.'
-        ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד תחילה.'
-        : errorMessage;
+      const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
+      const translatedMessage =
+        errorMessage === 'Cannot create order. Please add at least one location first.'
+          ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.'
+          : errorMessage;
       setError(translatedMessage);
     } finally {
       setIsCreating(false);
@@ -365,9 +364,7 @@ export default function OrdersPage() {
     setViewingOrder(order);
   };
 
-  const closeViewModal = () => {
-    setViewingOrder(null);
-  };
+  const closeViewModal = () => setViewingOrder(null);
 
   const toggleSortDirection = () => {
     setSortDirection(prev => prev === 'ASC' ? 'DESC' : 'ASC');
@@ -1191,343 +1188,36 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* View Order Modal */}
+      {/* View Order Modal - same form and actions everywhere */}
       {viewingOrder && (
-        <div
-          ref={modalBackdropRef}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          onMouseDown={(e) => {
-            // Track if mousedown started on the backdrop
-            if (e.target === e.currentTarget) {
-              mousedownOnBackdropRef.current = true;
-            } else {
-              mousedownOnBackdropRef.current = false;
-            }
+        <OrderViewModal
+          order={viewingOrder}
+          onClose={closeViewModal}
+          actions={{
+            onCancel: () => {
+              setOrderIdPendingCancel(viewingOrder.id);
+              setShowCancelConfirm(true);
+            },
+            onEdit: () => {
+              setViewingOrder(null);
+              navigate(`/store/edit/${viewingOrder.id}`);
+            },
+            onDiscount: () => {
+              setDiscountOrder(viewingOrder);
+              setDiscountValue(viewingOrder.discount > 0 ? viewingOrder.discount.toString() : '');
+              setDiscountMode('number');
+            },
+            onMarkDone: () => handleMarkOrderDone(viewingOrder.id),
+            onClose: closeViewModal,
+            cancellingOrderId,
+            updatingOrderId,
           }}
-          onClick={(e) => {
-            // Only close if clicking directly on the backdrop AND mousedown started on backdrop
-            if (e.target === e.currentTarget && mousedownOnBackdropRef.current) {
-              closeViewModal();
-            }
-            // Reset the flag after click
-            mousedownOnBackdropRef.current = false;
-          }}
-        >
-          <div
-            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white/85"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              // Clear the backdrop flag if mousedown is on modal content
-              mousedownOnBackdropRef.current = false;
-            }}
-            dir="rtl"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-bold text-gray-800">פרטי הזמנה</h2>
-                <p className="text-sm text-gray-600">מספר מזהה #{viewingOrder.id}</p>
-              </div>
-              <button
-                onClick={closeViewModal}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <svg
-                  className="w-6 h-6 text-gray-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Status */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3">
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(viewingOrder.status)}`}>
-                  {viewingOrder.status === 'EMPTY' ? 'ריק' : viewingOrder.status === 'PLACED' ? 'הוזמן' : viewingOrder.status === 'DONE' ? 'הושלם' : viewingOrder.status === 'EXPIRED' ? 'פג תוקף' : viewingOrder.status === 'CANCELLED' ? 'בוטל' : viewingOrder.status}
-                </span>
-              </div>
-            </div>
-
-            {/* Customer Information */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">פרטי לקוח</h3>
-              <div className="glass-card rounded-xl p-4 space-y-2">
-                {viewingOrder.customerName ? (
-                  <>
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="text-sm text-gray-600">שם</span>
-                      <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerName}</span>
-                    </div>
-                    {viewingOrder.customerPhone && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">טלפון</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerPhone}</span>
-                      </div>
-                    )}
-                    {viewingOrder.customerEmail && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">אימייל</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerEmail}</span>
-                      </div>
-                    )}
-                    {viewingOrder.customerStreetAddress && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">כתובת</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerStreetAddress}</span>
-                      </div>
-                    )}
-                    {viewingOrder.customerCity && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">עיר</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.customerCity}</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">אין פרטי לקוח עדיין</p>
-                )}
-              </div>
-            </div>
-
-            {/* Pickup Location */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">מיקום איסוף</h3>
-              <div className="glass-card rounded-xl p-4 space-y-2">
-                {viewingOrder.storeStreetAddress ? (
-                  <>
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="text-sm text-gray-600">כתובת</span>
-                      <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeStreetAddress}</span>
-                    </div>
-                    {viewingOrder.storeCity && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">עיר</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeCity}</span>
-                      </div>
-                    )}
-                    {viewingOrder.storePhoneNumber && (
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">טלפון</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storePhoneNumber}</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">מיקום איסוף לא נבחר עדיין</p>
-                )}
-              </div>
-            </div>
-
-            {/* Products */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">מוצרים</h3>
-              <div className="glass-card rounded-xl overflow-hidden">
-                {viewingOrder.products.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic p-4">אין מוצרים עדיין</p>
-                ) : (
-                  <div className="divide-y divide-gray-200/50">
-                    {viewingOrder.products.map((product, index) => (
-                      <div key={index} className="p-3 flex items-start justify-between gap-3 hover:bg-white/20 transition-colors">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800 break-words break-all">{product.productName}</p>
-                          <p className="text-xs text-gray-600 break-words break-all">כמות: {product.quantity}</p>
-                        </div>
-                        <div className="text-left break-words break-all">
-                          <p className="text-sm font-semibold text-gray-800 break-words break-all">
-                            {formatPrice(product.pricePerUnit * product.quantity)}
-                          </p>
-                          <p className="text-xs text-gray-600 break-words break-all">{formatPrice(product.pricePerUnit)} לכל יחידה</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Order Summary */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">סיכום הזמנה</h3>
-              <div className="glass-card rounded-xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">סה״כ פריטים</span>
-                  <span className="text-sm font-medium text-gray-800">{viewingOrder.products.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">סה״כ כמות</span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {viewingOrder.products.reduce((sum, p) => sum + p.quantity, 0)}
-                  </span>
-                </div>
-                {(() => {
-                  const productsTotal = viewingOrder.products.reduce((sum, p) => 
-                    sum + (p.pricePerUnit * p.quantity), 0
-                  );
-                  return (
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                      <span className="text-sm text-gray-600">מחיר</span>
-                      <span className="text-sm font-medium text-gray-800">{formatPrice(productsTotal)}</span>
-                    </div>
-                  );
-                })()}
-                {viewingOrder.discount > 0 && (() => {
-                  const productsTotal = viewingOrder.products.reduce((sum, p) => 
-                    sum + (p.pricePerUnit * p.quantity), 0
-                  );
-                  const discountPercentage = productsTotal > 0 
-                    ? ((viewingOrder.discount / productsTotal) * 100).toFixed(1)
-                    : '0.0';
-                  return (
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                      <span className="text-sm text-gray-600">הנחה</span>
-                      <span className="text-sm font-semibold text-red-600">
-                        {viewingOrder.discount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}-₪ ({discountPercentage}%)
-                      </span>
-                    </div>
-                  );
-                })()}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                  <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
-                  <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Notes */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">הערות</h3>
-              <div className="glass-card rounded-xl p-4">
-                {viewingOrder.notes && viewingOrder.notes.trim() ? (
-                  <p className="text-sm font-bold text-orange-600 whitespace-pre-wrap break-words">{viewingOrder.notes}</p>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">אין הערות</p>
-                )}
-              </div>
-            </div>
-
-            {/* Link Info & Dates */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">מידע נוסף</h3>
-              <div className="glass-card rounded-xl p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">מספר אסמכתא</span>
-                  <span className="text-xs font-mono font-bold text-gray-800">{viewingOrder.referenceId}</span>
-                </div>
-                <div className="pt-2 border-t border-gray-200/50 space-y-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">נוצר ב:</span>
-                    <span className="text-sm font-medium text-gray-600">{formatDate(viewingOrder.createdAt)}</span>
-                </div>
-                  {viewingOrder.placedAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">הוזמן ב:</span>
-                      <span className="text-sm font-medium text-blue-600">{formatDate(viewingOrder.placedAt)}</span>
-                    </div>
-                  )}
-                  {viewingOrder.doneAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">הושלם ב:</span>
-                      <span className="text-sm font-medium text-green-600">{formatDate(viewingOrder.doneAt)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">פג תוקף ב:</span>
-                    <span className="text-sm font-medium text-orange-600">{formatDate(viewingOrder.linkExpiresAt)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-wrap justify-center gap-3 items-center">
-              {(viewingOrder.status === 'PLACED' || viewingOrder.status === 'EMPTY') && (
-                <button
-                  onClick={() => {
-                    setOrderIdPendingCancel(viewingOrder.id);
-                    setShowCancelConfirm(true);
-                  }}
-                  disabled={cancellingOrderId === viewingOrder.id}
-                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border ${
-                    cancellingOrderId === viewingOrder.id
-                      ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                      : 'text-red-600 border-red-600 bg-red-50 hover:shadow-lg'
-                  }`}
-                >
-                  {cancellingOrderId === viewingOrder.id ? 'מבטל...' : 'בטל הזמנה'}
-                </button>
-              )}
-              {viewingOrder.status === 'PLACED' && (
-                <>
-                  <button
-                    onClick={() => {
-                      setViewingOrder(null);
-                      navigate(`/store/edit/${viewingOrder.id}`);
-                    }}
-                    className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-blue-100 text-blue-700 border-blue-700 hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    <span>ערוך הזמנה</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDiscountOrder(viewingOrder);
-                      setDiscountValue(viewingOrder.discount > 0 ? viewingOrder.discount.toString() : '');
-                      setDiscountMode('number');
-                    }}
-                    className="glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 bg-purple-100 text-purple-700 border-purple-700 hover:shadow-lg"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>הוסף הנחה</span>
-                  </button>
-                  <button
-                    onClick={() => handleMarkOrderDone(viewingOrder.id)}
-                    disabled={updatingOrderId === viewingOrder.id}
-                    className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
-                      updatingOrderId === viewingOrder.id
-                        ? 'text-gray-400 border-gray-300 cursor-not-allowed'
-                        : 'text-green-600 border-green-700 bg-green-50 hover:shadow-lg'
-                    }`}
-                  >
-                    {updatingOrderId === viewingOrder.id ? (
-                      'מסמן...'
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>סמן כהושלם</span>
-                      </>
-                    )}
-                  </button>
-                </>
-              )}
-              <button
-                onClick={closeViewModal}
-                className="glass-button px-6 py-2 rounded-xl text-sm font-semibold text-gray-800 hover:shadow-md transition-all"
-              >
-                סגור
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       )}
 
       {showCancelConfirm && orderIdPendingCancel && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           {...cancelConfirmBackdropProps}
         >
           <div
@@ -1581,7 +1271,7 @@ export default function OrdersPage() {
       {/* Discount Modal */}
       {discountOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           {...discountModalBackdropProps}
         >
           <div
