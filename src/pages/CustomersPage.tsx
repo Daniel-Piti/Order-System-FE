@@ -117,8 +117,7 @@ export default function CustomersPage() {
     if (agentFilter === 'manager') {
       filtered = customers.filter((customer) => customer.agentId == null);
     } else if (agentFilter !== 'all') {
-      const agentId = Number(agentFilter);
-      filtered = customers.filter((customer) => customer.agentId === agentId);
+      filtered = customers.filter((customer) => customer.agentId === agentFilter);
     }
 
     // Then filter by search query

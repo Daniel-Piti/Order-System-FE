@@ -5,7 +5,7 @@ import { agentAPI } from '../services/api';
 interface AgentDeleteModalProps {
   isOpen: boolean;
   agentName: string | null;
-  agentId: number | null;
+  agentId: string | null;
   onClose: () => void;
   onDeleted: () => void;
 }

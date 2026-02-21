@@ -122,7 +122,7 @@ export default function OrdersPage() {
       const filterAgent = agentFilter !== ''; // If agentFilter is not empty, we're filtering by agent
       const agentId = agentFilter === '' || agentFilter === 'manager' 
         ? null 
-        : parseInt(agentFilter, 10);
+        : agentFilter;
 
       const pageResponse = await orderAPI.getAllOrders(
         page,
@@ -570,7 +570,7 @@ export default function OrdersPage() {
                 <option value="">הכל</option>
                 <option value="manager">אני</option>
                 {agents.map((agent) => (
-                  <option key={agent.id} value={agent.id.toString()}>
+                  <option key={agent.id} value={agent.id}>
                     {agent.firstName} {agent.lastName}
                   </option>
                 ))}
@@ -700,7 +700,7 @@ export default function OrdersPage() {
             const labelStyles = getLabelStyles(order.status);
             const orderAgent = order.agentId ? agents.find(agent => agent.id === order.agentId) : null;
             // Show "Me" if filtering by this agent (agentFilter matches this order's agentId)
-            const isMe = agentFilter !== '' && agentFilter !== 'manager' && order.agentId === parseInt(agentFilter, 10);
+            const isMe = agentFilter !== '' && agentFilter !== 'manager' && order.agentId === agentFilter;
             // Show "Me" label for manager's own orders (orderSource === 'MANAGER' and agentId === null)
             const isManagerOrder = order.orderSource === 'MANAGER' && order.agentId === null;
             // Show label for public orders (orderSource === 'PUBLIC')

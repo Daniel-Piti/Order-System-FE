@@ -18,7 +18,7 @@ export interface ProductOverride {
   id: number;
   productId: string;
   managerId: string;
-  agentId: number | null;
+  agentId: string | null;
   customerId: string;
   overridePrice: number;
 }

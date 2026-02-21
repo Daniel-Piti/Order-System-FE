@@ -90,7 +90,7 @@ export interface UpdateManagerDetailsRequest {
 }
 
 export interface Agent {
-  id: number;
+  id: string;
   managerId: string;
   firstName: string;
   lastName: string;
@@ -277,17 +277,17 @@ export const agentAPI = {
     return response.data;
   },
 
-  createAgent: async (data: NewAgentRequest): Promise<number> => {
-    const response = await api.post<number>('/agents', data);
+  createAgent: async (data: NewAgentRequest): Promise<string> => {
+    const response = await api.post<string>('/agents', data);
     return response.data;
   },
 
-  updateAgent: async (agentId: number, data: UpdateAgentRequest): Promise<Agent> => {
+  updateAgent: async (agentId: string, data: UpdateAgentRequest): Promise<Agent> => {
     const response = await api.put<Agent>(`/agents/${agentId}`, data);
     return response.data;
   },
 
-  deleteAgent: async (agentId: number): Promise<string> => {
+  deleteAgent: async (agentId: string): Promise<string> => {
     const response = await api.delete<string>(`/agents/${agentId}`);
     return response.data;
   },
@@ -457,7 +457,7 @@ export interface Customer {
   discountPercentage: number;
   id: string;
   managerId: string;
-  agentId: number | null;
+  agentId: string | null;
   name: string;
   phoneNumber: string;
   email: string;
@@ -481,7 +481,7 @@ export interface Order {
   referenceId: number;
   orderSource: 'MANAGER' | 'AGENT' | 'PUBLIC';
   managerId: string;
-  agentId: number | null;
+  agentId: string | null;
   customerId: string | null;
   storeStreetAddress: string | null;
   storeCity: string | null;
@@ -519,7 +519,7 @@ export interface CreateOrderRequest {
 }
 
 export interface AgentLinkInfo {
-  agentId: number;
+  agentId: string;
   agentName: string;
   linkCount: number;
 }
@@ -528,7 +528,7 @@ export interface LinksCreatedStats {
   managerLinks: number;
   agentLinks: number;
   total: number;
-  linksPerAgent: Record<number, AgentLinkInfo>;
+  linksPerAgent: Record<string, AgentLinkInfo>;
 }
 
 export interface MonthlyData {
@@ -552,12 +552,12 @@ export const orderAPI = {
     sortDirection: string = 'DESC',
     status?: string,
     filterAgent: boolean = false,
-    agentId?: number | null,
+    agentId?: string | null,
     customerId?: string | null
   ): Promise<PageResponse<Order>> => {
     const params: Record<string, unknown> = { page, size, sortBy, sortDirection, filterAgent };
     if (status) params.status = status;
-    if (agentId !== undefined && agentId !== null) params.agentId = agentId;
+    if (agentId !== undefined && agentId !== null && agentId !== '') params.agentId = agentId;
     if (customerId != null) params.customerId = customerId;
     const response = await api.get<PageResponse<Order>>('/orders', { params });
     return response.data;

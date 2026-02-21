@@ -186,13 +186,13 @@ export default function OverridesPage() {
     return customerMap.get(customerId)?.name ?? customerId;
   };
 
-  const getAgentLabel = (agentId: number | null) => {
+  const getAgentLabel = (agentId: string | null) => {
     if (agentId == null) {
       return 'אני';
     }
     const agent = agentMap.get(agentId);
     if (!agent) {
-      return `Agent #${agentId}`;
+      return 'Agent';
     }
     return `${agent.firstName} ${agent.lastName}`.trim();
   };
@@ -515,7 +515,7 @@ export default function OverridesPage() {
                   <option value="all">הכל</option>
                   <option value="manager">אני</option>
                   {agents.map((agent) => (
-                    <option key={agent.id} value={agent.id.toString()}>
+                    <option key={agent.id} value={agent.id}>
                       {agent.firstName} {agent.lastName}
                     </option>
                   ))}
