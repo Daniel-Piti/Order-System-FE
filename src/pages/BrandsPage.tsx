@@ -9,6 +9,18 @@ import SparkMD5 from 'spark-md5';
 import Spinner from '../components/Spinner';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
+/** Map backend BrandFailureReason userMessage (English) to Hebrew for display */
+function translateBrandError(message: string): string {
+  if (!message || typeof message !== 'string') return message;
+  const trimmed = message.trim();
+  const t: Record<string, string> = {
+    'Brand not found': 'המותג לא נמצא',
+    'Brand already exists': 'המותג כבר קיים',
+    'Brand limit exceeded': 'חרגת ממכסת המותגים המותרת',
+  };
+  return t[trimmed] ?? message;
+}
+
 // Helper function to calculate MD5 hash of a file and return as Base64
 async function calculateFileMD5(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -165,7 +177,7 @@ export default function BrandsPage() {
         err.response?.data?.message ||
         err.message ||
         'נכשל בטעינת המותגים';
-      setError(message);
+      setError(translateBrandError(message));
     } finally {
       setIsLoading(false);
     }
@@ -333,12 +345,13 @@ export default function BrandsPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = 'Failed to create brand';
+        let errorMessage = 'נכשל ביצירת המותג';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'נכשל ביצירת המותג';
+          const raw = errorData.userMessage || errorData.message || errorMessage;
+          errorMessage = translateBrandError(raw);
         } catch (parseError) {
-          errorMessage = errorText || 'נכשל ביצירת המותג';
+          errorMessage = translateBrandError(errorText || errorMessage);
         }
         throw new Error(errorMessage);
       }
@@ -364,7 +377,7 @@ export default function BrandsPage() {
       await fetchBrands();
       handleCloseModal();
     } catch (err: any) {
-      setFormError(err.message || 'נכשל ביצירת המותג');
+      setFormError(translateBrandError(err.message || '') || 'נכשל ביצירת המותג');
     } finally {
       setIsSubmitting(false);
     }
@@ -422,12 +435,13 @@ export default function BrandsPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = 'Failed to update brand';
+        let errorMessage = 'נכשל בעדכון המותג';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'נכשל בעדכון המותג';
+          const raw = errorData.userMessage || errorData.message || errorMessage;
+          errorMessage = translateBrandError(raw);
         } catch (parseError) {
-          errorMessage = errorText || 'נכשל בעדכון המותג';
+          errorMessage = translateBrandError(errorText || errorMessage);
         }
         throw new Error(errorMessage);
       }
@@ -453,7 +467,7 @@ export default function BrandsPage() {
       await fetchBrands();
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(err.message || 'נכשל בעדכון המותג');
+      setFormError(translateBrandError(err.message || '') || 'נכשל בעדכון המותג');
     } finally {
       setIsSubmitting(false);
     }
@@ -476,13 +490,13 @@ export default function BrandsPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = 'Failed to delete brand';
+        let errorMessage = 'נכשל במחיקת המותג';
         try {
           const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'נכשל במחיקת המותג';
+          const raw = errorData.userMessage || errorData.message || errorMessage;
+          errorMessage = translateBrandError(raw);
         } catch (parseError) {
-          // If JSON parse fails, use the raw error text
-          errorMessage = errorText || 'נכשל במחיקת המותג';
+          errorMessage = translateBrandError(errorText || errorMessage);
         }
         throw new Error(errorMessage);
       }
@@ -490,7 +504,7 @@ export default function BrandsPage() {
       await fetchBrands();
       setBrandToDelete(null);
     } catch (err: any) {
-      setError(err.message || 'נכשל במחיקת המותג');
+      setError(translateBrandError(err.message || '') || 'נכשל במחיקת המותג');
     } finally {
       setIsDeleting(false);
     }
