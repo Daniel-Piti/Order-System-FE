@@ -93,6 +93,11 @@ export default function AgentsPage() {
     handleCloseDeleteModal();
   };
 
+  const handleAddSuccess = (newAgent: Agent) => {
+    setAgents((prev) => [...prev, newAgent]);
+    setIsAddModalOpen(false);
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -320,7 +325,7 @@ export default function AgentsPage() {
       <AgentAddModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={fetchAgents}
+        onSuccess={handleAddSuccess}
       />
 
       <AgentEditModal

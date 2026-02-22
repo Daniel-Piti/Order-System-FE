@@ -1,14 +1,26 @@
 import { useEffect, useState } from 'react';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
-import { agentAPI, type NewAgentRequest } from '../services/api';
+import { agentAPI, type Agent, type NewAgentRequest } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentCreationForm, AGENT_FIELD_LIMITS } from '../utils/validation';
+
+/** Map backend agent error messages (English) to Hebrew for display */
+function translateAgentError(message: string): string {
+  if (message.includes('email') && message.toLowerCase().includes('already exists')) {
+    return 'כבר קיים סוכן עם כתובת אימייל זו';
+  }
+  if (message.toLowerCase().includes('limit reached') || message.toLowerCase().includes('limit exceeded')) {
+    return 'הגעת למגבלת מספר הסוכנים';
+  }
+  return message;
+}
 
 interface AgentAddModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  /** Called with the created agent so the parent can add it to the list without refetching. */
+  onSuccess: (newAgent: Agent) => void;
 }
 
 const INITIAL_FORM: NewAgentRequest = {
@@ -92,16 +104,16 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
     setIsSubmitting(true);
 
     try {
-      await agentAPI.createAgent(formData);
-      onSuccess();
+      const newAgent = await agentAPI.createAgent(formData);
+      onSuccess(newAgent);
       handleClose();
     } catch (err: any) {
-      setError(
+      const raw =
         err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'Failed to create agent'
-      );
+        err.response?.data?.message ||
+        err.message ||
+        'נכשל ביצירת הסוכן';
+      setError(translateAgentError(raw));
     } finally {
       setIsSubmitting(false);
     }

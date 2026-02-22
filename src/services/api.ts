@@ -277,8 +277,8 @@ export const agentAPI = {
     return response.data;
   },
 
-  createAgent: async (data: NewAgentRequest): Promise<string> => {
-    const response = await api.post<string>('/agents', data);
+  createAgent: async (data: NewAgentRequest): Promise<Agent> => {
+    const response = await api.post<Agent>('/agents', data);
     return response.data;
   },
 
