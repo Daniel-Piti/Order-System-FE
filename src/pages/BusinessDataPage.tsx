@@ -131,16 +131,35 @@ export default function BusinessDataPage() {
       <div className="glass-card rounded-3xl p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between gap-4 md:gap-6">
           <div className="flex flex-col md:flex-row gap-4 md:gap-6 flex-1">
-            {/* Business Image */}
-            {business.imageUrl && (
-              <div className="flex-shrink-0">
+            {/* Business Image - show image or empty placeholder box */}
+            <div className="flex-shrink-0">
+              {business.imageUrl ? (
                 <img
                   src={business.imageUrl}
                   alt={business.name}
-                  className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover border-2 border-indigo-100 shadow-md"
+                  className="max-w-[400px] max-h-[150px] w-auto h-auto rounded-xl object-contain border-2 border-indigo-100 shadow-md"
                 />
-              </div>
-            )}
+              ) : (
+                <div
+                  className="w-24 h-24 md:w-32 md:h-32 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center"
+                  aria-label="אין תמונה"
+                >
+                  <svg
+                    className="w-10 h-10 md:w-12 md:h-12 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+              )}
+            </div>
             <div className="max-w-full md:flex-1">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 break-words leading-tight max-w-full">
                 {business.name}

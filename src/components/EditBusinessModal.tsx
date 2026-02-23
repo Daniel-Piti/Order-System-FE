@@ -154,37 +154,49 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
     setError('');
 
     try {
-      // Build payload for update (removeImage only when true so backend receives it)
-      let fileMd5Base64: string | null = null;
-      const updatePayload: Parameters<typeof businessAPI.updateMyBusiness>[0] = {
-        name: formData.name,
-        stateIdNumber: formData.stateIdNumber,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        streetAddress: formData.streetAddress,
-        city: formData.city,
-        ...(removeImage && { removeImage: true }),
+      // 1. Update business details only (PUT /businesses/me)
+      const detailsPayload = {
+        name: formData.name.trim(),
+        stateIdNumber: formData.stateIdNumber.trim(),
+        email: formData.email.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        streetAddress: formData.streetAddress.trim(),
+        city: formData.city.trim(),
       };
+
+      const hasDetailsChanges =
+        detailsPayload.name !== currentBusiness.name ||
+        detailsPayload.stateIdNumber !== currentBusiness.stateIdNumber ||
+        detailsPayload.email !== currentBusiness.email ||
+        detailsPayload.phoneNumber !== currentBusiness.phoneNumber ||
+        detailsPayload.streetAddress !== currentBusiness.streetAddress ||
+        detailsPayload.city !== currentBusiness.city;
+
+      if (hasDetailsChanges) {
+        await businessAPI.updateMyBusiness(detailsPayload);
+      }
+
+      // 2. Remove image if user chose to remove (DELETE /businesses/me/image)
+      if (removeImage) {
+        await businessAPI.removeBusinessImage();
+      }
+
+      // 3. Set new image if user selected a file (POST /businesses/me/image + upload to S3)
       if (selectedImage) {
-        fileMd5Base64 = await calculateFileMD5(selectedImage);
-        updatePayload.imageMetadata = {
+        const fileMd5Base64 = await calculateFileMD5(selectedImage);
+        const imageMetadata = {
           fileName: selectedImage.name,
           contentType: selectedImage.type,
           fileSizeBytes: selectedImage.size,
           fileMd5Base64,
         };
-      }
+        const result = await businessAPI.setBusinessImage(imageMetadata);
 
-      // Step 1: Update business via API (auth via axios interceptor; backend may return presigned URL)
-      const result = await businessAPI.updateMyBusiness(updatePayload);
-
-      // Step 2: If new image was provided, upload to S3 using presigned URL
-      if (selectedImage && result.preSignedUrl && fileMd5Base64) {
         const uploadResponse = await fetch(result.preSignedUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': selectedImage.type,
-            'Content-MD5': fileMd5Base64, // Required: presigned URL was signed with content-md5
+            'Content-MD5': fileMd5Base64,
           },
           body: selectedImage,
         });

@@ -205,9 +205,22 @@ export interface ImageMetadata {
   fileMd5Base64: string;
 }
 
-export interface BusinessUpdateResponse {
-  businessDto: Business;
-  preSignedUrl: string | null;
+export interface UpdateBusinessDetailsRequest {
+  name: string;
+  stateIdNumber: string;
+  email: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+}
+
+export interface UpdateBusinessDetailsResponse {
+  business: Business;
+}
+
+export interface SetBusinessImageResponse {
+  business: Business;
+  preSignedUrl: string;
 }
 
 export const businessAPI = {
@@ -221,17 +234,18 @@ export const businessAPI = {
     return response.data;
   },
 
-  updateMyBusiness: async (data: {
-    name: string;
-    stateIdNumber: string;
-    email: string;
-    phoneNumber: string;
-    streetAddress: string;
-    city: string;
-    imageMetadata?: ImageMetadata;
-    removeImage?: boolean;
-  }): Promise<BusinessUpdateResponse> => {
-    const response = await api.put<BusinessUpdateResponse>('/businesses/me', data);
+  /** Update business details only (name, stateIdNumber, email, phoneNumber, streetAddress, city). */
+  updateMyBusiness: async (data: UpdateBusinessDetailsRequest): Promise<UpdateBusinessDetailsResponse> => {
+    const response = await api.put<UpdateBusinessDetailsResponse>('/businesses/me', data);
+    return response.data;
+  },
+
+  removeBusinessImage: async (): Promise<void> => {
+    await api.delete('/businesses/me/image');
+  },
+
+  setBusinessImage: async (imageMetadata: ImageMetadata): Promise<SetBusinessImageResponse> => {
+    const response = await api.post<SetBusinessImageResponse>('/businesses/me/image', imageMetadata);
     return response.data;
   },
 
