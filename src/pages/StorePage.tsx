@@ -457,21 +457,16 @@ export default function StorePage() {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       if (existingItem) {
+        // Set cart quantity to the selected number (not add)
         return prevCart.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity }
             : item
         );
       }
       return [...prevCart, { product, quantity }];
     });
-    
-    // Reset pending quantity after adding to cart
-    setPendingQuantities(prev => {
-      const updated = { ...prev };
-      delete updated[product.id];
-      return updated;
-    });
+    // Keep selector at current value (do not reset to 1)
 
     // Show "Added!" feedback
     setJustAdded(prev => new Set(prev).add(product.id));
@@ -487,7 +482,9 @@ export default function StorePage() {
   };
 
   const getPendingQuantity = (productId: string): number => {
-    return pendingQuantities[productId] || 1;
+    if (pendingQuantities[productId] != null) return pendingQuantities[productId];
+    const inCart = cart.find(item => item.product.id === productId)?.quantity;
+    return inCart ?? 1;
   };
 
   const updatePendingQuantity = (productId: string, delta: number) => {
