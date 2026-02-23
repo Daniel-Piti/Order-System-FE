@@ -652,6 +652,46 @@ export const categoryAPI = {
   },
 };
 
+export interface CreateBrandResponse {
+  brand: Brand;
+  preSignedUrl?: string | null;
+}
+
+export interface UpdateBrandNameResponse {
+  brand: Brand;
+}
+
+export interface UpdateBrandImageResponse {
+  brand: Brand;
+  preSignedUrl: string;
+}
+
+export const brandAPI = {
+  /** Create brand (name + optional imageMetadata). Returns { brand, preSignedUrl? }; upload to preSignedUrl when present. */
+  createBrand: async (data: { name: string; imageMetadata?: ImageMetadata }): Promise<CreateBrandResponse> => {
+    const response = await api.post<CreateBrandResponse>('/brands', data);
+    return response.data;
+  },
+
+  /** Update brand name only. Use removeBrandImage / setBrandImage for image changes. */
+  updateBrand: async (brandId: number, data: { name: string }): Promise<UpdateBrandNameResponse> => {
+    const response = await api.put<UpdateBrandNameResponse>(`/brands/${brandId}`, data);
+    return response.data;
+  },
+
+  removeBrandImage: async (brandId: number): Promise<void> => {
+    await api.delete(`/brands/${brandId}/image`);
+  },
+
+  setBrandImage: async (
+    brandId: number,
+    imageMetadata: ImageMetadata
+  ): Promise<UpdateBrandImageResponse> => {
+    const response = await api.post<UpdateBrandImageResponse>(`/brands/${brandId}/image`, imageMetadata);
+    return response.data;
+  },
+};
+
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {

@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import CloseButton from '../components/CloseButton';
 import { useNavigate } from 'react-router-dom';
-import { managerAPI, publicAPI } from '../services/api';
-import type { Brand } from '../services/api';
+import { managerAPI, publicAPI, brandAPI } from '../services/api';
+import type { Brand, ImageMetadata } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductWithBrand } from '../utils/types';
 import SparkMD5 from 'spark-md5';
@@ -81,6 +81,7 @@ export default function BrandsPage() {
   const [brandName, setBrandName] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [formError, setFormError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -226,6 +227,7 @@ export default function BrandsPage() {
     updateBrandName('');
     setSelectedImage(null);
     setPreviewImage(null);
+    setRemoveImage(false);
     setFormError('');
     setFieldErrors({});
     setShowErrors(false);
@@ -237,6 +239,7 @@ export default function BrandsPage() {
     updateBrandName(brand.name);
     setSelectedImage(null);
     setPreviewImage(null);
+    setRemoveImage(false);
     setIsEditModalOpen(true);
   };
 
@@ -263,6 +266,7 @@ export default function BrandsPage() {
     }
 
     setSelectedImage(file);
+    setRemoveImage(false);
     setFormError('');
     // Create preview
     const reader = new FileReader();
@@ -313,58 +317,27 @@ export default function BrandsPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      
-      // Step 1: Create brand with file metadata (backend generates s3Key and returns presigned URL)
-      const createBrandBody: any = {
-        name: brandName,
+      const createPayload: { name: string; imageMetadata?: ImageMetadata } = {
+        name: brandName.trim(),
       };
-
-      let fileMd5Base64: string | null = null;
       if (selectedImage) {
-        // Calculate MD5 hash of the file
-        fileMd5Base64 = await calculateFileMD5(selectedImage);
-        
-        createBrandBody.imageMetadata = {
+        const fileMd5Base64 = await calculateFileMD5(selectedImage);
+        createPayload.imageMetadata = {
           fileName: selectedImage.name,
           contentType: selectedImage.type,
           fileSizeBytes: selectedImage.size,
-          fileMd5Base64: fileMd5Base64,
+          fileMd5Base64,
         };
       }
-      
-      const response = await fetch(`${API_BASE_URL}/brands`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(createBrandBody),
-      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'נכשל ביצירת המותג';
-        try {
-          const errorData = JSON.parse(errorText);
-          const raw = errorData.userMessage || errorData.message || errorMessage;
-          errorMessage = translateBrandError(raw);
-        } catch (parseError) {
-          errorMessage = translateBrandError(errorText || errorMessage);
-        }
-        throw new Error(errorMessage);
-      }
+      const result = await brandAPI.createBrand(createPayload);
 
-      const result = await response.json();
-
-      // Step 2: If image was provided, upload to S3 using presigned URL
-      if (selectedImage && result.preSignedUrl && fileMd5Base64) {
+      if (selectedImage && result.preSignedUrl && createPayload.imageMetadata?.fileMd5Base64) {
         const uploadResponse = await fetch(result.preSignedUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': selectedImage.type,
-            'Content-MD5': fileMd5Base64,  // Required: presigned URL was signed with content-md5
+            'Content-MD5': createPayload.imageMetadata.fileMd5Base64,
           },
           body: selectedImage,
         });
@@ -403,64 +376,39 @@ export default function BrandsPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      
-      // Step 1: Update brand with file metadata (backend generates s3Key and returns presigned URL)
-      const updateBrandBody: any = {
-        name: brandName,
-      };
 
-      let fileMd5Base64: string | null = null;
+      // 1. Update name only (PUT /brands/{id})
+      await brandAPI.updateBrand(brandToEdit.id, { name: brandName.trim() });
+
+      // 2. Remove image if user chose to remove (DELETE /brands/{id}/image)
+      if (removeImage) {
+        await brandAPI.removeBrandImage(brandToEdit.id);
+      }
+
+      // 3. Set new image if user selected a file (POST /brands/{id}/image + upload to S3)
       if (selectedImage) {
-        // Calculate MD5 hash of the file
-        fileMd5Base64 = await calculateFileMD5(selectedImage);
-        
-        updateBrandBody.imageMetadata = {
+        const fileMd5Base64 = await calculateFileMD5(selectedImage);
+        const imageMetadata = {
           fileName: selectedImage.name,
           contentType: selectedImage.type,
           fileSizeBytes: selectedImage.size,
-          fileMd5Base64: fileMd5Base64,
+          fileMd5Base64,
         };
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/brands/${brandToEdit.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateBrandBody),
-      });
+        const result = await brandAPI.setBrandImage(brandToEdit.id, imageMetadata);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'נכשל בעדכון המותג';
-        try {
-          const errorData = JSON.parse(errorText);
-          const raw = errorData.userMessage || errorData.message || errorMessage;
-          errorMessage = translateBrandError(raw);
-        } catch (parseError) {
-          errorMessage = translateBrandError(errorText || errorMessage);
-        }
-        throw new Error(errorMessage);
-      }
+        if (result.preSignedUrl) {
+          const uploadResponse = await fetch(result.preSignedUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': selectedImage.type,
+              'Content-MD5': fileMd5Base64,
+            },
+            body: selectedImage,
+          });
 
-      const result = await response.json();
-
-      // Step 2: If new image was provided, upload to S3 using presigned URL
-      if (selectedImage && result.preSignedUrl && fileMd5Base64) {
-        const uploadResponse = await fetch(result.preSignedUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': selectedImage.type,
-            'Content-MD5': fileMd5Base64,  // Required: presigned URL was signed with content-md5
-          },
-          body: selectedImage,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error('נכשל בהעלאת התמונה ל-S3');
+          if (!uploadResponse.ok) {
+            throw new Error('נכשל בהעלאת התמונה ל-S3');
+          }
         }
       }
 
@@ -1005,8 +953,8 @@ export default function BrandsPage() {
                   תמונה <span className="text-gray-500 text-xs">(אופציונלי)</span>
                 </label>
                 <div className="space-y-3">
-                  {/* Current Image */}
-                  {brandToEdit?.imageUrl && !previewImage && (
+                  {/* Current Image - hide when removeImage or new preview */}
+                  {brandToEdit?.imageUrl && !previewImage && !removeImage && (
                     <div className="flex flex-col items-center">
                       <p className="text-xs text-gray-500 mb-2">תמונה נוכחית:</p>
                       <div className="relative group">
@@ -1016,12 +964,57 @@ export default function BrandsPage() {
                             alt={brandToEdit.name}
                             className="max-h-full max-w-full object-contain"
                             onError={(e) => {
-                              // Hide image if it fails to load
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                           />
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRemoveImage(true);
+                            setSelectedImage(null);
+                            setPreviewImage(null);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                          title="הסר תמונה"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRemoveImage(true);
+                          setSelectedImage(null);
+                          setPreviewImage(null);
+                        }}
+                        className="mt-2 px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 font-medium rounded-lg shadow-md transition-colors"
+                      >
+                        הסר תמונה
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Image removal state - show when user chose to remove */}
+                  {removeImage && !previewImage && (
+                    <div className="flex flex-col items-center">
+                      <div className="w-full max-w-xs h-48 flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 p-2">
+                        <div className="text-center">
+                          <svg className="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-sm text-gray-600">התמונה תוסר</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRemoveImage(false)}
+                        className="mt-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                      >
+                        ביטול הסרה
+                      </button>
                     </div>
                   )}
 
@@ -1049,12 +1042,12 @@ export default function BrandsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-sm font-medium">
-                        {isDragging 
-                          ? 'שחרר תמונה כאן' 
-                          : previewImage 
-                            ? 'שנה תמונה' 
-                            : brandToEdit?.imageUrl 
-                              ? 'החלף תמונה או גרור ושחרר' 
+                        {isDragging
+                          ? 'שחרר תמונה כאן'
+                          : previewImage
+                            ? 'שנה תמונה'
+                            : brandToEdit?.imageUrl && !removeImage
+                              ? 'החלף תמונה או גרור ושחרר'
                               : 'בחר תמונה או גרור ושחרר'}
                       </span>
                     </label>
