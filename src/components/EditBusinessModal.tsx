@@ -151,59 +151,32 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
     }
 
     setIsLoading(true);
+    setError('');
 
     try {
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
-      // Prepare update body (only include removeImage when true so backend reliably receives it)
-      const updateBody: Record<string, unknown> = {
+      // Build payload for update (removeImage only when true so backend receives it)
+      let fileMd5Base64: string | null = null;
+      const updatePayload: Parameters<typeof businessAPI.updateMyBusiness>[0] = {
         name: formData.name,
         stateIdNumber: formData.stateIdNumber,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         streetAddress: formData.streetAddress,
         city: formData.city,
+        ...(removeImage && { removeImage: true }),
       };
-      if (removeImage) {
-        updateBody.removeImage = true;
-      }
-
-      let fileMd5Base64: string | null = null;
       if (selectedImage) {
-        // Calculate MD5 hash of the file
         fileMd5Base64 = await calculateFileMD5(selectedImage);
-        (updateBody as Record<string, unknown>).imageMetadata = {
+        updatePayload.imageMetadata = {
           fileName: selectedImage.name,
           contentType: selectedImage.type,
           fileSizeBytes: selectedImage.size,
-          fileMd5Base64: fileMd5Base64,
+          fileMd5Base64,
         };
       }
 
-      // Step 1: Update business with image metadata (backend generates s3Key and returns presigned URL)
-      const response = await fetch(`${API_BASE_URL}/businesses/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateBody),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to update business';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'נכשל בעדכון פרטי העסק';
-        } catch (parseError) {
-          errorMessage = errorText || 'נכשל בעדכון פרטי העסק';
-        }
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
+      // Step 1: Update business via API (auth via axios interceptor; backend may return presigned URL)
+      const result = await businessAPI.updateMyBusiness(updatePayload);
 
       // Step 2: If new image was provided, upload to S3 using presigned URL
       if (selectedImage && result.preSignedUrl && fileMd5Base64) {
@@ -211,7 +184,7 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
           method: 'PUT',
           headers: {
             'Content-Type': selectedImage.type,
-            'Content-MD5': fileMd5Base64,  // Required: presigned URL was signed with content-md5
+            'Content-MD5': fileMd5Base64, // Required: presigned URL was signed with content-md5
           },
           body: selectedImage,
         });

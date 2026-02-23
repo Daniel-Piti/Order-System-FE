@@ -205,13 +205,13 @@ export interface ImageMetadata {
 }
 
 export interface BusinessUpdateResponse {
-  businessId: string;
+  businessDto: Business;
   preSignedUrl: string | null;
 }
 
 export const businessAPI = {
-  createBusiness: async (data: CreateBusinessRequest): Promise<string> => {
-    const response = await api.post<string>('/businesses', data);
+  createBusiness: async (data: CreateBusinessRequest): Promise<Business> => {
+    const response = await api.post<Business>('/businesses', data);
     return response.data;
   },
 
@@ -228,6 +228,7 @@ export const businessAPI = {
     streetAddress: string;
     city: string;
     imageMetadata?: ImageMetadata;
+    removeImage?: boolean;
   }): Promise<BusinessUpdateResponse> => {
     const response = await api.put<BusinessUpdateResponse>('/businesses/me', data);
     return response.data;
