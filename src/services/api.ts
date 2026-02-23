@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAuthToken } from '../utils/authUtils';
 
 // Get API URL from environment variable, fallback to relative URL (works with Vite proxy locally and same-domain in production)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -12,7 +13,7 @@ const api = axios.create({
 
 // Add token to requests if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
+  const token = getAuthToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -631,15 +632,15 @@ export const orderAPI = {
 };
 
 export const categoryAPI = {
-  createCategory: async (categoryName: string): Promise<number> => {
-    const response = await api.post<number>('/categories', {
+  createCategory: async (categoryName: string): Promise<Category> => {
+    const response = await api.post<Category>('/categories', {
       category: categoryName,
     });
     return response.data;
   },
 
-  updateCategory: async (categoryId: number, categoryName: string): Promise<number> => {
-    const response = await api.put<number>(`/categories/${categoryId}`, {
+  updateCategory: async (categoryId: number, categoryName: string): Promise<Category> => {
+    const response = await api.put<Category>(`/categories/${categoryId}`, {
       category: categoryName,
     });
     return response.data;

@@ -1,4 +1,6 @@
 import { Navigate } from 'react-router-dom';
+import { isTokenExpired } from '../utils/jwtUtils';
+import { clearAuth, getAuthToken, getAuthRole } from '../utils/authUtils';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -6,35 +8,16 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
-function isTokenValid(token: string): boolean {
-  try {
-    // Decode JWT token (it's base64 encoded)
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    
-    // Check if token has expired (exp is in seconds, Date.now() is in milliseconds)
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    // If we can't decode the token, it's invalid
-    return false;
-  }
-}
-
 export default function ProtectedRoute({
   children,
   redirectTo = '/login/manager',
   allowedRoles,
 }: ProtectedRouteProps) {
-  const token = localStorage.getItem('authToken');
-  const userRole = localStorage.getItem('userRole');
+  const token = getAuthToken();
+  const userRole = getAuthRole();
 
-  if (!token || !isTokenValid(token)) {
-    // Not authenticated or token is expired, clear storage and redirect to login
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
+  if (!token || isTokenExpired(token)) {
+    clearAuth();
     return <Navigate to={redirectTo} replace />;
   }
 

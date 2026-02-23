@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { clearAuth } from '../utils/authUtils';
 
 export default function UserLayout() {
   // On desktop, sidebar is always open. On mobile, it starts closed.
@@ -21,8 +22,7 @@ export default function UserLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
+    clearAuth();
     navigate('/');
   };
 

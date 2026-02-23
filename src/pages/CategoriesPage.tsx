@@ -7,6 +7,7 @@ import PaginationBar from '../components/PaginationBar';
 import type { ProductWithCategory } from '../utils/types';
 import Spinner from '../components/Spinner';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { toHebrewCategoryMessage } from '../utils/categoryErrorMessages';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -114,13 +115,13 @@ export default function CategoriesPage() {
         err.message ||
         'נכשל בטעינת הקטגוריות';
       
-      // Translate "Network Error" to Hebrew (check both message and axios error codes)
+      // Translate "Network Error" and category API messages to Hebrew
       const isNetworkError = errorMessage === 'Network Error' || 
         errorMessage?.includes('Network Error') ||
         err.code === 'ERR_NETWORK' ||
         err.code === 'ECONNABORTED';
       
-      const translatedMessage = isNetworkError ? 'שגיאת רשת' : errorMessage;
+      const translatedMessage = isNetworkError ? 'שגיאת רשת' : toHebrewCategoryMessage(errorMessage);
       
       setError(translatedMessage);
     } finally {
@@ -197,12 +198,12 @@ export default function CategoriesPage() {
       await fetchCategories();
       handleCloseModal();
     } catch (err: any) {
-      const message =
+      const rawMessage =
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
         'נכשל ביצירת קטגוריה';
-      setFormError(message);
+      setFormError(toHebrewCategoryMessage(rawMessage));
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
@@ -237,12 +238,12 @@ export default function CategoriesPage() {
       await fetchCategories();
       handleCloseEditModal();
     } catch (err: any) {
-      const message =
+      const rawMessage =
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
         'נכשל בעדכון קטגוריה';
-      setFormError(message);
+      setFormError(toHebrewCategoryMessage(rawMessage));
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
@@ -262,12 +263,12 @@ export default function CategoriesPage() {
       await fetchCategories();
       setCategoryToDelete(null);
     } catch (err: any) {
-      const message =
+      const rawMessage =
         err.response?.data?.userMessage ||
         err.response?.data?.message ||
         err.message ||
         'נכשל במחיקת קטגוריה';
-      setError(message);
+      setError(toHebrewCategoryMessage(rawMessage));
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');

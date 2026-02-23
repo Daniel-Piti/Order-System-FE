@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { clearAuth } from '../utils/authUtils';
 
 const menuItems = [
   { name: 'פרופיל', path: '/agent/dashboard/profile', icon: '👤' },
@@ -29,8 +30,7 @@ export default function AgentLayout() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
+    clearAuth();
     navigate('/login/agent');
   };
 
