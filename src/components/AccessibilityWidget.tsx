@@ -133,12 +133,11 @@ export default function AccessibilityWidget() {
     }
   }, [isOpen]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcut: Alt + A (Option + A on Mac) to toggle widget.
+  // We use only Alt/Option so that Cmd+A / Ctrl+A still does "Select All".
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Alt + A to toggle widget (Windows/Linux)
-      // Option + A to toggle widget (Mac)
-      if ((event.altKey || event.metaKey) && event.key === 'a') {
+      if (event.altKey && event.key === 'a') {
         event.preventDefault();
         setIsOpen(!isOpen);
         if (!isOpen) {
@@ -329,22 +328,16 @@ export default function AccessibilityWidget() {
             </button>
           </div>
 
-          {/* Keyboard Shortcut Hint */}
-          <div className="pt-4 border-t border-gray-200 space-y-3">
-            <p className="text-xs text-gray-600 text-center">
-              קיצור מקלדת: Alt + A (או Option + A ב-Mac)
-            </p>
-            
-            {/* Accessibility Statement & Contact */}
-            <div className="space-y-2">
-              <a
-                href="/accessibility-statement"
-                onClick={() => setIsOpen(false)}
-                className="block w-full text-xs text-indigo-600 hover:text-indigo-700 underline text-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
-                role="menuitem"
-              >
-                הצהרת נגישות
-              </a>
+          {/* Accessibility Statement & Contact */}
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            <a
+              href="/accessibility-statement"
+              onClick={() => setIsOpen(false)}
+              className="block w-full text-xs text-indigo-600 hover:text-indigo-700 underline text-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
+              role="menuitem"
+            >
+              הצהרת נגישות
+            </a>
               <a
                 href="tel:0505566979"
                 className="block text-xs text-indigo-600 hover:text-indigo-700 underline text-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 rounded"
@@ -353,7 +346,6 @@ export default function AccessibilityWidget() {
               >
                 דיווח על בעיית נגישות: 050-5566979
               </a>
-            </div>
           </div>
         </div>
       )}
