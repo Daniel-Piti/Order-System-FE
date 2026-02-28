@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { validateUserProfileForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-import { managerAPI } from '../services/api';
+import { managerAPI, type Manager } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedManager: Manager) => void;
   currentProfile: {
     firstName: string;
     lastName: string;
@@ -89,8 +89,16 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
     setIsLoading(true);
 
     try {
-      await managerAPI.updateCurrentManager(formData);
-      onSuccess();
+      const payload = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+        dateOfBirth: formData.dateOfBirth.trim(),
+        streetAddress: formData.streetAddress.trim(),
+        city: formData.city.trim(),
+      };
+      const updatedManager = await managerAPI.updateCurrentManager(payload);
+      onSuccess(updatedManager);
       handleClose();
     } catch (err: any) {
       setError(

@@ -290,8 +290,8 @@ export default function LocationsPage() {
       <AddLocationModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          fetchLocations(); // Refresh the locations list
+        onSuccess={(newLocation) => {
+          setLocations((prev) => [...prev, newLocation]);
         }}
       />
 
@@ -302,8 +302,10 @@ export default function LocationsPage() {
             setIsEditModalOpen(false);
             setLocationToEdit(null);
           }}
-          onSuccess={() => {
-            fetchLocations(); // Refresh the locations list
+          onSuccess={(updatedLocation) => {
+            setLocations((prev) =>
+              prev.map((l) => (l.id === updatedLocation.id ? updatedLocation : l))
+            );
           }}
           location={locationToEdit}
         />

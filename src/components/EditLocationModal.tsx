@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import AccessibleModal from './AccessibleModal';
 import Spinner from './Spinner';
+import { locationAPI, type Location } from '../services/api';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface EditLocationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedLocation: Location) => void;
   location: {
     id: number;
     name: string;
@@ -67,25 +66,22 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/locations/${location.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'נכשל בעדכון הסניף');
-      }
-
-      onSuccess();
+      const payload = {
+        name: formData.name.trim(),
+        streetAddress: formData.streetAddress.trim(),
+        city: formData.city.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+      };
+      const updatedLocation = await locationAPI.updateLocation(location.id, payload);
+      onSuccess(updatedLocation);
       handleClose();
     } catch (err: any) {
-      setError(err.message || 'נכשל בעדכון הסניף');
+      setError(
+        err.response?.data?.userMessage ||
+          err.response?.data?.message ||
+          err.message ||
+          'נכשל בעדכון הסניף'
+      );
     } finally {
       setIsLoading(false);
     }

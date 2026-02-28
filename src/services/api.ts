@@ -127,8 +127,8 @@ export const managerAPI = {
     return response.data;
   },
 
-  createManager: async (data: NewManagerRequest): Promise<string> => {
-    const response = await api.post<string>('/managers', data);
+  createManager: async (data: NewManagerRequest): Promise<Manager> => {
+    const response = await api.post<Manager>('/managers', data);
     return response.data;
   },
 
@@ -151,8 +151,8 @@ export const managerAPI = {
     return response.data;
   },
 
-  updateCurrentManager: async (data: UpdateManagerDetailsRequest): Promise<string> => {
-    const response = await api.put<string>('/managers/me', data);
+  updateCurrentManager: async (data: UpdateManagerDetailsRequest): Promise<Manager> => {
+    const response = await api.put<Manager>('/managers/me', data);
     return response.data;
   },
 
@@ -408,13 +408,13 @@ export const locationAPI = {
     return response.data;
   },
 
-  createLocation: async (data: LocationRequest): Promise<number> => {
-    const response = await api.post<number>('/locations', data);
+  createLocation: async (data: LocationRequest): Promise<Location> => {
+    const response = await api.post<Location>('/locations', data);
     return response.data;
   },
 
-  updateLocation: async (locationId: number, data: LocationRequest): Promise<number> => {
-    const response = await api.put<number>(`/locations/${locationId}`, data);
+  updateLocation: async (locationId: number, data: LocationRequest): Promise<Location> => {
+    const response = await api.put<Location>(`/locations/${locationId}`, data);
     return response.data;
   },
 

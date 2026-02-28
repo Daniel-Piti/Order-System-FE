@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
+import { locationAPI, type Location } from '../services/api';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface AddLocationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (newLocation: Location) => void;
 }
 
 export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLocationModalProps) {
@@ -45,25 +44,22 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/locations`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'נכשל ביצירת הסניף');
-      }
-
-      onSuccess();
+      const payload = {
+        name: formData.name.trim(),
+        streetAddress: formData.streetAddress.trim(),
+        city: formData.city.trim(),
+        phoneNumber: formData.phoneNumber.trim(),
+      };
+      const newLocation = await locationAPI.createLocation(payload);
+      onSuccess(newLocation);
       handleClose();
     } catch (err: any) {
-      setError(err.message || 'נכשל ביצירת הסניף');
+      setError(
+        err.response?.data?.userMessage ||
+          err.response?.data?.message ||
+          err.message ||
+          'נכשל ביצירת הסניף'
+      );
     } finally {
       setIsLoading(false);
     }

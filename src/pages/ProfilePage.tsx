@@ -254,8 +254,8 @@ export default function ProfilePage() {
         <EditProfileModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
-            fetchProfile(); // Refresh the profile data
+          onSuccess={(updatedManager) => {
+            setProfile(updatedManager);
           }}
           currentProfile={{
             firstName: profile.firstName,

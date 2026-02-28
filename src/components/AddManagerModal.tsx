@@ -109,17 +109,26 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
     setStep('manager');
 
     try {
-      // Step 1: Create manager
-      const managerId = await managerAPI.createManager(managerFormData);
-      
+      // Step 1: Create manager (trim strings, lowercase email)
+      const managerPayload = {
+        ...managerFormData,
+        firstName: managerFormData.firstName.trim(),
+        lastName: managerFormData.lastName.trim(),
+        email: managerFormData.email.trim().toLowerCase(),
+        phoneNumber: managerFormData.phoneNumber.trim(),
+        streetAddress: managerFormData.streetAddress.trim(),
+        city: managerFormData.city.trim(),
+      };
+      const manager = await managerAPI.createManager(managerPayload);
+
       // Step 2: Create business with manager ID
       setStep('business');
       await businessAPI.createBusiness({
-        managerId,
+        managerId: manager.id,
         name: businessFormData.name.trim(),
         stateIdNumber: businessFormData.stateIdNumber.trim(),
-        email: businessFormData.email.trim(),
-        phoneNumber: businessFormData.phoneNumber,
+        email: businessFormData.email.trim().toLowerCase(),
+        phoneNumber: businessFormData.phoneNumber.trim(),
         streetAddress: businessFormData.streetAddress.trim(),
         city: businessFormData.city.trim(),
       });
