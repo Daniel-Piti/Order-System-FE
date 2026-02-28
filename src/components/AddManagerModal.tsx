@@ -17,7 +17,7 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
   const MAX_PHONE_LENGTH = 10;
   const MAX_STREET_ADDRESS_LENGTH = 120;
   const MAX_CITY_LENGTH = 60;
-  const MAX_STATE_ID_LENGTH = 20;
+  const STATE_ID_LENGTH = 9;
 
   // Manager form data
   const [managerFormData, setManagerFormData] = useState({
@@ -179,7 +179,7 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
       name === 'name'
         ? value.slice(0, MAX_NAME_LENGTH)
         : name === 'stateIdNumber'
-        ? value.slice(0, MAX_STATE_ID_LENGTH)
+        ? value.replace(/\D/g, '').slice(0, STATE_ID_LENGTH)
         : name === 'phoneNumber'
         ? value.replace(/\D/g, '').slice(0, MAX_PHONE_LENGTH)
         : name === 'email'
@@ -464,9 +464,11 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
                     id="stateIdNumber"
                     name="stateIdNumber"
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={businessFormData.stateIdNumber}
                     onChange={handleBusinessChange}
-                    maxLength={MAX_STATE_ID_LENGTH}
+                    maxLength={STATE_ID_LENGTH}
                     className={`glass-input w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 ${
                       showErrors && businessFieldErrors.stateIdNumber ? 'border-red-400 focus:ring-red-400' : 'border-transparent'
                     }`}

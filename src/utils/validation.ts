@@ -43,6 +43,24 @@ export function validateRequiredWithMaxLength(
 }
 
 /**
+ * Validates State ID number: required, digits only, exactly 9 characters
+ */
+export function validateStateIdNumber(value: string, fieldName: string = 'State ID number'): string | null {
+  const trimmed = value.trim();
+  const requiredError = validateRequired(value, fieldName);
+  if (requiredError) {
+    return requiredError;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    return `${fieldName} חייב להכיל ספרות בלבד`;
+  }
+  if (trimmed.length !== 9) {
+    return `${fieldName} חייב להכיל בדיוק 9 ספרות`;
+  }
+  return null;
+}
+
+/**
  * Validates phone numbers to ensure they contain digits only and respect length constraints
  */
 export function validatePhoneNumberDigitsOnly(
@@ -263,7 +281,7 @@ export function validateBusinessForm(formData: {
 }): ValidationResult {
   return validateFields([
     { field: 'name', error: validateRequiredWithMaxLength(formData.name, 'Business name', MAX_NAME_LENGTH) },
-    { field: 'stateIdNumber', error: validateRequiredWithMaxLength(formData.stateIdNumber, 'State ID number', 20) },
+    { field: 'stateIdNumber', error: validateStateIdNumber(formData.stateIdNumber, 'State ID number') },
     { field: 'email', error: validateEmail(formData.email, MAX_EMAIL_LENGTH) },
     { field: 'phoneNumber', error: validatePhoneNumberDigitsOnly(formData.phoneNumber, MAX_PHONE_LENGTH, 'Phone number') },
     { field: 'streetAddress', error: validateRequiredWithMaxLength(formData.streetAddress, 'Street address', MAX_STREET_ADDRESS_LENGTH) },
