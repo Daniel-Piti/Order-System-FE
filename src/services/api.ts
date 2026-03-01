@@ -719,7 +719,7 @@ export const publicAPI = {
       categoryId?: number,
       brandId?: number
     ): Promise<PageResponse<Product>> => {
-      const params: any = { page, size, sortBy, sortDirection };
+      const params: any = { pageNumber: page, pageSize: size, sortBy, sortOrder: sortDirection.toLowerCase() };
       if (categoryId) {
         params.categoryId = categoryId;
       }

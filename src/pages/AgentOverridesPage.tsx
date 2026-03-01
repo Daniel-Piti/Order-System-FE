@@ -45,6 +45,7 @@ export default function AgentOverridesPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showErrors, setShowErrors] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addModalProductSearch, setAddModalProductSearch] = useState('');
 
   const navigate = useNavigate();
   const { backdropProps: addModalBackdropProps, contentProps: addModalContentProps } = useModalBackdrop(() => setIsAddModalOpen(false));
@@ -84,10 +85,10 @@ export default function AgentOverridesPage() {
       const token = localStorage.getItem('authToken');
 
       const params = new URLSearchParams({
-        page: currentPage.toString(),
-        size: pageSize.toString(),
+        pageNumber: currentPage.toString(),
+        pageSize: pageSize.toString(),
         sortBy: 'customer_id',
-        sortDirection: 'ASC',
+        sortOrder: 'asc',
       });
       if (productFilter) params.append('productId', productFilter);
       if (customerFilter) params.append('customerId', customerFilter);
@@ -153,6 +154,12 @@ export default function AgentOverridesPage() {
   }, [customers]);
 
 
+  const filteredProductsForAdd = useMemo(() => {
+    const query = addModalProductSearch.trim().toLowerCase();
+    if (!query) return products;
+    return products.filter((p) => p.name.toLowerCase().includes(query));
+  }, [products, addModalProductSearch]);
+
   const handleProductFilterChange = (value: string) => {
     setProductFilter(value);
     setCurrentPage(0);
@@ -178,6 +185,7 @@ export default function AgentOverridesPage() {
 
   const handleCloseModal = () => {
     setIsAddModalOpen(false);
+    setAddModalProductSearch('');
     setFieldErrors({});
     setFormError('');
     setShowErrors(false);
@@ -591,31 +599,97 @@ export default function AgentOverridesPage() {
 
             <form onSubmit={handleAddSubmit} className="space-y-3.5" noValidate>
               <div>
-                <label htmlFor="productId" className="block text-xs font-medium text-gray-700 mb-1.5">
+                <label htmlFor="add-modal-product-search" className="block text-xs font-medium text-gray-700 mb-1.5">
                   מוצר *
                 </label>
-                <select
-                  id="productId"
-                  name="productId"
-                  value={formData.productId}
-                  onChange={(e) => {
-                    setFormData({ ...formData, productId: e.target.value });
-                    if (showErrors && fieldErrors.productId) {
-                      setFieldErrors({ ...fieldErrors, productId: '' });
-                    }
-                  }}
-                  className={`glass-input w-full px-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
-                    showErrors && fieldErrors.productId ? 'border-red-400 focus:ring-red-400/50' : ''
-                  }`}
-                  dir="ltr"
-                >
-                  <option value="">בחר מוצר</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name} - {formatPrice(product.price)}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative mb-2">
+                  <svg
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    id="add-modal-product-search"
+                    type="text"
+                    placeholder="חפש מוצרים..."
+                    value={addModalProductSearch}
+                    onChange={(e) => setAddModalProductSearch(e.target.value)}
+                    className="glass-input w-full pr-10 pl-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    dir="rtl"
+                    aria-label="חפש מוצרים"
+                  />
+                  {addModalProductSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setAddModalProductSearch('')}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="נקה חיפוש"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div className={`rounded-xl border overflow-hidden ${showErrors && fieldErrors.productId ? 'border-red-400 ring-2 ring-red-400/30' : 'border-gray-200'}`}>
+                  <div className="space-y-1 max-h-40 overflow-y-auto p-1.5 bg-gray-50/50">
+                    {filteredProductsForAdd.length === 0 && addModalProductSearch ? (
+                      <div className="text-center py-6 text-gray-500">
+                        <svg className="w-10 h-10 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <p className="text-xs">לא נמצאו מוצרים</p>
+                        <button
+                          type="button"
+                          onClick={() => setAddModalProductSearch('')}
+                          className="text-xs text-indigo-600 hover:text-indigo-700 mt-1"
+                        >
+                          נקה חיפוש
+                        </button>
+                      </div>
+                    ) : filteredProductsForAdd.length === 0 && !addModalProductSearch ? (
+                      <div className="text-center py-6 text-gray-500">
+                        {isLoading ? (
+                          <p className="text-xs">טוען מוצרים...</p>
+                        ) : (
+                          <p className="text-xs">אין מוצרים להצגה</p>
+                        )}
+                      </div>
+                    ) : (
+                      filteredProductsForAdd.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, productId: product.id }));
+                            if (showErrors && fieldErrors.productId) setFieldErrors((prev) => ({ ...prev, productId: '' }));
+                          }}
+                          className={`w-full text-right px-3 py-2.5 rounded-lg transition-all flex items-center gap-2.5 ${
+                            formData.productId === product.id
+                              ? 'bg-indigo-100 border-2 border-indigo-500 shadow-sm'
+                              : 'bg-white hover:bg-gray-50 border border-transparent'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                            formData.productId === product.id ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'
+                          }`}>
+                            {formData.productId === product.id && (
+                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 font-medium text-gray-800 text-sm truncate">
+                            {product.name}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
                 {showErrors && fieldErrors.productId && <p className="text-xs text-red-500 mt-1">{fieldErrors.productId}</p>}
                 {(() => {
                   if (!formData.productId) return null;

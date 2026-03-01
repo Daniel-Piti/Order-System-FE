@@ -339,12 +339,11 @@ export default function StorePage() {
           const allProductsResponse = await publicAPI.products.getAllByManagerId(
             managerId,
             0,
-            1000, // Large page size to get all products
+            1000,
             sortBy,
             sortDirection
           );
-          
-          let filteredProducts = allProductsResponse.content;
+          let filteredProducts = allProductsResponse.content ?? [];
           
           // Filter by categories
           if (selectedCategories.length > 0) {
