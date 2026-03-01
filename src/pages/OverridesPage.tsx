@@ -24,11 +24,8 @@ export default function OverridesPage() {
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Filters
+  // Filters (manager: all overrides, optional filter by product)
   const [productFilter, setProductFilter] = useState<string>('');
-  const [customerFilter, setCustomerFilter] = useState<string>('');
-  const [agentFilter, setAgentFilter] = useState<string>('all');
-
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -68,7 +65,7 @@ export default function OverridesPage() {
       fetchCustomers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [managerId, currentPage, pageSize, productFilter, customerFilter, agentFilter]);
+  }, [managerId, currentPage, pageSize, productFilter]);
 
   useEffect(() => {
     if (managerId) {
@@ -91,14 +88,6 @@ export default function OverridesPage() {
       
       if (productFilter) {
         params.append('productId', productFilter);
-      }
-      if (customerFilter) {
-        params.append('customerId', customerFilter);
-      }
-      if (agentFilter === 'manager') {
-        params.append('agentId', 'manager');
-      } else if (agentFilter !== 'all') {
-        params.append('agentId', agentFilter);
       }
 
       const response = await fetch(`${API_BASE_URL}/product-overrides?${params.toString()}`, {
@@ -208,11 +197,6 @@ export default function OverridesPage() {
 
   const handleProductFilterChange = (productId: string) => {
     setProductFilter(productId);
-    setCurrentPage(0);
-  };
-
-  const handleCustomerFilterChange = (customerId: string) => {
-    setCustomerFilter(customerId);
     setCurrentPage(0);
   };
 
@@ -468,7 +452,7 @@ export default function OverridesPage() {
       </div>
 
       {/* Filters & Controls */}
-      {(overrides.length > 0 || productFilter || customerFilter || agentFilter !== 'all') && (
+      {(overrides.length > 0 || productFilter) && (
         <div className="glass-card rounded-3xl p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-start">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -485,46 +469,6 @@ export default function OverridesPage() {
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name} - {formatPrice(product.price)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Customer Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700" dir="rtl">לקוח:</span>
-                <select
-                  value={customerFilter}
-                  onChange={(e) => handleCustomerFilterChange(e.target.value)}
-                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
-                  dir="ltr"
-                >
-                  <option value="">הכל</option>
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Agent Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700" dir="rtl">סוכן:</span>
-                <select
-                  value={agentFilter}
-                  onChange={(e) => {
-                    setAgentFilter(e.target.value);
-                    setCurrentPage(0);
-                  }}
-                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-40"
-                  dir="ltr"
-                >
-                  <option value="all">הכל</option>
-                  <option value="manager">אני</option>
-                  {agents.map((agent) => (
-                    <option key={agent.id} value={agent.id}>
-                      {agent.firstName} {agent.lastName}
                     </option>
                   ))}
                 </select>
@@ -555,7 +499,7 @@ export default function OverridesPage() {
       {overrides.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
           <div className="flex flex-col items-center space-y-4">
-            {productFilter || customerFilter ? (
+            {productFilter ? (
               <>
                 <div className="p-6 rounded-full bg-gray-100/50">
                   <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -564,17 +508,13 @@ export default function OverridesPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800">לא נמצאו מחירים מיוחדים תואמים</h2>
                 <p className="text-gray-600 max-w-md">
-                  לא נמצאו מחירים מיוחדים התואמים למסננים שנבחרו.
+                  לא נמצאו מחירים מיוחדים עבור המוצר שנבחר.
                 </p>
                 <button
-                  onClick={() => {
-                    setProductFilter('');
-                    setCustomerFilter('');
-                    setAgentFilter('all');
-                  }}
+                  onClick={() => setProductFilter('')}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
-                  נקה מסננים
+                  נקה מסנן
                 </button>
               </>
             ) : (
