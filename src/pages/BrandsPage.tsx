@@ -199,8 +199,8 @@ export default function BrandsPage() {
     if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByManagerId(managerId, 0, 1000);
-      setProducts(data.content.map((p: any) => ({ id: p.id, brandId: p.brandId })));
+      const data = await publicAPI.products.getAllByManagerId(managerId);
+      setProducts(data.map((p: { id: string; brandId: number | null }) => ({ id: p.id, brandId: p.brandId })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

@@ -119,9 +119,8 @@ export default function AgentOverridesPage() {
   const fetchProducts = async () => {
     if (!agentInfo) return;
     try {
-      const data = await publicAPI.products.getAllByManagerId(agentInfo.managerId, 0, 1000);
-      const items = data.content ?? [];
-      setProducts(items.map((p) => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
+      const data = await publicAPI.products.getAllByManagerId(agentInfo.managerId);
+      setProducts(data.map((p) => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
     } catch (err) {
       console.error('Failed to fetch products', err);
     }

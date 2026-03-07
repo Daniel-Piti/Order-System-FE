@@ -3,7 +3,6 @@ import CloseButton from '../components/CloseButton';
 import { useNavigate } from 'react-router-dom';
 import { managerAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
-import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import SparkMD5 from 'spark-md5';
 import Spinner from '../components/Spinner';
@@ -78,11 +77,6 @@ export default function ProductsPage() {
   // Swipe detection state
   const [touchStart, setTouchStart] = useState<{ x: number; y: number; productId: string } | null>(null);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-  const [totalPages, setTotalPages] = useState(0);
-  
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
@@ -143,11 +137,11 @@ export default function ProductsPage() {
 
   useEffect(() => {
     if (managerId) {
-      fetchProducts(currentPage);
+      fetchProducts();
       fetchCategories();
       fetchBrands();
     }
-  }, [managerId, currentPage, sortBy, sortDirection, pageSize, categoryFilter, brandFilter]);
+  }, [managerId, sortBy, sortDirection, categoryFilter, brandFilter]);
 
   const fetchManagerId = async () => {
     try {
@@ -160,32 +154,39 @@ export default function ProductsPage() {
     }
   };
 
-  const fetchProducts = async (page: number = 0) => {
+  const fetchProducts = async () => {
     const id = managerId;
     if (!id) return;
-    
+
     try {
       setIsLoading(true);
       setError('');
-
-      const pageResponse = await publicAPI.products.getAllByManagerId(
-        id,
-        page, 
-        pageSize, 
-        sortBy, 
-        sortDirection, 
-        categoryFilter ? Number(categoryFilter) : undefined,
-        brandFilter ? Number(brandFilter) : undefined
-      );
-      setProducts(pageResponse.content);
-      setTotalPages(pageResponse.totalPages);
-      
-      // Clear old images and fetch images for all products in parallel
+      const list = await publicAPI.products.getAllByManagerId(id);
+      // Filter and sort client-side (BE returns all)
+      let filtered = list;
+      if (categoryFilter) filtered = filtered.filter((p) => p.categoryId === Number(categoryFilter));
+      if (brandFilter) filtered = filtered.filter((p) => p.brandId === Number(brandFilter));
+      const sorted = [...filtered].sort((a, b) => {
+        if (sortBy === 'name') {
+          const c = a.name.localeCompare(b.name);
+          return sortDirection === 'ASC' ? c : -c;
+        }
+        if (sortBy === 'price') {
+          const c = a.price - b.price;
+          return sortDirection === 'ASC' ? c : -c;
+        }
+        if (sortBy === 'minimumPrice') {
+          const c = a.minimumPrice - b.minimumPrice;
+          return sortDirection === 'ASC' ? c : -c;
+        }
+        return a.name.localeCompare(b.name);
+      });
+      setProducts(sorted);
       setProductImages({});
-      await fetchProductImagesForAll(pageResponse.content);
+      await fetchProductImagesForAll(sorted);
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
-      if (err.message.includes('401')) {
+      if (err.message?.includes('401')) {
         navigate('/login/manager');
       }
     } finally {
@@ -246,30 +247,20 @@ export default function ProductsPage() {
   };
 
   const handleSortChange = (newSortBy: string) => {
-    // If clicking the same sort field, toggle direction
     if (newSortBy === sortBy) {
       setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC');
     } else {
-      // New sort field, default to ASC
       setSortBy(newSortBy);
       setSortDirection('ASC');
     }
-    setCurrentPage(0); // Reset to first page when sorting changes
-  };
-
-  const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setCurrentPage(0); // Reset to first page when page size changes
   };
 
   const handleCategoryFilterChange = (categoryId: string) => {
     setCategoryFilter(categoryId);
-    setCurrentPage(0); // Reset to first page when category changes
   };
 
   const handleBrandFilterChange = (brandId: string) => {
     setBrandFilter(brandId);
-    setCurrentPage(0); // Reset to first page when brand changes
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -821,8 +812,7 @@ export default function ProductsPage() {
         }
       }
 
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      await fetchProducts()
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to update product');
@@ -850,8 +840,7 @@ export default function ProductsPage() {
       }
 
       setProductToDelete(null);
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      await fetchProducts()
     } catch (err: any) {
       setError(err.message || 'Failed to delete product');
     } finally {
@@ -980,8 +969,7 @@ export default function ProductsPage() {
       }
 
       // Success - refresh products and close modal
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      await fetchProducts()
       handleCloseModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create product');
@@ -1136,22 +1124,6 @@ export default function ProductsPage() {
                   </button>
                 </div>
 
-                {/* Page Size Dropdown */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">הצג:</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                    className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-20"
-                    dir="ltr"
-                  >
-                    <option value={1}>1</option>
-                    <option value={2}>2</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                  </select>
-                </div>
             </div>
           </div>
         </div>
@@ -1394,16 +1366,6 @@ export default function ProductsPage() {
           })}
         </div>
       )}
-
-      {/* Pagination Controls - Bottom */}
-      <PaginationBar
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        maxWidth="max-w-6xl"
-        showCondition={!isLoading && products.length > 0 && totalPages > 0}
-        rtl={true}
-      />
 
       {/* Add Product Modal */}
       {isAddModalOpen && (

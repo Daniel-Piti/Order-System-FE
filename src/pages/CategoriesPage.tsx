@@ -144,8 +144,8 @@ export default function CategoriesPage() {
     if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByManagerId(managerId, 0, 1000);
-      setProducts(data.content.map((p: any) => ({ id: p.id, categoryId: p.categoryId })));
+      const data = await publicAPI.products.getAllByManagerId(managerId);
+      setProducts(data.map((p: { id: string; categoryId: number | null }) => ({ id: p.id, categoryId: p.categoryId })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

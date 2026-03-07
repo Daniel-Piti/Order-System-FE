@@ -2,10 +2,7 @@ import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { agentAPI, publicAPI } from '../services/api';
 import type { Product, Category, Brand } from '../services/api';
-import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
-
-const PAGE_SIZE_OPTIONS = [8, 12, 20] as const;
 
 interface ProductImage {
   id: number;
@@ -29,10 +26,6 @@ export default function AgentProductsPage() {
   const [productImageDirections, setProductImageDirections] = useState<Record<string, 'next' | 'prev'>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(PAGE_SIZE_OPTIONS[1]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedBrand, setSelectedBrand] = useState<string>('');
@@ -80,36 +73,26 @@ export default function AgentProductsPage() {
 
   useEffect(() => {
     if (!managerId) return;
-    fetchProducts(currentPage);
+    fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [managerId, currentPage, pageSize, sortDirection, selectedCategory, selectedBrand]);
+  }, [managerId, sortDirection, selectedCategory, selectedBrand]);
 
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [pageSize, sortDirection, selectedCategory, selectedBrand]);
-
-  const fetchProducts = async (page: number = 0) => {
+  const fetchProducts = async () => {
     if (!managerId) return;
 
     try {
       setIsLoading(true);
       setError('');
-
-      const pageResponse = await publicAPI.products.getAllByManagerId(
-        managerId,
-        page,
-        pageSize,
-        'name',
-        sortDirection,
-        selectedCategory ? Number(selectedCategory) : undefined,
-        selectedBrand ? Number(selectedBrand) : undefined
+      const list = await publicAPI.products.getAllByManagerId(managerId);
+      // Filter and sort client-side (BE returns all)
+      let filtered = list;
+      if (selectedCategory) filtered = filtered.filter((p) => p.categoryId === Number(selectedCategory));
+      if (selectedBrand) filtered = filtered.filter((p) => p.brandId === Number(selectedBrand));
+      const sorted = [...filtered].sort((a, b) =>
+        sortDirection === 'ASC' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
       );
-
-      setProducts(pageResponse.content);
-      setTotalPages(pageResponse.totalPages);
-      setTotalElements(pageResponse.totalElements);
-
-      await fetchProductImagesForAll(pageResponse.content);
+      setProducts(sorted);
+      await fetchProductImagesForAll(sorted);
     } catch (err: any) {
       console.error('Failed to load products for agent view:', err);
       setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת מוצרים');
@@ -183,10 +166,6 @@ export default function AgentProductsPage() {
     schedulePrevReset(productId);
   };
 
-  const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setPageSize(Number(event.target.value) as (typeof PAGE_SIZE_OPTIONS)[number]);
-  };
-
   const handleSortToggle = () => {
     setSortDirection((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
   };
@@ -222,22 +201,6 @@ export default function AgentProductsPage() {
       <div className="glass-card rounded-3xl p-6 space-y-4">
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">הצג:</span>
-              <select
-                value={pageSize}
-                onChange={handlePageSizeChange}
-                className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-24"
-                dir="ltr"
-              >
-                {PAGE_SIZE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium uppercase tracking-wide text-gray-600" dir="rtl">מיין:</span>
               <button
@@ -330,7 +293,7 @@ export default function AgentProductsPage() {
             <p className="text-gray-600">{error}</p>
           </div>
           <button
-            onClick={() => fetchProducts(currentPage)}
+            onClick={() => fetchProducts()}
             className="glass-button px-6 py-2 rounded-xl font-medium text-gray-800 hover:bg-white/40 border border-sky-200 hover:border-sky-300 transition-colors"
           >
             נסה שוב
@@ -486,14 +449,6 @@ export default function AgentProductsPage() {
         </div>
       )}
 
-      <PaginationBar
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        maxWidth="max-w-6xl"
-        showCondition={!isLoading && totalPages > 1}
-        rtl={true}
-      />
     </div>
   );
 }

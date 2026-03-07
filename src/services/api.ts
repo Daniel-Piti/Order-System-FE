@@ -709,24 +709,9 @@ export const brandAPI = {
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {
-    // Get all products for a manager (seller) with pagination
-    getAllByManagerId: async (
-      managerId: string,
-      page: number = 0,
-      size: number = 20,
-      sortBy: string = 'name',
-      sortDirection: string = 'ASC',
-      categoryId?: number,
-      brandId?: number
-    ): Promise<PageResponse<Product>> => {
-      const params: any = { pageNumber: page, pageSize: size, sortBy, sortOrder: sortDirection.toLowerCase() };
-      if (categoryId) {
-        params.categoryId = categoryId;
-      }
-      if (brandId) {
-        params.brandId = brandId;
-      }
-      const response = await axios.get<PageResponse<Product>>(`${API_BASE_URL}/public/products/manager/${managerId}`, { params });
+    // Get all products for a manager (seller) - no pagination, max 1000; FE handles sort/filter
+    getAllByManagerId: async (managerId: string): Promise<Product[]> => {
+      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/manager/${managerId}`);
       return response.data;
     },
 

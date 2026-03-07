@@ -129,9 +129,8 @@ export default function OverridesPage() {
     if (!managerId) return;
     
     try {
-      const data = await publicAPI.products.getAllByManagerId(managerId, 0, 1000);
-      const items = data.content ?? [];
-      setProducts(items.map(p => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
+      const data = await publicAPI.products.getAllByManagerId(managerId);
+      setProducts(data.map(p => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

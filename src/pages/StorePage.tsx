@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { publicAPI, orderAPI, agentAPI } from '../services/api';
 import type { Product, Category, Brand, OrderPublic, Order } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
-import PaginationBar from '../components/PaginationBar';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { formatPrice } from '../utils/formatPrice';
 
@@ -33,11 +32,6 @@ export default function StorePage() {
   const [productImages, setProductImages] = useState<Record<string, string[]>>({});
   // Store current image index for each product: productId -> currentIndex
   const [productImageIndices, setProductImageIndices] = useState<Record<string, number>>({});
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-  const [totalPages, setTotalPages] = useState(0);
   
   // Sorting state
   const [sortBy, setSortBy] = useState('name');
@@ -263,141 +257,51 @@ export default function StorePage() {
 
   const fetchProducts = useCallback(async () => {
     if (!managerId) return;
-    
+
     try {
       setIsLoading(true);
       setError('');
-      
-      // If orderId exists, use order-specific endpoint (with price overrides) - returns all products
-      // Otherwise use regular store endpoint with pagination
+
+      let allProducts: Product[];
       if (orderId) {
-        const allProducts = await publicAPI.products.getAllByOrderId(orderId);
-        
-        // In edit mode, update cart items with new product prices
+        allProducts = await publicAPI.products.getAllByOrderId(orderId);
         if (isEditMode) {
           setCart(prevCart => {
-            if (prevCart.length === 0) return prevCart; // No cart items to update
+            if (prevCart.length === 0) return prevCart;
             return prevCart.map(cartItem => {
               const updatedProduct = allProducts.find(p => p.id === cartItem.product.id);
-              if (updatedProduct) {
-                return {
-                  ...cartItem,
-                  product: updatedProduct // Update with new product object that has correct prices
-                };
-              }
-              return cartItem; // Keep original if product not found
+              if (updatedProduct) return { ...cartItem, product: updatedProduct };
+              return cartItem;
             });
           });
         }
-        
-        // Filter by categories and brands client-side if selected
-        let filteredProducts = allProducts;
-        if (selectedCategories.length > 0) {
-          filteredProducts = filteredProducts.filter(p => p.categoryId && selectedCategories.includes(p.categoryId));
-        }
-        if (selectedBrands.length > 0) {
-          filteredProducts = filteredProducts.filter(p => p.brandId && selectedBrands.includes(p.brandId));
-        }
-        
-        // Sort client-side
-        let sortedProducts = [...filteredProducts];
-        if (sortBy === 'name') {
-          sortedProducts.sort((a, b) => {
-            const comparison = a.name.localeCompare(b.name);
-            return sortDirection === 'ASC' ? comparison : -comparison;
-          });
-        } else if (sortBy === 'price') {
-          sortedProducts.sort((a, b) => {
-            const comparison = a.price - b.price;
-            return sortDirection === 'ASC' ? comparison : -comparison;
-          });
-        } else if (sortBy === 'minimumPrice') {
-          sortedProducts.sort((a, b) => {
-            const comparison = a.minimumPrice - b.minimumPrice;
-            return sortDirection === 'ASC' ? comparison : -comparison;
-          });
-        }
-        
-        // Paginate client-side
-        const startIndex = currentPage * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
-        
-        setProducts(paginatedProducts);
-        setTotalPages(Math.ceil(sortedProducts.length / pageSize));
-        
-        // Fetch images for products
-        await fetchProductImagesForAll(paginatedProducts);
       } else {
-        // Regular store - use paginated endpoint
-        // Note: Backend currently supports single category/brand filter
-        // For multi-select, we'll fetch all and filter client-side
-        const hasFilters = selectedCategories.length > 0 || selectedBrands.length > 0;
-        
-        if (hasFilters) {
-          // Fetch all products and filter client-side
-          const allProductsResponse = await publicAPI.products.getAllByManagerId(
-            managerId,
-            0,
-            1000,
-            sortBy,
-            sortDirection
-          );
-          let filteredProducts = allProductsResponse.content ?? [];
-          
-          // Filter by categories
-          if (selectedCategories.length > 0) {
-            filteredProducts = filteredProducts.filter(p => p.categoryId && selectedCategories.includes(p.categoryId));
-          }
-          
-          // Filter by brands
-          if (selectedBrands.length > 0) {
-            filteredProducts = filteredProducts.filter(p => p.brandId && selectedBrands.includes(p.brandId));
-          }
-          
-          // Sort client-side (already sorted, but keep for consistency)
-          let sortedProducts = [...filteredProducts];
-          if (sortBy === 'name') {
-            sortedProducts.sort((a, b) => {
-              const comparison = a.name.localeCompare(b.name);
-              return sortDirection === 'ASC' ? comparison : -comparison;
-            });
-          } else if (sortBy === 'price') {
-            sortedProducts.sort((a, b) => {
-              const comparison = a.price - b.price;
-              return sortDirection === 'ASC' ? comparison : -comparison;
-            });
-          }
-          
-          // Paginate client-side
-          const startIndex = currentPage * pageSize;
-          const endIndex = startIndex + pageSize;
-          const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
-          
-          setProducts(paginatedProducts);
-          setTotalPages(Math.ceil(sortedProducts.length / pageSize));
-          
-          await fetchProductImagesForAll(paginatedProducts);
-        } else {
-          // No filters - use normal pagination
-          const pageResponse = await publicAPI.products.getAllByManagerId(
-            managerId,
-            currentPage,
-            pageSize,
-            sortBy,
-            sortDirection
-          );
-          
-          setProducts(pageResponse.content);
-          setTotalPages(pageResponse.totalPages);
-          
-          await fetchProductImagesForAll(pageResponse.content);
-        }
+        allProducts = await publicAPI.products.getAllByManagerId(managerId);
       }
+
+      // Filter by categories and brands client-side if selected
+      let filtered = allProducts;
+      if (selectedCategories.length > 0) {
+        filtered = filtered.filter(p => p.categoryId && selectedCategories.includes(p.categoryId));
+      }
+      if (selectedBrands.length > 0) {
+        filtered = filtered.filter(p => p.brandId && selectedBrands.includes(p.brandId));
+      }
+
+      // Sort client-side (for orderId path; for store path backend already sorts but we re-sort after filter)
+      const sorted = [...filtered];
+      if (sortBy === 'name') {
+        sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * a.name.localeCompare(b.name));
+      } else if (sortBy === 'price') {
+        sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * (a.price - b.price));
+      } else if (sortBy === 'minimumPrice') {
+        sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * (a.minimumPrice - b.minimumPrice));
+      }
+
+      setProducts(sorted);
+      await fetchProductImagesForAll(sorted);
     } catch (err: any) {
       console.error('Store error:', err);
-      
-      // Check if it's a 404 (user not found)
       if (err.response?.status === 404 || err.message?.includes('404')) {
         setError('STORE_NOT_FOUND');
       } else if (err.response?.status === 403 || err.message?.includes('403')) {
@@ -408,7 +312,7 @@ export default function StorePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [managerId, orderId, isEditMode, currentPage, pageSize, sortBy, sortDirection, selectedCategories, selectedBrands]);
+  }, [managerId, orderId, isEditMode, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!managerId || productsList.length === 0) return;
@@ -503,23 +407,12 @@ export default function StorePage() {
       setSortBy(newSortBy);
       setSortDirection('ASC');
     }
-    setCurrentPage(0); // Reset to first page when sorting changes
-  };
-
-  const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setCurrentPage(0); // Reset to first page when page size changes
   };
 
   const handleCategoryToggle = (categoryId: number) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
-    setCurrentPage(0); // Reset to first page when filter changes
+    setSelectedCategories(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
+    );
   };
 
   const handleBrandToggle = (brandId: number) => {
@@ -530,13 +423,11 @@ export default function StorePage() {
         return [...prev, brandId];
       }
     });
-    setCurrentPage(0); // Reset to first page when filter changes
   };
 
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
-    setCurrentPage(0);
   };
 
   const updateQuantity = (productId: string, newQuantity: number) => {
@@ -785,21 +676,6 @@ export default function StorePage() {
                     )}
                   </button>
                 </div>
-              </div>
-              <div>
-                <span className="text-sm font-semibold text-gray-700 block mb-2">הצג:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
-                  dir="ltr"
-                >
-                  <option value={2}>2</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
               </div>
             </div>
 
@@ -1093,16 +969,6 @@ export default function StorePage() {
           </div>
         )}
 
-        {/* Pagination Controls - Bottom */}
-        <PaginationBar
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          maxWidth="max-w-full"
-          sidebarOffset={false}
-          showCondition={totalPages > 0}
-          rtl={true}
-        />
         </main>
       </div>
 
@@ -1194,21 +1060,6 @@ export default function StorePage() {
                         )}
                       </button>
                     </div>
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-gray-700 block mb-2">הצג:</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                      className="glass-select w-full pl-3 pr-8 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer"
-                      dir="ltr"
-                    >
-                      <option value={2}>2</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
                   </div>
                 </div>
 
