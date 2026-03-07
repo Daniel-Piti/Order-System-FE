@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import CloseButton from '../components/CloseButton';
 import { useNavigate } from 'react-router-dom';
-import { managerAPI, publicAPI } from '../services/api';
-import type { Product, Category, Brand } from '../services/api';
+import { managerAPI, productAPI, publicAPI } from '../services/api';
+import type { Product, Category, Brand, CreateProductRequest, ProductInfo, ProductImage } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import SparkMD5 from 'spark-md5';
@@ -111,14 +111,6 @@ export default function ProductsPage() {
   const [isDraggingEdit, setIsDraggingEdit] = useState(false);
   
   // Product image states for edit modal
-  interface ProductImage {
-    id: number;
-    productId: string;
-    managerId: string;
-    url: string; // Full public URL from R2 (constructed from s3_key)
-    fileName: string; // From product_images.file_name (NOT NULL)
-    mimeType: string; // From product_images.mime_type (NOT NULL)
-  }
   const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
   const [originalImages, setOriginalImages] = useState<ProductImage[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
@@ -195,30 +187,23 @@ export default function ProductsPage() {
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!managerId || productsList.length === 0) return;
-    
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
-          if (response.ok) {
-            const images: ProductImage[] = await response.json();
-            // Sort images by filename
-            const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-            return { productId: product.id, imageUrls: sortedImages.map(img => img.url) };
-          }
+          const images = await publicAPI.products.getImages(managerId, product.id);
+          const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+          return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
         } catch (err) {
           console.error(`Failed to fetch images for product ${product.id}:`, err);
+          return { productId: product.id, imageUrls: [] };
         }
-        return { productId: product.id, imageUrls: [] };
       });
-      
       const results = await Promise.all(imagePromises);
       const imagesMap: Record<string, string[]> = {};
       results.forEach(({ productId, imageUrls }) => {
         imagesMap[productId] = imageUrls;
       });
-      setProductImages(prev => ({ ...prev, ...imagesMap }));
+      setProductImages((prev) => ({ ...prev, ...imagesMap }));
     } catch (err) {
       console.error('Failed to fetch product images:', err);
     }
@@ -549,16 +534,10 @@ export default function ProductsPage() {
   const fetchProductImages = async (managerId: string, productId: string) => {
     try {
       setIsLoadingImages(true);
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}/images`);
-      
-      if (response.ok) {
-        const images: ProductImage[] = await response.json();
-        // Sort images by filename
-        const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-        setExistingImages(sortedImages);
-        setOriginalImages(sortedImages); // Store original for undo
-      }
+      const images = await publicAPI.products.getImages(managerId, productId);
+      const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+      setExistingImages(sorted);
+      setOriginalImages(sorted);
     } catch (err) {
       console.error('Failed to fetch product images:', err);
     } finally {
@@ -714,53 +693,24 @@ export default function ProductsPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      
-      // Only update product data if it changed
+      let updatedProduct: Product | null = null;
       if (productDataChanged) {
-        const response = await fetch(`${API_BASE_URL}/products/${productToEdit.id}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: editFormData.name,
-            brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
-            categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
-            minimumPrice: minimumPriceValue,
-            price: finalPrice,
-            description: editFormData.description,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to update product');
-        }
+        const productInfo: ProductInfo = {
+          name: editFormData.name,
+          brandId: editFormData.brandId ? Number(editFormData.brandId) : null,
+          categoryId: editFormData.categoryId ? Number(editFormData.categoryId) : null,
+          minimumPrice: minimumPriceValue,
+          price: finalPrice,
+          description: editFormData.description ?? '',
+        };
+        updatedProduct = await productAPI.updateProductInfo(productToEdit.id, productInfo);
       }
 
-      // Delete images if any were marked for deletion (bulk delete)
       if (imagesToDelete.length > 0) {
-        const deleteResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(imagesToDelete),
-        });
-        
-        if (!deleteResponse.ok) {
-          const errorText = await deleteResponse.text();
-          throw new Error(errorText || 'Failed to delete images');
-        }
+        await productAPI.deleteProductImages(productToEdit.id, imagesToDelete);
       }
 
-      // Upload new images if any were added
       if (newImagesToAdd.length > 0) {
-        // Calculate MD5 hashes for all new images
         const imagesMetadata = await Promise.all(
           newImagesToAdd.map(async (imageFile) => {
             const fileMd5Base64 = await calculateFileMD5(imageFile);
@@ -768,52 +718,25 @@ export default function ProductsPage() {
               fileName: imageFile.name,
               contentType: imageFile.type,
               fileSizeBytes: imageFile.size,
-              fileMd5Base64: fileMd5Base64,
+              fileMd5Base64,
             };
           })
         );
-
-        // Step 1: Get presigned URLs from backend
-        const uploadResponse = await fetch(`${API_BASE_URL}/products/${productToEdit.id}/images`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(imagesMetadata),
-        });
-
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          let errorMessage = 'Failed to upload images';
-          try {
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.userMessage || errorData.message || 'נכשל בהעלאת התמונות';
-          } catch (parseError) {
-            errorMessage = errorText || 'נכשל בהעלאת התמונות';
-          }
-          throw new Error(errorMessage);
-        }
-
-        const result = await uploadResponse.json();
-
-        // Step 2: Upload images to S3 using presigned URLs
-        if (result.imagesPreSignedUrls && result.imagesPreSignedUrls.length > 0) {
+        const result = await productAPI.uploadProductImages(productToEdit.id, imagesMetadata);
+        if (result.imagesPreSignedUrls?.length) {
           await Promise.all(
             result.imagesPreSignedUrls.map(async (preSignedUrl: string, index: number) => {
               const imageFile = newImagesToAdd[index];
-              const imageMetadata = imagesMetadata[index];
-              
-              const s3UploadResponse = await fetch(preSignedUrl, {
+              const meta = imagesMetadata[index];
+              const s3Res = await fetch(preSignedUrl, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': imageFile.type,
-                  'Content-MD5': imageMetadata.fileMd5Base64,
+                  'Content-MD5': meta.fileMd5Base64,
                 },
                 body: imageFile,
               });
-
-              if (!s3UploadResponse.ok) {
+              if (!s3Res.ok) {
                 throw new Error(`נכשל בהעלאת התמונה ${imageFile.name} ל-S3`);
               }
             })
@@ -821,11 +744,14 @@ export default function ProductsPage() {
         }
       }
 
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      if (updatedProduct) {
+        setProducts((prev) => prev.map((p) => (p.id === productToEdit.id ? updatedProduct! : p)));
+      }
+      await fetchProductImagesForAll(updatedProduct ? [updatedProduct] : [productToEdit]);
+      setCurrentPage(0);
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to update product');
+      setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to update product');
     } finally {
       setIsSubmitting(false);
     }
@@ -833,27 +759,14 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
-
+    const idToDelete = productToDelete.id;
     try {
       setIsDeleting(true);
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE_URL}/products/${productToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete product');
-      }
-
+      await productAPI.deleteProduct(idToDelete);
       setProductToDelete(null);
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      setProducts((prev) => prev.filter((p) => p.id !== idToDelete));
     } catch (err: any) {
-      setError(err.message || 'Failed to delete product');
+      setError(err?.response?.data?.userMessage || err?.message || 'Failed to delete product');
     } finally {
       setIsDeleting(false);
     }
@@ -901,12 +814,9 @@ export default function ProductsPage() {
 
     try {
       setIsSubmitting(true);
-      const token = localStorage.getItem('authToken');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      
       const minimumPriceValue = Math.round(Math.min(Number(formData.minimumPrice), MAX_PRICE) * 100) / 100;
       const finalPrice = Math.round(Math.min(Number(formData.price), MAX_PRICE) * 100) / 100;
-      
+
       // Calculate MD5 hashes for all images
       const imagesMetadata = await Promise.all(
         selectedImages.map(async (image) => {
@@ -920,8 +830,8 @@ export default function ProductsPage() {
         })
       );
 
-      // Step 1: Create product with image metadata (backend generates s3Keys and returns presigned URLs)
-      const createProductBody: any = {
+      // Step 1: Create product with image metadata (backend returns product + presigned URLs)
+      const createRequest: CreateProductRequest = {
         productInfo: {
           name: formData.name,
           brandId: formData.brandId ? Number(formData.brandId) : null,
@@ -930,31 +840,10 @@ export default function ProductsPage() {
           price: finalPrice,
           description: formData.description || '',
         },
-        imagesMetadata: imagesMetadata,
+        imagesMetadata,
       };
 
-      const response = await fetch(`${API_BASE_URL}/products`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(createProductBody),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'Failed to create product';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.userMessage || errorData.message || 'נכשל ביצירת המוצר';
-        } catch (parseError) {
-          errorMessage = errorText || 'נכשל ביצירת המוצר';
-        }
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
+      const result = await productAPI.createProduct(createRequest);
 
       // Step 2: Upload images to S3 using presigned URLs
       if (result.imagesPreSignedUrls && result.imagesPreSignedUrls.length > 0) {
@@ -962,7 +851,7 @@ export default function ProductsPage() {
           result.imagesPreSignedUrls.map(async (preSignedUrl: string, index: number) => {
             const imageFile = selectedImages[index];
             const imageMetadata = imagesMetadata[index];
-            
+
             const uploadResponse = await fetch(preSignedUrl, {
               method: 'PUT',
               headers: {
@@ -979,12 +868,13 @@ export default function ProductsPage() {
         );
       }
 
-      // Success - refresh products and close modal
-      setCurrentPage(0); // Reset to first page
-      await fetchProducts(0); // Explicitly fetch to ensure refresh
+      // Use returned product: prepend and fetch images for it (no full refetch)
+      setProducts((prev) => [result.product, ...prev]);
+      setCurrentPage(0);
+      await fetchProductImagesForAll([result.product]);
       handleCloseModal();
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create product');
+      setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to create product');
     } finally {
       setIsSubmitting(false);
     }
