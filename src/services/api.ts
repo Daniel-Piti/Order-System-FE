@@ -368,21 +368,24 @@ export const agentAPI = {
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<string> => {
-    const response = await api.post<string>('/agent/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    const response = await api.post<Order>('/agent/orders', data);
     return response.data;
   },
 
-  markOrderCancelled: async (orderId: string): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}/status/cancelled`);
+  markOrderCancelled: async (orderId: string): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}/status/cancelled`);
+    return response.data;
   },
 
-  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}`, data);
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}`, data);
+    return response.data;
   },
 
-  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}/discount`, { discount });
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}/discount`, { discount });
+    return response.data;
   },
 };
 
@@ -452,6 +455,25 @@ export interface Product {
   description: string;
 }
 
+export interface ProductInfo {
+  name: string;
+  brandId: number | null;
+  categoryId: number | null;
+  minimumPrice: number;
+  price: number;
+  description: string;
+}
+
+export interface CreateProductRequest {
+  productInfo: ProductInfo;
+  imagesMetadata: ImageMetadata[];
+}
+
+export interface CreateProductResponse {
+  product: Product;
+  imagesPreSignedUrls: string[];
+}
+
 export interface ProductDataForOrder {
   productId: string;
   productName: string;
@@ -492,6 +514,14 @@ export interface CustomerRequest {
   discountPercentage?: number;
 }
 
+export interface SelectedLocation {
+  locationId: number | null;
+  name: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  phoneNumber: string | null;
+}
+
 export interface Order {
   id: string;
   referenceId: number;
@@ -499,9 +529,7 @@ export interface Order {
   managerId: string;
   agentId: string | null;
   customerId: string | null;
-  storeStreetAddress: string | null;
-  storeCity: string | null;
-  storePhoneNumber: string | null;
+  selectedLocation: SelectedLocation | null;
   customerName: string | null;
   customerPhone: string | null;
   customerEmail: string | null;
@@ -584,8 +612,8 @@ export const orderAPI = {
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<string> => {
-    const response = await api.post<string>('/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    const response = await api.post<Order>('/orders', data);
     return response.data;
   },
 
@@ -593,16 +621,19 @@ export const orderAPI = {
     await api.put(`/orders/${orderId}/status/done`);
   },
 
-  markOrderCancelled: async (orderId: string): Promise<void> => {
-    await api.put(`/orders/${orderId}/status/cancelled`);
+  markOrderCancelled: async (orderId: string): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}/status/cancelled`);
+    return response.data;
   },
 
-  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
-    await api.put(`/orders/${orderId}`, data);
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}`, data);
+    return response.data;
   },
 
-  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
-    await api.put(`/orders/${orderId}/discount`, { discount });
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}/discount`, { discount });
+    return response.data;
   },
 
   getBusinessStats: async (year?: number, month?: number): Promise<BusinessStats> => {
@@ -706,6 +737,51 @@ export const brandAPI = {
   },
 };
 
+/** Product image from GET /public/products/.../images (url is full public URL). */
+export interface ProductImage {
+  id: number;
+  productId: string;
+  managerId: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+}
+
+export interface UploadProductImagesResponse {
+  imagesPreSignedUrls: string[];
+}
+
+/** Manager product API (authenticated). */
+export const productAPI = {
+  createProduct: async (request: CreateProductRequest): Promise<CreateProductResponse> => {
+    const response = await api.post<CreateProductResponse>('/products', request);
+    return response.data;
+  },
+
+  updateProductInfo: async (productId: string, productInfo: ProductInfo): Promise<Product> => {
+    const response = await api.put<Product>(`/products/${productId}`, productInfo);
+    return response.data;
+  },
+
+  deleteProduct: async (productId: string): Promise<void> => {
+    await api.delete(`/products/${productId}`);
+  },
+
+  /** Delete product images by IDs. Only images belonging to this product are deleted. */
+  deleteProductImages: async (productId: string, imageIds: number[]): Promise<void> => {
+    await api.delete(`/products/${productId}/images`, { data: imageIds });
+  },
+
+  /** Get presigned URLs for new images; upload each file to the corresponding URL (PUT, Content-Type + Content-MD5). */
+  uploadProductImages: async (
+    productId: string,
+    imagesMetadata: ImageMetadata[]
+  ): Promise<UploadProductImagesResponse> => {
+    const response = await api.post<UploadProductImagesResponse>(`/products/${productId}/images`, imagesMetadata);
+    return response.data;
+  },
+};
+
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {
@@ -725,6 +801,14 @@ export const publicAPI = {
     getAllByOrderId: async (orderId: string): Promise<Product[]> => {
       const response = await axios.get<Product[]>(
         `${API_BASE_URL}/public/products/order/${orderId}`
+      );
+      return response.data;
+    },
+
+    /** Get image list for a product (public, no auth). */
+    getImages: async (managerId: string, productId: string): Promise<ProductImage[]> => {
+      const response = await axios.get<ProductImage[]>(
+        `${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}/images`
       );
       return response.data;
     },

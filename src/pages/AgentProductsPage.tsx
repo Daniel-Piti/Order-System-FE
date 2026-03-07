@@ -107,20 +107,14 @@ export default function AgentProductsPage() {
       return;
     }
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-
     const imagePromises = productList.map(async (product) => {
       try {
-        const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
-        if (!response.ok) {
-          return { productId: product.id, images: [] as ProductImage[] };
-        }
-        const images: ProductImage[] = await response.json();
-        const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-        return { productId: product.id, images: sortedImages };
+        const images = await publicAPI.products.getImages(managerId, product.id);
+        const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+        return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
       } catch (err) {
         console.error(`Failed to fetch images for product ${product.id}`, err);
-        return { productId: product.id, images: [] as ProductImage[] };
+        return { productId: product.id, imageUrls: [] };
       }
     });
 
@@ -130,8 +124,8 @@ export default function AgentProductsPage() {
     const indexMap: Record<string, number> = {};
     const prevIndexMap: Record<string, number | null> = {};
 
-    results.forEach(({ productId, images }) => {
-      imageMap[productId] = images.map((image) => image.url);
+    results.forEach(({ productId, imageUrls }) => {
+      imageMap[productId] = imageUrls;
       indexMap[productId] = 0;
       prevIndexMap[productId] = null;
     });

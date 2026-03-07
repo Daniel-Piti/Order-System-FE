@@ -316,30 +316,23 @@ export default function StorePage() {
 
   const fetchProductImagesForAll = async (productsList: Product[]) => {
     if (!managerId || productsList.length === 0) return;
-    
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
       const imagePromises = productsList.map(async (product) => {
         try {
-          const response = await fetch(`${API_BASE_URL}/public/products/manager/${managerId}/product/${product.id}/images`);
-          if (response.ok) {
-            const images: Array<{ id: number; url: string; fileName: string }> = await response.json();
-            // Sort images by fileName (same as ProductsPage)
-            const sortedImages = images.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-            return { productId: product.id, imageUrls: sortedImages.map(img => img.url) };
-          }
+          const images = await publicAPI.products.getImages(managerId, product.id);
+          const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
+          return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
         } catch (err) {
           console.error(`Failed to fetch images for product ${product.id}:`, err);
+          return { productId: product.id, imageUrls: [] };
         }
-        return { productId: product.id, imageUrls: [] };
       });
-      
       const results = await Promise.all(imagePromises);
       const imagesMap: Record<string, string[]> = {};
       results.forEach(({ productId, imageUrls }) => {
         imagesMap[productId] = imageUrls;
       });
-      setProductImages(prev => ({ ...prev, ...imagesMap }));
+      setProductImages((prev) => ({ ...prev, ...imagesMap }));
     } catch (err) {
       console.error('Failed to fetch product images:', err);
     }
