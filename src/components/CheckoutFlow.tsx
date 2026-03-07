@@ -85,11 +85,15 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
         
         // In edit mode, pre-fill location and notes from order
         if (isEditMode && editOrder) {
-          // Find location by address match (storeStreetAddress, storeCity)
-          const matchingLocation = data.find(loc => 
-            loc.streetAddress === editOrder.storeStreetAddress && 
-            loc.city === editOrder.storeCity
-          );
+          const sel = editOrder.selectedLocation;
+          const matchingLocation = sel?.locationId != null
+            ? data.find(loc => loc.id === sel.locationId)
+            : sel
+              ? data.find(loc =>
+                  loc.streetAddress === sel.streetAddress &&
+                  loc.city === sel.city
+                )
+              : undefined;
           if (matchingLocation) {
             setSelectedLocationId(matchingLocation.id);
           } else if (data.length === 1) {

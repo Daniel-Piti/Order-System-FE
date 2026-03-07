@@ -1042,29 +1042,37 @@ export default function AgentOrdersPage() {
 
             {/* Pickup Location */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">מיקום איסוף</h3>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">סניף</h3>
               <div className="glass-card rounded-xl p-4 space-y-2">
-                {viewingOrder.storeStreetAddress ? (
+                {viewingOrder.selectedLocation ? (
                   <>
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="text-sm text-gray-600">כתובת</span>
-                      <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeStreetAddress}</span>
-                    </div>
-                    {viewingOrder.storeCity && (
+                    {viewingOrder.selectedLocation.name && (
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm text-gray-600">עיר</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storeCity}</span>
+                        <span className="text-sm text-gray-600">שם</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.selectedLocation.name}</span>
                       </div>
                     )}
-                    {viewingOrder.storePhoneNumber && (
+                    {viewingOrder.selectedLocation.streetAddress && (
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-sm text-gray-600">כתובת</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.selectedLocation.streetAddress}</span>
+                      </div>
+                    )}
+                    {viewingOrder.selectedLocation.city && (
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-sm text-gray-600">עיר</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.selectedLocation.city}</span>
+                      </div>
+                    )}
+                    {viewingOrder.selectedLocation.phoneNumber && (
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-sm text-gray-600">טלפון</span>
-                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.storePhoneNumber}</span>
+                        <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{viewingOrder.selectedLocation.phoneNumber}</span>
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">מיקום איסוף לא נבחר עדיין</p>
+                  <p className="text-sm text-gray-500 italic">סניף לא נבחר עדיין</p>
                 )}
               </div>
             </div>

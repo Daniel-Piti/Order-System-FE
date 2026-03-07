@@ -495,6 +495,14 @@ export interface CustomerRequest {
   discountPercentage?: number;
 }
 
+export interface SelectedLocation {
+  locationId: number | null;
+  name: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  phoneNumber: string | null;
+}
+
 export interface Order {
   id: string;
   referenceId: number;
@@ -502,9 +510,7 @@ export interface Order {
   managerId: string;
   agentId: string | null;
   customerId: string | null;
-  storeStreetAddress: string | null;
-  storeCity: string | null;
-  storePhoneNumber: string | null;
+  selectedLocation: SelectedLocation | null;
   customerName: string | null;
   customerPhone: string | null;
   customerEmail: string | null;

@@ -164,29 +164,37 @@ export default function OrderViewModal({
 
         {/* Pickup */}
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">מיקום איסוף</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">סניף</h3>
           <div className="glass-card rounded-xl p-4 space-y-2">
-            {order.storeStreetAddress ? (
+            {order.selectedLocation ? (
               <>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-sm text-gray-600">כתובת</span>
-                  <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.storeStreetAddress}</span>
-                </div>
-                {order.storeCity && (
+                {order.selectedLocation.name && (
                   <div className="flex items-start justify-between gap-3">
-                    <span className="text-sm text-gray-600">עיר</span>
-                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.storeCity}</span>
+                    <span className="text-sm text-gray-600">שם</span>
+                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.selectedLocation.name}</span>
                   </div>
                 )}
-                {order.storePhoneNumber && (
+                {order.selectedLocation.streetAddress && (
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm text-gray-600">כתובת</span>
+                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.selectedLocation.streetAddress}</span>
+                  </div>
+                )}
+                {order.selectedLocation.city && (
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm text-gray-600">עיר</span>
+                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.selectedLocation.city}</span>
+                  </div>
+                )}
+                {order.selectedLocation.phoneNumber && (
                   <div className="flex items-start justify-between gap-3">
                     <span className="text-sm text-gray-600">טלפון</span>
-                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.storePhoneNumber}</span>
+                    <span className="text-sm font-medium text-gray-800 text-left break-words break-all">{order.selectedLocation.phoneNumber}</span>
                   </div>
                 )}
               </>
             ) : (
-              <p className="text-sm text-gray-500 italic">מיקום איסוף לא נבחר עדיין</p>
+              <p className="text-sm text-gray-500 italic">סניף לא נבחר עדיין</p>
             )}
           </div>
         </div>
