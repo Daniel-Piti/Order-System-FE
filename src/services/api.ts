@@ -368,21 +368,24 @@ export const agentAPI = {
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<string> => {
-    const response = await api.post<string>('/agent/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    const response = await api.post<Order>('/agent/orders', data);
     return response.data;
   },
 
-  markOrderCancelled: async (orderId: string): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}/status/cancelled`);
+  markOrderCancelled: async (orderId: string): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}/status/cancelled`);
+    return response.data;
   },
 
-  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}`, data);
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}`, data);
+    return response.data;
   },
 
-  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
-    await api.put(`/agent/orders/${orderId}/discount`, { discount });
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<Order> => {
+    const response = await api.put<Order>(`/agent/orders/${orderId}/discount`, { discount });
+    return response.data;
   },
 };
 
@@ -584,8 +587,8 @@ export const orderAPI = {
     return response.data;
   },
 
-  createOrder: async (data: CreateOrderRequest): Promise<string> => {
-    const response = await api.post<string>('/orders', data);
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    const response = await api.post<Order>('/orders', data);
     return response.data;
   },
 
@@ -593,16 +596,19 @@ export const orderAPI = {
     await api.put(`/orders/${orderId}/status/done`);
   },
 
-  markOrderCancelled: async (orderId: string): Promise<void> => {
-    await api.put(`/orders/${orderId}/status/cancelled`);
+  markOrderCancelled: async (orderId: string): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}/status/cancelled`);
+    return response.data;
   },
 
-  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<void> => {
-    await api.put(`/orders/${orderId}`, data);
+  updateOrder: async (orderId: string, data: UpdateOrderRequest): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}`, data);
+    return response.data;
   },
 
-  updateOrderDiscount: async (orderId: string, discount: number): Promise<void> => {
-    await api.put(`/orders/${orderId}/discount`, { discount });
+  updateOrderDiscount: async (orderId: string, discount: number): Promise<Order> => {
+    const response = await api.put<Order>(`/orders/${orderId}/discount`, { discount });
+    return response.data;
   },
 
   getBusinessStats: async (year?: number, month?: number): Promise<BusinessStats> => {

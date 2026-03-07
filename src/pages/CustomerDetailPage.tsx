@@ -218,13 +218,16 @@ export default function CustomerDetailPage() {
     setIsGeneratingLink(true);
     setError('');
     try {
-      const orderId = await orderAPI.createOrder({ customerId });
+      const newOrder = await orderAPI.createOrder({ customerId });
       const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
-      const link = `${baseUrl}/store/order/${orderId}`;
+      const link = `${baseUrl}/store/order/${newOrder.id}`;
       setGeneratedLink(link);
       await copyToClipboard(link);
+      setOrdersPage((prev) => ({
+        content: [newOrder, ...prev.content],
+        totalPages: prev.totalPages === 0 ? 1 : prev.totalPages,
+      }));
       setOrdersPageNum(0);
-      await fetchOrders(0);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { userMessage?: string }; status: number }; message?: string };
       const msg = e?.response?.data?.userMessage || (e?.message as string) || 'שגיאה ביצירת קישור';
@@ -288,12 +291,12 @@ export default function CustomerDetailPage() {
     setCancellingOrderId(orderId);
     setError('');
     try {
-      await orderAPI.markOrderCancelled(orderId);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) return { ...prev, status: 'CANCELLED' };
-        return prev;
-      });
-      await fetchOrders(ordersPageNum);
+      const cancelledOrder = await orderAPI.markOrderCancelled(orderId);
+      setViewingOrder((prev) => (prev?.id === orderId ? cancelledOrder : prev));
+      setOrdersPage((prev) => ({
+        ...prev,
+        content: prev.content.map((o) => (o.id === orderId ? cancelledOrder : o)),
+      }));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { userMessage?: string } }; status?: number };
       setError(e?.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
@@ -318,15 +321,15 @@ export default function CustomerDetailPage() {
     setIsUpdatingDiscount(true);
     setError('');
     try {
-      await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === discountOrder.id) return { ...prev, discount: discountNum };
-        return prev;
-      });
+      const updatedOrder = await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
+      setViewingOrder((prev) => (prev?.id === updatedOrder.id ? updatedOrder : prev));
+      setOrdersPage((prev) => ({
+        ...prev,
+        content: prev.content.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)),
+      }));
       setDiscountOrder(null);
       setDiscountValue('');
       setDiscountMode('number');
-      await fetchOrders(ordersPageNum);
     } catch (err: unknown) {
       const er = err as { response?: { data?: { userMessage?: string } }; status?: number };
       const msg = er?.response?.data?.userMessage || 'נכשל בעדכון ההנחה';

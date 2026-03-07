@@ -196,14 +196,9 @@ export default function AgentOrdersPage() {
     setCancellingOrderId(orderId);
     setError('');
     try {
-      await agentAPI.markOrderCancelled(orderId);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) {
-          return { ...prev, status: 'CANCELLED' };
-        }
-        return prev;
-      });
+      const cancelledOrder = await agentAPI.markOrderCancelled(orderId);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? cancelledOrder : o)));
+      setViewingOrder((prev) => (prev?.id === orderId ? cancelledOrder : prev));
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
     } finally {
@@ -237,15 +232,9 @@ export default function AgentOrdersPage() {
     setIsUpdatingDiscount(true);
     setDiscountError('');
     try {
-      // Always send the discount as a number to the backend (rounded to 2 decimal places)
-      await agentAPI.updateOrderDiscount(discountOrder.id, discountNum);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === discountOrder.id) {
-          return { ...prev, discount: discountNum, totalPrice: prev.totalPrice };
-        }
-        return prev;
-      });
+      const updatedOrder = await agentAPI.updateOrderDiscount(discountOrder.id, discountNum);
+      setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
+      setViewingOrder((prev) => (prev?.id === updatedOrder.id ? updatedOrder : prev));
       setDiscountOrder(null);
       setDiscountValue('');
       setDiscountMode('number');

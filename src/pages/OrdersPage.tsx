@@ -311,15 +311,9 @@ export default function OrdersPage() {
     setIsUpdatingDiscount(true);
     setError('');
     try {
-      // Always send the discount as a number to the backend (rounded to 2 decimal places)
-      await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === discountOrder.id) {
-          return { ...prev, discount: discountNum };
-        }
-        return prev;
-      });
+      const updatedOrder = await orderAPI.updateOrderDiscount(discountOrder.id, discountNum);
+      setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
+      setViewingOrder((prev) => (prev?.id === updatedOrder.id ? updatedOrder : prev));
       setDiscountOrder(null);
       setDiscountValue('');
       setDiscountMode('number');
@@ -343,14 +337,9 @@ export default function OrdersPage() {
     setCancellingOrderId(orderId);
     setError('');
     try {
-      await orderAPI.markOrderCancelled(orderId);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) {
-          return { ...prev, status: 'CANCELLED' };
-        }
-        return prev;
-      });
+      const cancelledOrder = await orderAPI.markOrderCancelled(orderId);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? cancelledOrder : o)));
+      setViewingOrder((prev) => (prev?.id === orderId ? cancelledOrder : prev));
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
     } finally {
