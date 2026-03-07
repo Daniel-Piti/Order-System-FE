@@ -2,35 +2,7 @@ import { useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { Order } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'EMPTY': return 'ריק';
-    case 'PLACED': return 'הוזמן';
-    case 'DONE': return 'הושלם';
-    case 'EXPIRED': return 'פג תוקף';
-    case 'CANCELLED': return 'בוטל';
-    default: return status;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'EMPTY': return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-    case 'PLACED': return 'bg-blue-100 text-blue-700 border-2 border-blue-700';
-    case 'DONE': return 'bg-green-100 text-green-700 border-2 border-green-700';
-    case 'EXPIRED': return 'bg-orange-100 text-orange-700 border-2 border-orange-700';
-    case 'CANCELLED': return 'bg-red-100 text-red-700 border-2 border-red-700';
-    default: return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-  }
-};
-
-const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString('he-IL', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+import { getStatusLabel, getStatusColor, formatOrderDate } from '../utils/orderUtils';
 
 export interface OrderViewModalActions {
   onCancel: () => void;
@@ -297,23 +269,23 @@ export default function OrderViewModal({
             <div className="pt-2 border-t border-gray-200/50 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">נוצר ב:</span>
-                <span className="text-sm font-medium text-gray-600">{formatDate(order.createdAt)}</span>
+                <span className="text-sm font-medium text-gray-600">{formatOrderDate(order.createdAt)}</span>
               </div>
               {order.placedAt && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">הוזמן ב:</span>
-                  <span className="text-sm font-medium text-blue-600">{formatDate(order.placedAt)}</span>
+                  <span className="text-sm font-medium text-blue-600">{formatOrderDate(order.placedAt)}</span>
                 </div>
               )}
               {order.doneAt && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">הושלם ב:</span>
-                  <span className="text-sm font-medium text-green-600">{formatDate(order.doneAt)}</span>
+                  <span className="text-sm font-medium text-green-600">{formatOrderDate(order.doneAt)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">פג תוקף ב:</span>
-                <span className="text-sm font-medium text-orange-600">{formatDate(order.linkExpiresAt)}</span>
+                <span className="text-sm font-medium text-orange-600">{formatOrderDate(order.linkExpiresAt)}</span>
               </div>
             </div>
           </div>

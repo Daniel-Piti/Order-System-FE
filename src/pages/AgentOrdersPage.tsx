@@ -4,6 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { agentAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
+import { getStatusLabel, getStatusColor, getCardStyles, formatOrderDate, formatOrderDateShort, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
+import { copyOrderLink } from '../utils/copyOrderLink';
 
 export default function AgentOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -162,33 +164,10 @@ export default function AgentOrdersPage() {
   };
 
   const handleCopyLink = async (orderId: string) => {
-    try {
-      // Get base URL from environment or use current origin
-      const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
-      const fullLink = `${baseUrl}/store/order/${orderId}`;
-      
-      await navigator.clipboard.writeText(fullLink);
+    const ok = await copyOrderLink(orderId);
+    if (ok) {
       setCopiedOrderId(orderId);
-      setTimeout(() => setCopiedOrderId(null), 2000); // Clear after 2 seconds
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      // Fallback: try using execCommand
-      try {
-        const baseUrl = import.meta.env.VITE_FRONTEND_URL || window.location.origin;
-        const fullLink = `${baseUrl}/store/order/${orderId}`;
-        const textArea = document.createElement('textarea');
-        textArea.value = fullLink;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCopiedOrderId(orderId);
-        setTimeout(() => setCopiedOrderId(null), 2000);
-      } catch (fallbackErr) {
-        console.error('Fallback copy also failed:', fallbackErr);
-      }
+      setTimeout(() => setCopiedOrderId(null), 2000);
     }
   };
 
@@ -240,15 +219,7 @@ export default function AgentOrdersPage() {
       setDiscountMode('number');
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
-      // Translate common backend error messages to Hebrew
-      const translatedMessage = errorMessage.includes('can have at most 2 decimal places')
-        ? 'הנחה יכולה לכלול עד 2 ספרות אחרי הנקודה'
-        : errorMessage.includes('cannot exceed the total price')
-        ? 'הנחה לא יכולה לעלות על סכום ההזמנה'
-        : errorMessage.includes('must be greater than or equal to 0')
-        ? 'הנחה חייבת להיות מספר חיובי'
-        : errorMessage;
-      setDiscountError(translatedMessage);
+      setDiscountError(translateDiscountErrorMessage(errorMessage));
     } finally {
       setIsUpdatingDiscount(false);
     }
@@ -269,91 +240,6 @@ export default function AgentOrdersPage() {
   const toggleSortDirection = () => {
     setSortDirection(prev => prev === 'ASC' ? 'DESC' : 'ASC');
     setCurrentPage(0);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'EMPTY':
-        return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-      case 'PLACED':
-        return 'bg-blue-100 text-blue-700 border-2 border-blue-700';
-      case 'DONE':
-        return 'bg-green-100 text-green-700 border-2 border-green-700';
-      case 'EXPIRED':
-        return 'bg-orange-100 text-orange-700 border-2 border-orange-700';
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-700 border-2 border-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-    }
-  };
-
-  const getCardStyles = (status: string) => {
-    switch (status) {
-      case 'EMPTY':
-        return {
-          container: 'bg-gradient-to-br from-gray-50/90 via-gray-100/80 to-gray-50/90 border-2 border-gray-300/60 shadow-md hover:shadow-xl hover:border-gray-400/80',
-          accent: 'bg-gray-200/50',
-        };
-      case 'PLACED':
-        return {
-          container: 'bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-blue-50/90 border-2 border-blue-300/60 shadow-md hover:shadow-xl hover:border-blue-400/80 hover:shadow-blue-200/50',
-          accent: 'bg-blue-200/50',
-        };
-      case 'DONE':
-        return {
-          container: 'bg-gradient-to-br from-green-50/90 via-emerald-50/80 to-green-50/90 border-2 border-green-300/60 shadow-md hover:shadow-xl hover:border-green-400/80 hover:shadow-green-200/50',
-          accent: 'bg-green-200/50',
-        };
-      case 'EXPIRED':
-        return {
-          container: 'bg-gradient-to-br from-orange-50/90 via-amber-50/80 to-orange-50/90 border-2 border-orange-300/60 shadow-md hover:shadow-xl hover:border-orange-400/80 hover:shadow-orange-200/50',
-          accent: 'bg-orange-200/50',
-        };
-      case 'CANCELLED':
-        return {
-          container: 'bg-gradient-to-br from-red-50/90 via-rose-50/80 to-red-50/90 border-2 border-red-300/60 shadow-md hover:shadow-xl hover:border-red-400/80 hover:shadow-red-200/50',
-          accent: 'bg-red-200/50',
-        };
-      default:
-        return {
-          container: 'bg-gradient-to-br from-gray-50/90 via-gray-100/80 to-gray-50/90 border-2 border-gray-300/60 shadow-md hover:shadow-xl hover:border-gray-400/80',
-          accent: 'bg-gray-200/50',
-        };
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('he-IL', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
-  const formatDateShort = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear().toString().slice(-2);
-    return `${day}/${month}/${year}`;
-  };
-
-  const getOrderCardDate = (order: Order): { label: string; date: string } | null => {
-    switch (order.status) {
-      case 'EMPTY':
-        return { label: 'נוצר ב:\u00A0', date: order.createdAt };
-      case 'PLACED':
-        return { label: 'הוזמן ב:\u00A0', date: order.placedAt || order.createdAt };
-      case 'DONE':
-        return { label: 'הושלם ב:\u00A0', date: order.doneAt || order.placedAt || order.createdAt };
-      case 'EXPIRED':
-        return { label: 'פג תוקף ב:\u00A0', date: order.linkExpiresAt };
-      case 'CANCELLED':
-        return null; // No date for cancelled
-      default:
-        return { label: 'נוצר ב:\u00A0', date: order.createdAt };
-    }
   };
 
   // Filter customers in modal based on search query
@@ -542,7 +428,7 @@ export default function AgentOrdersPage() {
               {/* Order Header - Status & ID */}
               <div className="flex items-center justify-between mb-3 mt-1">
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(order.status)} shadow-sm`}>
-                  {order.status === 'EMPTY' ? 'ריק' : order.status === 'PLACED' ? 'הוזמן' : order.status === 'DONE' ? 'הושלם' : order.status === 'EXPIRED' ? 'פג תוקף' : order.status === 'CANCELLED' ? 'בוטל' : order.status}
+                  {getStatusLabel(order.status)}
                 </span>
                 <p className="text-xs font-mono text-gray-600 font-medium">#{order.id}</p>
               </div>
@@ -653,7 +539,7 @@ export default function AgentOrdersPage() {
                   <p className="text-xs text-gray-500 font-medium flex items-center min-w-0 flex-1 pt-1 sm:pt-0">
                     <span className="truncate">
                       <span>{getOrderCardDate(order)!.label}</span>
-                      <span>{formatDateShort(getOrderCardDate(order)!.date)}</span>
+                      <span>{formatOrderDateShort(getOrderCardDate(order)!.date)}</span>
                     </span>
                   </p>
                 ) : (
@@ -994,7 +880,7 @@ export default function AgentOrdersPage() {
                   {viewingOrder.status === 'EMPTY' ? 'ריק' : viewingOrder.status === 'PLACED' ? 'הוזמן' : viewingOrder.status === 'DONE' ? 'הושלם' : viewingOrder.status === 'EXPIRED' ? 'פג תוקף' : viewingOrder.status === 'CANCELLED' ? 'בוטל' : viewingOrder.status}
                 </span>
                 <span className="text-sm text-gray-600">
-                  {viewingOrder.placedAt ? 'הוזמן' : 'נוצר'} {formatDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
+                  {viewingOrder.placedAt ? 'הוזמן' : 'נוצר'} {formatOrderDate(viewingOrder.placedAt ?? viewingOrder.createdAt)}
                 </span>
               </div>
             </div>
@@ -1132,7 +1018,7 @@ export default function AgentOrdersPage() {
                 {viewingOrder.doneAt && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">הושלם</span>
-                    <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.doneAt)}</span>
+                    <span className="text-sm font-medium text-gray-800">{formatOrderDate(viewingOrder.doneAt)}</span>
                   </div>
                 )}
                 {viewingOrder.discount > 0 && (() => {
@@ -1176,7 +1062,7 @@ export default function AgentOrdersPage() {
               <div className="glass-card rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">תאריך תפוגה</span>
-                  <span className="text-sm font-medium text-gray-800">{formatDate(viewingOrder.linkExpiresAt)}</span>
+                  <span className="text-sm font-medium text-gray-800">{formatOrderDate(viewingOrder.linkExpiresAt)}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">מספר אסמכתא</span>

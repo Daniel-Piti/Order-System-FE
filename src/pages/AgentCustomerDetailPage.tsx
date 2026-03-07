@@ -6,49 +6,10 @@ import PaginationBar from '../components/PaginationBar';
 import CustomerEditModal from '../components/CustomerEditModal';
 import OrderViewModal from '../components/OrderViewModal';
 import { formatPrice } from '../utils/formatPrice';
+import { getStatusLabel, getStatusColor, formatOrderDateShort, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
-const formatDateShort = (dateString: string) => {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear().toString().slice(-2);
-  return `${day}/${month}/${year}`;
-};
-
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case 'EMPTY': return 'ריק';
-    case 'PLACED': return 'הוזמן';
-    case 'DONE': return 'הושלם';
-    case 'EXPIRED': return 'פג תוקף';
-    case 'CANCELLED': return 'בוטל';
-    default: return status;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'EMPTY': return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-    case 'PLACED': return 'bg-blue-100 text-blue-700 border-2 border-blue-700';
-    case 'DONE': return 'bg-green-100 text-green-700 border-2 border-green-700';
-    case 'EXPIRED': return 'bg-orange-100 text-orange-700 border-2 border-orange-700';
-    case 'CANCELLED': return 'bg-red-100 text-red-700 border-2 border-red-700';
-    default: return 'bg-gray-100 text-gray-700 border-2 border-gray-700';
-  }
-};
-
-const getOrderRowClass = (status: string) => {
-  switch (status) {
-    case 'EMPTY': return 'bg-gray-50/90 hover:bg-gray-100/90';
-    case 'PLACED': return 'bg-blue-50/80 hover:bg-blue-100/80';
-    case 'DONE': return 'bg-green-50/80 hover:bg-green-100/80';
-    case 'EXPIRED': return 'bg-orange-50/80 hover:bg-orange-100/80';
-    case 'CANCELLED': return 'bg-red-50/80 hover:bg-red-100/80';
-    default: return 'bg-gray-50/90 hover:bg-gray-100/90';
-  }
-};
 
 export default function AgentCustomerDetailPage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -277,14 +238,7 @@ export default function AgentCustomerDetailPage() {
     } catch (err: unknown) {
       const er = err as { response?: { data?: { userMessage?: string } }; status?: number };
       const msg = er?.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
-      const translated = msg.includes('can have at most 2 decimal places')
-        ? 'הנחה יכולה לכלול עד 2 ספרות אחרי הנקודה'
-        : msg.includes('cannot exceed the total price')
-          ? 'הנחה לא יכולה לעלות על סכום ההזמנה'
-          : msg.includes('must be greater than or equal to 0')
-            ? 'הנחה חייבת להיות מספר חיובי'
-            : msg;
-      setError(translated);
+      setError(translateDiscountErrorMessage(msg));
       if (er?.response?.status === 401) navigate('/login/agent');
     } finally {
       setIsUpdatingDiscount(false);
@@ -476,7 +430,7 @@ export default function AgentCustomerDetailPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 text-center">
-                        {formatDateShort(order.createdAt)}
+                        {formatOrderDateShort(order.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">
                         {formatPrice(order.totalPrice)}
