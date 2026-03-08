@@ -442,7 +442,14 @@ export interface Brand {
   mimeType: string | null; // From brands.mime_type (nullable)
 }
 
-/** Public API product (store, order flow) – no minimum price. */
+/** Product image data (id + mimeType + url) – included on product list/order responses. */
+export interface ProductImageData {
+  id: number;
+  mimeType: string;
+  url: string;
+}
+
+/** Public API product (store, order flow) – no minimum price. Includes images. */
 export interface ProductPublic {
   id: string;
   managerId: string;
@@ -453,9 +460,10 @@ export interface ProductPublic {
   categoryName: string | null;
   price: number;
   description: string;
+  images?: ProductImageData[];
 }
 
-/** Internal API product (manager/agent) – includes minimum price. */
+/** Internal API product (manager/agent) – includes minimum price and images. */
 export interface Product {
   id: string;
   managerId: string;
@@ -467,6 +475,7 @@ export interface Product {
   minimumPrice: number;
   price: number;
   description: string;
+  images?: ProductImageData[];
 }
 
 export interface ProductInfo {
@@ -751,7 +760,7 @@ export const brandAPI = {
   },
 };
 
-/** Product image from GET /public/products/.../images (url is full public URL). */
+/** Shape used in the product edit modal for existing images (id required for delete). Built from ProductImageData + product context. */
 export interface ProductImage {
   id: number;
   productId: string;
@@ -769,11 +778,6 @@ export interface UploadProductImagesResponse {
 export const productAPI = {
   getAllProducts: async (): Promise<Product[]> => {
     const response = await api.get<Product[]>('/products');
-    return response.data;
-  },
-
-  getProduct: async (productId: string): Promise<Product> => {
-    const response = await api.get<Product>(`/products/${productId}`);
     return response.data;
   },
 
@@ -815,24 +819,10 @@ export const publicAPI = {
       return response.data;
     },
 
-    // Get single product by managerId and productId (public, no minimum price)
-    getByManagerIdAndProductId: async (managerId: string, productId: string): Promise<ProductPublic> => {
-      const response = await axios.get<ProductPublic>(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}`);
-      return response.data;
-    },
-
     // Get all products for a specific order (with overrides applied)
     getAllByOrderId: async (orderId: string): Promise<ProductPublic[]> => {
       const response = await axios.get<ProductPublic[]>(
         `${API_BASE_URL}/public/products/order/${orderId}`
-      );
-      return response.data;
-    },
-
-    /** Get image list for a product (public, no auth). */
-    getImages: async (managerId: string, productId: string): Promise<ProductImage[]> => {
-      const response = await axios.get<ProductImage[]>(
-        `${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}/images`
       );
       return response.data;
     },

@@ -262,7 +262,7 @@ export default function StorePage() {
       setIsLoading(true);
       setError('');
 
-      let allProducts: Product[];
+      let allProducts: ProductPublic[];
       if (orderId) {
         allProducts = await publicAPI.products.getAllByOrderId(orderId);
         if (isEditMode) {
@@ -297,7 +297,12 @@ export default function StorePage() {
       }
 
       setProducts(sorted);
-      await fetchProductImagesForAll(sorted);
+      // Images come with product from API
+      const imagesMap: Record<string, string[]> = {};
+      sorted.forEach((p) => {
+        imagesMap[p.id] = p.images?.map((i) => i.url) ?? [];
+      });
+      setProductImages((prev) => ({ ...prev, ...imagesMap }));
     } catch (err: any) {
       console.error('Store error:', err);
       if (err.response?.status === 404 || err.message?.includes('404')) {
@@ -312,42 +317,25 @@ export default function StorePage() {
     }
   }, [managerId, orderId, isEditMode, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
-  const fetchProductImagesForAll = async (productsList: ProductPublic[]) => {
-    if (!managerId || productsList.length === 0) return;
-    try {
-      const imagePromises = productsList.map(async (product) => {
-        try {
-          const images = await publicAPI.products.getImages(managerId, product.id);
-          const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-          return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
-        } catch (err) {
-          console.error(`Failed to fetch images for product ${product.id}:`, err);
-          return { productId: product.id, imageUrls: [] };
-        }
-      });
-      const results = await Promise.all(imagePromises);
-      const imagesMap: Record<string, string[]> = {};
-      results.forEach(({ productId, imageUrls }) => {
-        imagesMap[productId] = imageUrls;
-      });
-      setProductImages((prev) => ({ ...prev, ...imagesMap }));
-    } catch (err) {
-      console.error('Failed to fetch product images:', err);
-    }
-  };
-
+  // Categories, brands, store business only depend on managerId
   useEffect(() => {
     if (managerId) {
-      fetchProducts();
       fetchCategories();
       fetchBrands();
       fetchStoreBusiness();
     } else {
       setStoreBusiness(null);
     }
-  }, [managerId, fetchProducts, fetchCategories, fetchBrands, fetchStoreBusiness]);
+  }, [managerId, fetchCategories, fetchBrands, fetchStoreBusiness]);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  // Products depend on managerId + orderId + filters + sort
+  useEffect(() => {
+    if (managerId) {
+      fetchProducts();
+    }
+  }, [managerId, fetchProducts]);
+
+  const addToCart = (product: ProductPublic, quantity: number = 1) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       if (existingItem) {

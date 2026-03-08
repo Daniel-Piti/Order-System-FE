@@ -1,23 +1,14 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { agentAPI, publicAPI } from '../services/api';
-import type { Product, Category, Brand } from '../services/api';
+import type { ProductPublic, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
-
-interface ProductImage {
-  id: number;
-  productId: string;
-  managerId: string;
-  url: string;
-  fileName: string;
-  mimeType: string;
-}
 
 type SortDirection = 'ASC' | 'DESC';
 
 export default function AgentProductsPage() {
   const [managerId, setManagerId] = useState<string | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductPublic[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [productImages, setProductImages] = useState<Record<string, string[]>>({});
@@ -92,48 +83,25 @@ export default function AgentProductsPage() {
         sortDirection === 'ASC' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
       );
       setProducts(sorted);
-      await fetchProductImagesForAll(sorted);
+      // Images come with product from API (one query)
+      const imageMap: Record<string, string[]> = {};
+      const indexMap: Record<string, number> = {};
+      const prevIndexMap: Record<string, number | null> = {};
+      sorted.forEach((p) => {
+        imageMap[p.id] = p.images?.map((i) => i.url) ?? [];
+        indexMap[p.id] = 0;
+        prevIndexMap[p.id] = null;
+      });
+      setProductImages(imageMap);
+      setProductImageIndices(indexMap);
+      setProductPrevImageIndices(prevIndexMap);
+      setProductImageDirections({});
     } catch (err: any) {
       console.error('Failed to load products for agent view:', err);
       setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת מוצרים');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fetchProductImagesForAll = async (productList: Product[]) => {
-    if (!managerId || productList.length === 0) {
-      setProductImages({});
-      return;
-    }
-
-    const imagePromises = productList.map(async (product) => {
-      try {
-        const images = await publicAPI.products.getImages(managerId, product.id);
-        const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-        return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
-      } catch (err) {
-        console.error(`Failed to fetch images for product ${product.id}`, err);
-        return { productId: product.id, imageUrls: [] };
-      }
-    });
-
-    const results = await Promise.all(imagePromises);
-
-    const imageMap: Record<string, string[]> = {};
-    const indexMap: Record<string, number> = {};
-    const prevIndexMap: Record<string, number | null> = {};
-
-    results.forEach(({ productId, imageUrls }) => {
-      imageMap[productId] = imageUrls;
-      indexMap[productId] = 0;
-      prevIndexMap[productId] = null;
-    });
-
-    setProductImages(imageMap);
-    setProductImageIndices(indexMap);
-    setProductPrevImageIndices(prevIndexMap);
-    setProductImageDirections({});
   };
 
   const schedulePrevReset = (productId: string) => {

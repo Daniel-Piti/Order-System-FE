@@ -109,7 +109,6 @@ export default function ProductsPage() {
   const [originalImages, setOriginalImages] = useState<ProductImage[]>([]);
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
   const [newImagesToAdd, setNewImagesToAdd] = useState<File[]>([]);
-  const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -127,11 +126,18 @@ export default function ProductsPage() {
     fetchManagerId();
   }, []);
 
+  // Categories and brands only depend on managerId
+  useEffect(() => {
+    if (managerId) {
+      fetchCategories();
+      fetchBrands();
+    }
+  }, [managerId]);
+
+  // Products depend on managerId + sort + filters
   useEffect(() => {
     if (managerId) {
       fetchProducts();
-      fetchCategories();
-      fetchBrands();
     }
   }, [managerId, sortBy, sortDirection, categoryFilter, brandFilter]);
 
@@ -173,8 +179,12 @@ export default function ProductsPage() {
         return a.name.localeCompare(b.name);
       });
       setProducts(sorted);
-      setProductImages({});
-      await fetchProductImagesForAll(sorted);
+      // Images come with product from API
+      const imagesMap: Record<string, string[]> = {};
+      sorted.forEach((p) => {
+        imagesMap[p.id] = p.images?.map((i) => i.url) ?? [];
+      });
+      setProductImages(imagesMap);
     } catch (err: any) {
       setError(err.message || 'Failed to load products');
       if (err.message?.includes('401')) {
@@ -182,30 +192,6 @@ export default function ProductsPage() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchProductImagesForAll = async (productsList: Product[]) => {
-    if (!managerId || productsList.length === 0) return;
-    try {
-      const imagePromises = productsList.map(async (product) => {
-        try {
-          const images = await publicAPI.products.getImages(managerId, product.id);
-          const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-          return { productId: product.id, imageUrls: sorted.map((img) => img.url) };
-        } catch (err) {
-          console.error(`Failed to fetch images for product ${product.id}:`, err);
-          return { productId: product.id, imageUrls: [] };
-        }
-      });
-      const results = await Promise.all(imagePromises);
-      const imagesMap: Record<string, string[]> = {};
-      results.forEach(({ productId, imageUrls }) => {
-        imagesMap[productId] = imageUrls;
-      });
-      setProductImages((prev) => ({ ...prev, ...imagesMap }));
-    } catch (err) {
-      console.error('Failed to fetch product images:', err);
     }
   };
 
@@ -511,28 +497,21 @@ export default function ProductsPage() {
       price: product.price.toString(),
       description: (product.description || '').slice(0, MAX_PRODUCT_DESCRIPTION_LENGTH),
     });
-    setExistingImages([]);
-    setOriginalImages([]);
     setImagesToDelete([]);
     setNewImagesToAdd([]);
+    // Use images already on product (include id for delete)
+    const images = (product.images ?? []).map((img) => ({
+      id: img.id,
+      productId: product.id,
+      managerId: product.managerId,
+      url: img.url,
+      fileName: img.url.split('/').pop() ?? '',
+      mimeType: img.mimeType,
+    }));
+    const sorted = [...images].sort((a, b) => a.url.localeCompare(b.url, undefined, { numeric: true, sensitivity: 'base' }));
+    setExistingImages(sorted);
+    setOriginalImages(sorted);
     setIsEditModalOpen(true);
-    
-    // Fetch existing images
-    await fetchProductImages(product.managerId, product.id);
-  };
-
-  const fetchProductImages = async (managerId: string, productId: string) => {
-    try {
-      setIsLoadingImages(true);
-      const images = await publicAPI.products.getImages(managerId, productId);
-      const sorted = [...images].sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: 'base' }));
-      setExistingImages(sorted);
-      setOriginalImages(sorted);
-    } catch (err) {
-      console.error('Failed to fetch product images:', err);
-    } finally {
-      setIsLoadingImages(false);
-    }
   };
 
   const schedulePrevReset = (productId: string) => {
@@ -1697,19 +1676,8 @@ export default function ProductsPage() {
                   תמונות <span className="text-gray-500 text-xs">(עד 5 סה״כ)</span>
                 </label>
                 <div className="space-y-3">
-                  {/* Loading State */}
-                  {isLoadingImages && (
-                    <div className="text-center py-4">
-                      <svg className="animate-spin h-6 w-6 text-indigo-600 mx-auto" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <p className="text-xs text-gray-500 mt-2">טוען תמונות...</p>
-                    </div>
-                  )}
-
                   {/* Existing Images */}
-                  {!isLoadingImages && existingImages.length > 0 && (
+                  {existingImages.length > 0 && (
                     <div>
                       <p className="text-xs font-medium text-gray-600 mb-2">תמונות קיימות:</p>
                       <div className="grid grid-cols-3 gap-2">
