@@ -84,7 +84,7 @@ export default function AgentProductsPage() {
       setIsLoading(true);
       setError('');
       const list = await publicAPI.products.getAllByManagerId(managerId);
-      // Filter and sort client-side (BE returns all)
+      // Filter and sort client-side (BE returns all; public API has no minimumPrice)
       let filtered = list;
       if (selectedCategory) filtered = filtered.filter((p) => p.categoryId === Number(selectedCategory));
       if (selectedBrand) filtered = filtered.filter((p) => p.brandId === Number(selectedBrand));
@@ -429,7 +429,7 @@ export default function AgentProductsPage() {
                       <span className="text-xl font-bold text-purple-600">
                         {formatPrice(product.price)}
                       </span>
-                      {product.price > product.minimumPrice && (
+                      {'minimumPrice' in product && product.minimumPrice != null && product.price > product.minimumPrice && (
                         <span className="text-xs text-gray-400">
                           מינימום {formatPrice(product.minimumPrice)}
                         </span>

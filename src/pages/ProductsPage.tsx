@@ -147,13 +147,12 @@ export default function ProductsPage() {
   };
 
   const fetchProducts = async () => {
-    const id = managerId;
-    if (!id) return;
+    if (!managerId) return;
 
     try {
       setIsLoading(true);
       setError('');
-      const list = await publicAPI.products.getAllByManagerId(id);
+      const list = await productAPI.getAllProducts();
       // Filter and sort client-side (BE returns all)
       let filtered = list;
       if (categoryFilter) filtered = filtered.filter((p) => p.categoryId === Number(categoryFilter));

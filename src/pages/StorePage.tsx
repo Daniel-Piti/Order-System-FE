@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { publicAPI, orderAPI, agentAPI } from '../services/api';
-import type { Product, Category, Brand, OrderPublic, Order } from '../services/api';
+import type { ProductPublic, Category, Brand, OrderPublic, Order } from '../services/api';
 import CheckoutFlow from '../components/CheckoutFlow';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { formatPrice } from '../utils/formatPrice';
 
 interface CartItem {
-  product: Product;
+  product: ProductPublic;
   quantity: number;
 }
 
@@ -22,7 +22,7 @@ export default function StorePage() {
   const [managerId, setManagerId] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderPublic | null>(null);
   const [editOrder, setEditOrder] = useState<Order | null>(null); // Full order for edit mode
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductPublic[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function StorePage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductPublic | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -288,14 +288,12 @@ export default function StorePage() {
         filtered = filtered.filter(p => p.brandId && selectedBrands.includes(p.brandId));
       }
 
-      // Sort client-side (for orderId path; for store path backend already sorts but we re-sort after filter)
+      // Sort client-side (public API does not return minimumPrice)
       const sorted = [...filtered];
       if (sortBy === 'name') {
         sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * a.name.localeCompare(b.name));
       } else if (sortBy === 'price') {
         sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * (a.price - b.price));
-      } else if (sortBy === 'minimumPrice') {
-        sorted.sort((a, b) => (sortDirection === 'ASC' ? 1 : -1) * (a.minimumPrice - b.minimumPrice));
       }
 
       setProducts(sorted);
@@ -314,7 +312,7 @@ export default function StorePage() {
     }
   }, [managerId, orderId, isEditMode, sortBy, sortDirection, selectedCategories, selectedBrands]);
 
-  const fetchProductImagesForAll = async (productsList: Product[]) => {
+  const fetchProductImagesForAll = async (productsList: ProductPublic[]) => {
     if (!managerId || productsList.length === 0) return;
     try {
       const imagePromises = productsList.map(async (product) => {

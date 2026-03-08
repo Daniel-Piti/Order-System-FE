@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useModalFocus } from '../hooks/useFocusManagement';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
-import type { Product, Category, Brand } from '../services/api';
+import type { ProductPublic, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 
 interface ProductDetailModalProps {
-  product: Product | null;
+  product: ProductPublic | null;
   productImages: string[];
   categories: Category[];
   brands: Brand[];
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart?: (product: Product, quantity: number) => void;
+  onAddToCart?: (product: ProductPublic, quantity: number) => void;
   currentQuantity?: number;
   getPendingQuantity?: (productId: string) => number;
   updateQuantity?: (productId: string, quantity: number) => void;

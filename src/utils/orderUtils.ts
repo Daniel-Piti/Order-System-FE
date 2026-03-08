@@ -109,6 +109,7 @@ export function getCardStyles(status: string): { container: string; accent: stri
         container: 'bg-gradient-to-br from-gray-50/90 via-gray-100/80 to-gray-50/90 border-2 border-gray-300/60 shadow-md hover:shadow-xl hover:border-gray-400/80',
         accent: 'bg-gray-200/50',
       };
+  }
 }
 
 export function getLabelStyles(status: string): { bg: string; border: string; borderHover: string; text: string } {

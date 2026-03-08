@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import CloseButton from '../components/CloseButton';
 import { useNavigate } from 'react-router-dom';
-import { customerAPI, managerAPI, publicAPI, agentAPI } from '../services/api';
+import { customerAPI, managerAPI, productAPI, agentAPI } from '../services/api';
 import type { PageResponse, Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import type { ProductOverrideWithPrice, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
@@ -127,10 +127,9 @@ export default function OverridesPage() {
 
   const fetchProducts = async () => {
     if (!managerId) return;
-    
     try {
-      const data = await publicAPI.products.getAllByManagerId(managerId);
-      setProducts(data.map(p => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
+      const data = await productAPI.getAllProducts();
+      setProducts(data.map((p) => ({ id: p.id, name: p.name, price: p.price, minimumPrice: p.minimumPrice })));
     } catch (err) {
       console.error('Failed to fetch products:', err);
     }

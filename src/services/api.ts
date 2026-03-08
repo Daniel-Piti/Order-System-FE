@@ -442,6 +442,20 @@ export interface Brand {
   mimeType: string | null; // From brands.mime_type (nullable)
 }
 
+/** Public API product (store, order flow) – no minimum price. */
+export interface ProductPublic {
+  id: string;
+  managerId: string;
+  name: string;
+  brandId: number | null;
+  brandName: string | null;
+  categoryId: number | null;
+  categoryName: string | null;
+  price: number;
+  description: string;
+}
+
+/** Internal API product (manager/agent) – includes minimum price. */
 export interface Product {
   id: string;
   managerId: string;
@@ -751,8 +765,18 @@ export interface UploadProductImagesResponse {
   imagesPreSignedUrls: string[];
 }
 
-/** Manager product API (authenticated). */
+/** Manager product API (authenticated). Returns Product (with minimumPrice). */
 export const productAPI = {
+  getAllProducts: async (): Promise<Product[]> => {
+    const response = await api.get<Product[]>('/products');
+    return response.data;
+  },
+
+  getProduct: async (productId: string): Promise<Product> => {
+    const response = await api.get<Product>(`/products/${productId}`);
+    return response.data;
+  },
+
   createProduct: async (request: CreateProductRequest): Promise<CreateProductResponse> => {
     const response = await api.post<CreateProductResponse>('/products', request);
     return response.data;
@@ -785,21 +809,21 @@ export const productAPI = {
 // Public API (no authentication required) - for customers
 export const publicAPI = {
   products: {
-    // Get all products for a manager (seller) - no pagination, max 1000; FE handles sort/filter
-    getAllByManagerId: async (managerId: string): Promise<Product[]> => {
-      const response = await axios.get<Product[]>(`${API_BASE_URL}/public/products/manager/${managerId}`);
+    // Get all products for a manager (seller) - no pagination, no minimum price (public)
+    getAllByManagerId: async (managerId: string): Promise<ProductPublic[]> => {
+      const response = await axios.get<ProductPublic[]>(`${API_BASE_URL}/public/products/manager/${managerId}`);
       return response.data;
     },
 
-    // Get single product by managerId and productId
-    getByManagerIdAndProductId: async (managerId: string, productId: string): Promise<Product> => {
-      const response = await axios.get<Product>(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}`);
+    // Get single product by managerId and productId (public, no minimum price)
+    getByManagerIdAndProductId: async (managerId: string, productId: string): Promise<ProductPublic> => {
+      const response = await axios.get<ProductPublic>(`${API_BASE_URL}/public/products/manager/${managerId}/product/${productId}`);
       return response.data;
     },
 
-    // Get all products for a specific order (with overrides applied) - no pagination, no category filter
-    getAllByOrderId: async (orderId: string): Promise<Product[]> => {
-      const response = await axios.get<Product[]>(
+    // Get all products for a specific order (with overrides applied)
+    getAllByOrderId: async (orderId: string): Promise<ProductPublic[]> => {
+      const response = await axios.get<ProductPublic[]>(
         `${API_BASE_URL}/public/products/order/${orderId}`
       );
       return response.data;
