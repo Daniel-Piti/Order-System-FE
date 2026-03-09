@@ -208,13 +208,13 @@ export default function OrdersPage() {
     setIsCreating(true);
     setError('');
     try {
-      await orderAPI.createOrder({
+      const newOrder = await orderAPI.createOrder({
         customerId: selectedCustomerId || null,
       });
       setShowCreateModal(false);
       setSelectedCustomerId(null);
-      setCurrentPage(0); // Reset to first page
-      await fetchOrders(0);
+      setCurrentPage(0);
+      setOrders((prev) => [newOrder, ...prev]);
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
       const translatedMessage =
@@ -251,14 +251,9 @@ export default function OrdersPage() {
     setUpdatingOrderId(orderId);
     setError('');
     try {
-      await orderAPI.markOrderDone(orderId);
-      await fetchOrders(currentPage);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) {
-          return { ...prev, status: 'DONE', doneAt: prev.doneAt ?? new Date().toISOString() };
-        }
-        return prev;
-      });
+      const updatedOrder = await orderAPI.markOrderDone(orderId);
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? updatedOrder : o)));
+      setViewingOrder((prev) => (prev?.id === orderId ? updatedOrder : prev));
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'נכשל בסימון ההזמנה כהושלמה');
     } finally {

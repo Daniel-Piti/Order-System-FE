@@ -64,10 +64,11 @@ export default function AdminDashboard() {
 
     try {
       setIsDeleting(true);
-      await managerAPI.deleteManager(managerToDelete.id, managerToDelete.email);
+      const idToRemove = managerToDelete.id;
+      await managerAPI.deleteManager(idToRemove, managerToDelete.email);
+      setManagers((prev) => prev.filter((m) => m.id !== idToRemove));
       setManagerToDelete(null);
       setDeleteConfirmText('');
-      fetchManagers(); // Refresh the list
     } catch (err: any) {
       setError(err.response?.data?.userMessage || 'Failed to delete manager');
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -544,8 +545,9 @@ export default function AdminDashboard() {
       <AddManagerModal
         isOpen={isAddManagerModalOpen}
         onClose={() => setIsAddManagerModalOpen(false)}
-        onSuccess={() => {
-          fetchManagers(); // Refresh the manager list
+        onSuccess={(manager, business) => {
+          setManagers((prev) => [...prev, { ...manager, business }]);
+          setIsAddManagerModalOpen(false);
         }}
       />
 

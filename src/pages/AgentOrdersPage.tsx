@@ -131,13 +131,13 @@ export default function AgentOrdersPage() {
     setIsCreating(true);
     setError('');
     try {
-      await agentAPI.createOrder({
+      const newOrder = await agentAPI.createOrder({
         customerId: selectedCustomerId || null,
       });
       setShowCreateModal(false);
       setSelectedCustomerId(null);
-      setCurrentPage(0); // Reset to first page
-      await fetchOrders(0);
+      setCurrentPage(0);
+      setOrders((prev) => [newOrder, ...prev]);
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
       // Translate specific error messages to Hebrew

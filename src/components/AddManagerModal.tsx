@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { validateUserCreationForm, validateBusinessForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import { managerAPI, businessAPI } from '../services/api';
+import type { Manager, Business } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 
 interface AddManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (manager: Manager, business: Business) => void;
 }
 
 export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManagerModalProps) {
@@ -123,7 +124,7 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
 
       // Step 2: Create business with manager ID
       setStep('business');
-      await businessAPI.createBusiness({
+      const business = await businessAPI.createBusiness({
         managerId: manager.id,
         name: businessFormData.name.trim(),
         stateIdNumber: businessFormData.stateIdNumber.trim(),
@@ -136,8 +137,8 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
       // Success!
       setStep('complete');
       setTimeout(() => {
-      onSuccess();
-      handleClose();
+        onSuccess(manager, business);
+        handleClose();
       }, 1000);
     } catch (err: any) {
       setError(err.response?.data?.userMessage || err.message || 'Failed to create manager and business');

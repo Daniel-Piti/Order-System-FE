@@ -233,12 +233,12 @@ export default function CustomerDetailPage() {
     setUpdatingOrderId(orderId);
     setError('');
     try {
-      await orderAPI.markOrderDone(orderId);
-      setViewingOrder((prev) => {
-        if (prev && prev.id === orderId) return { ...prev, status: 'DONE', doneAt: prev.doneAt ?? new Date().toISOString() };
-        return prev;
-      });
-      await fetchOrders(ordersPageNum);
+      const updatedOrder = await orderAPI.markOrderDone(orderId);
+      setViewingOrder((prev) => (prev?.id === orderId ? updatedOrder : prev));
+      setOrdersPage((prev) => ({
+        ...prev,
+        content: prev.content.map((o) => (o.id === orderId ? updatedOrder : o)),
+      }));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { userMessage?: string } }; status?: number };
       setError(e?.response?.data?.userMessage || 'נכשל בסימון ההזמנה כהושלמה');

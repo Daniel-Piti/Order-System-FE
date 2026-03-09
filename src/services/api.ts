@@ -635,8 +635,10 @@ export const orderAPI = {
     return response.data;
   },
 
-  markOrderDone: async (orderId: string): Promise<void> => {
+  markOrderDone: async (orderId: string): Promise<Order> => {
     await api.put(`/orders/${orderId}/status/done`);
+    const response = await api.get<Order>(`/orders/${orderId}`);
+    return response.data;
   },
 
   markOrderCancelled: async (orderId: string): Promise<Order> => {
