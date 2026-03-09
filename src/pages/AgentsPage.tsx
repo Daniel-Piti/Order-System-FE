@@ -83,8 +83,8 @@ export default function AgentsPage() {
     setAgentToDelete(null);
   };
 
-  const handleEditSuccess = () => {
-    fetchAgents();
+  const handleEditSuccess = (updatedAgent: Agent) => {
+    setAgents((prev) => prev.map((a) => (a.id === updatedAgent.id ? updatedAgent : a)));
     handleCloseEditModal();
   };
 

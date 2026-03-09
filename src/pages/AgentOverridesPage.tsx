@@ -237,8 +237,16 @@ export default function AgentOverridesPage() {
         throw new Error(errorData.userMessage || 'Failed to create override');
       }
 
+      const created = await response.json();
+      const product = productMap.get(formData.productId) ?? productMap.get(created.productId);
+      const withPrice: ProductOverrideWithPrice = {
+        ...created,
+        overridePrice: Number(created.overridePrice),
+        productPrice: product?.price ?? 0,
+        productMinimumPrice: product?.minimumPrice ?? 0,
+      };
+      setOverrides((prev) => [withPrice, ...prev]);
       setCurrentPage(0);
-      await fetchOverrides();
       handleCloseModal();
     } catch (err: any) {
       setFormError(err?.message || 'נכשל ביצירת מחיר מיוחד');
@@ -307,7 +315,15 @@ export default function AgentOverridesPage() {
         throw new Error(errorData.userMessage || 'Failed to update override');
       }
 
-      await fetchOverrides();
+      const updated = await response.json();
+      const product = productMap.get(overrideToEdit.productId) ?? productMap.get(updated.productId);
+      const withPrice: ProductOverrideWithPrice = {
+        ...updated,
+        overridePrice: Number(updated.overridePrice),
+        productPrice: product?.price ?? 0,
+        productMinimumPrice: product?.minimumPrice ?? 0,
+      };
+      setOverrides((prev) => prev.map((o) => (o.id === withPrice.id ? withPrice : o)));
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err?.message || 'נכשל בעדכון מחיר מיוחד');
@@ -334,7 +350,8 @@ export default function AgentOverridesPage() {
         throw new Error(errorData.userMessage || 'Failed to delete override');
       }
 
-      await fetchOverrides();
+      const idToRemove = overrideToDelete.id;
+      setOverrides((prev) => prev.filter((o) => o.id !== idToRemove));
       setOverrideToDelete(null);
     } catch (err: any) {
       setError(err?.message || 'נכשל במחיקת מחיר מיוחד');

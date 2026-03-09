@@ -98,8 +98,8 @@ export default function AgentCustomersPage() {
   const handleOpenModal = () => setIsAddModalOpen(true);
   const handleCloseModal = () => setIsAddModalOpen(false);
 
-  const handleAddSuccess = async () => {
-    await fetchCustomers();
+  const handleAddSuccess = (newCustomer: Customer) => {
+    setCustomers((prev) => [...prev, newCustomer]);
     handleCloseModal();
   };
 
@@ -111,8 +111,8 @@ export default function AgentCustomersPage() {
     setEditingCustomer(null);
   };
 
-  const handleEditSuccess = async () => {
-    await fetchCustomers();
+  const handleEditSuccess = (updatedCustomer: Customer) => {
+    setCustomers((prev) => prev.map((c) => (c.id === updatedCustomer.id ? updatedCustomer : c)));
     setEditingCustomer(null);
   };
 

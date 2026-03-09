@@ -9,7 +9,7 @@ interface AgentEditModalProps {
   isOpen: boolean;
   agent: Agent | null;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedAgent: Agent) => void;
 }
 
 const INITIAL_FORM: UpdateAgentRequest = {
@@ -105,8 +105,8 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
     setIsSubmitting(true);
 
     try {
-      await agentAPI.updateAgent(agent.id, formData);
-      onSuccess();
+      const updatedAgent = await agentAPI.updateAgent(agent.id, formData);
+      onSuccess(updatedAgent);
       handleClose();
     } catch (err: any) {
       setError(

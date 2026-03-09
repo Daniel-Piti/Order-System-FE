@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { agentAPI, type CustomerRequest } from '../services/api';
+import { agentAPI, type Customer, type CustomerRequest } from '../services/api';
 import AccessibleModal from './AccessibleModal';
 import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
@@ -8,7 +8,7 @@ import Spinner from './Spinner';
 interface AgentCustomerAddModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (newCustomer: Customer) => void;
 }
 
 const MAX_CUSTOMER_NAME_LENGTH = 50;
@@ -160,8 +160,8 @@ export default function AgentCustomerAddModal({
     setIsSubmitting(true);
 
     try {
-      await agentAPI.createCustomerForAgent(formData);
-      onSuccess();
+      const newCustomer = await agentAPI.createCustomerForAgent(formData);
+      onSuccess(newCustomer);
       handleClose();
     } catch (err: any) {
       setError(

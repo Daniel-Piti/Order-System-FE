@@ -8,7 +8,7 @@ interface AgentCustomerEditModalProps {
   isOpen: boolean;
   customer: Customer | null;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedCustomer: Customer) => void;
 }
 
 const MAX_CUSTOMER_NAME_LENGTH = 50;
@@ -184,8 +184,8 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
 
     setIsSubmitting(true);
     try {
-      await agentAPI.updateCustomerForAgent(customer.id, formData);
-      onSuccess();
+      const updated = await agentAPI.updateCustomerForAgent(customer.id, formData);
+      onSuccess(updated);
     } catch (err: any) {
       setError(
         err?.response?.data?.userMessage ||
