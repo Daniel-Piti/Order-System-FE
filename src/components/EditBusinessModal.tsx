@@ -58,6 +58,8 @@ interface EditBusinessModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (updatedBusiness: Business | null) => void;
+  /** Full business from parent; used to avoid refetch when only removing image (API returns void). */
+  fullBusiness?: Business | null;
   currentBusiness: {
     name: string;
     stateIdNumber: string;
@@ -69,7 +71,7 @@ interface EditBusinessModalProps {
   };
 }
 
-export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentBusiness }: EditBusinessModalProps) {
+export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusiness = null, currentBusiness }: EditBusinessModalProps) {
   const MAX_NAME_LENGTH = 50;
   const MAX_STATE_ID_LENGTH = 9; // ח.פ / ע.מ: exactly 9 digits
   const MAX_EMAIL_LENGTH = 100;
@@ -179,11 +181,13 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
         updatedBusiness = r.business;
       }
 
-      // 2. Remove image if user chose to remove (DELETE /businesses/me/image)
+      // 2. Remove image if user chose to remove (DELETE /businesses/me/image) — API returns void, so merge from fullBusiness when needed
       if (removeImage) {
         await businessAPI.removeBusinessImage();
         if (updatedBusiness) {
           updatedBusiness = { ...updatedBusiness, imageUrl: null, fileName: null, mimeType: null };
+        } else if (fullBusiness) {
+          updatedBusiness = { ...fullBusiness, imageUrl: null, fileName: null, mimeType: null };
         }
       }
 

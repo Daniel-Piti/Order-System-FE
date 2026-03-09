@@ -277,6 +277,7 @@ export default function BusinessDataPage() {
             if (updatedBusiness) setBusiness(updatedBusiness);
             else fetchBusiness();
           }}
+          fullBusiness={business}
           currentBusiness={{
             name: business.name,
             stateIdNumber: business.stateIdNumber,

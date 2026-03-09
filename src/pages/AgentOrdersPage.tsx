@@ -151,8 +151,7 @@ export default function AgentOrdersPage() {
     }
   };
 
-  const openCreateModal = async () => {
-    await fetchCustomers();
+  const openCreateModal = () => {
     setShowCreateModal(true);
   };
 

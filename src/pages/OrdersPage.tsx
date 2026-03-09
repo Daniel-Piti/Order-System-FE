@@ -227,8 +227,7 @@ export default function OrdersPage() {
     }
   };
 
-  const openCreateModal = async () => {
-    await fetchCustomers();
+  const openCreateModal = () => {
     setShowCreateModal(true);
   };
 
