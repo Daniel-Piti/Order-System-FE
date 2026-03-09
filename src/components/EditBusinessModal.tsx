@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { validateBusinessForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
-import { businessAPI } from '../services/api';
+import { businessAPI, type Business } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 import SparkMD5 from 'spark-md5';
@@ -57,7 +57,7 @@ async function calculateFileMD5(file: File): Promise<string> {
 interface EditBusinessModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedBusiness: Business | null) => void;
   currentBusiness: {
     name: string;
     stateIdNumber: string;
@@ -71,7 +71,7 @@ interface EditBusinessModalProps {
 
 export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentBusiness }: EditBusinessModalProps) {
   const MAX_NAME_LENGTH = 50;
-  const MAX_STATE_ID_LENGTH = 20;
+  const MAX_STATE_ID_LENGTH = 9; // ח.פ / ע.מ: exactly 9 digits
   const MAX_EMAIL_LENGTH = 100;
   const MAX_PHONE_LENGTH = 10;
   const MAX_STREET_ADDRESS_LENGTH = 120;
@@ -153,6 +153,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
     setIsLoading(true);
     setError('');
 
+    let updatedBusiness: Business | null = null;
+
     try {
       // 1. Update business details only (PUT /businesses/me)
       const detailsPayload = {
@@ -173,12 +175,16 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
         detailsPayload.city !== currentBusiness.city;
 
       if (hasDetailsChanges) {
-        await businessAPI.updateMyBusiness(detailsPayload);
+        const r = await businessAPI.updateMyBusiness(detailsPayload);
+        updatedBusiness = r.business;
       }
 
       // 2. Remove image if user chose to remove (DELETE /businesses/me/image)
       if (removeImage) {
         await businessAPI.removeBusinessImage();
+        if (updatedBusiness) {
+          updatedBusiness = { ...updatedBusiness, imageUrl: null, fileName: null, mimeType: null };
+        }
       }
 
       // 3. Set new image if user selected a file (POST /businesses/me/image + upload to S3)
@@ -204,9 +210,10 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
         if (!uploadResponse.ok) {
           throw new Error('נכשל בהעלאת התמונה ל-S3');
         }
+        updatedBusiness = result.business;
       }
 
-      onSuccess();
+      onSuccess(updatedBusiness);
       handleClose();
     } catch (err: any) {
       setError(
@@ -226,7 +233,7 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
       name === 'name'
         ? value.slice(0, MAX_NAME_LENGTH)
         : name === 'stateIdNumber'
-        ? value.slice(0, MAX_STATE_ID_LENGTH)
+        ? value.replace(/\D/g, '').slice(0, MAX_STATE_ID_LENGTH)
         : name === 'email'
         ? value.slice(0, MAX_EMAIL_LENGTH)
         : name === 'phoneNumber'
@@ -371,6 +378,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, currentB
               id="stateIdNumber"
               name="stateIdNumber"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={formData.stateIdNumber}
               onChange={handleChange}
               maxLength={MAX_STATE_ID_LENGTH}

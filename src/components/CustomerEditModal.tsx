@@ -8,7 +8,7 @@ interface CustomerEditModalProps {
   isOpen: boolean;
   customer: Customer | null;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (updatedCustomer: Customer) => void;
   updateCustomer: (customerId: string, data: CustomerRequest) => Promise<Customer>;
 }
 
@@ -151,8 +151,8 @@ export default function CustomerEditModal({ isOpen, customer, onClose, onSuccess
 
     setIsSubmitting(true);
     try {
-      await updateCustomer(customer.id, formData);
-      onSuccess();
+      const updated = await updateCustomer(customer.id, formData);
+      onSuccess(updated);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { userMessage?: string; message?: string }; status?: number }; message?: string };
       setError(e?.response?.data?.userMessage ?? e?.response?.data?.message ?? (e?.message as string) ?? 'נכשל בעדכון לקוח');

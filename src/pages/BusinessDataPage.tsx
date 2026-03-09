@@ -273,8 +273,9 @@ export default function BusinessDataPage() {
         <EditBusinessModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
-            fetchBusiness(); // Refresh the business data
+          onSuccess={(updatedBusiness) => {
+            if (updatedBusiness) setBusiness(updatedBusiness);
+            else fetchBusiness();
           }}
           currentBusiness={{
             name: business.name,

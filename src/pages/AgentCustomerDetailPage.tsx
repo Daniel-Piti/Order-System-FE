@@ -616,7 +616,7 @@ export default function AgentCustomerDetailPage() {
         isOpen={isEditOpen}
         customer={customer}
         onClose={() => setIsEditOpen(false)}
-        onSuccess={() => { fetchCustomer(); setIsEditOpen(false); }}
+        onSuccess={(updatedCustomer) => { setCustomer(updatedCustomer); setIsEditOpen(false); }}
         updateCustomer={agentAPI.updateCustomerForAgent}
       />
     </div>
