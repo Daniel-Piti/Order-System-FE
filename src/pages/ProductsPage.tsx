@@ -729,8 +729,13 @@ export default function ProductsPage() {
     try {
       setIsDeleting(true);
       await productAPI.deleteProduct(idToDelete);
+      setProducts((prev) => prev.filter((p) => p.id !== idToDelete));
+      setProductImages((prev) => {
+        const next = { ...prev };
+        delete next[idToDelete];
+        return next;
+      });
       setProductToDelete(null);
-      await fetchProducts();
     } catch (err: any) {
       setError(err?.response?.data?.userMessage || err?.message || 'Failed to delete product');
     } finally {

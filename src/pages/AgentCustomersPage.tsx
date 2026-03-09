@@ -124,8 +124,10 @@ export default function AgentCustomersPage() {
     setDeletingCustomer(null);
   };
 
-  const handleDeleteSuccess = async () => {
-    await fetchCustomers();
+  const handleDeleteSuccess = () => {
+    if (deletingCustomer) {
+      setCustomers((prev) => prev.filter((c) => c.id !== deletingCustomer.id));
+    }
     setDeletingCustomer(null);
   };
 

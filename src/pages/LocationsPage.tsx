@@ -97,8 +97,9 @@ export default function LocationsPage() {
         throw new Error(errorText || 'נכשל במחיקת הסניף');
       }
 
+      const idToRemove = locationToDelete.id;
+      setLocations((prev) => prev.filter((l) => l.id !== idToRemove));
       setLocationToDelete(null);
-      fetchLocations(); // Refresh the list
     } catch (err: any) {
       setDeleteError(err.message || 'נכשל במחיקת הסניף');
     } finally {

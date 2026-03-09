@@ -89,7 +89,9 @@ export default function AgentsPage() {
   };
 
   const handleDeleteSuccess = () => {
-    fetchAgents();
+    if (agentToDelete) {
+      setAgents((prev) => prev.filter((a) => a.id !== agentToDelete.id));
+    }
     handleCloseDeleteModal();
   };
 

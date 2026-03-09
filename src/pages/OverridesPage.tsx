@@ -264,8 +264,16 @@ export default function OverridesPage() {
         throw new Error(errorData.userMessage || 'Failed to create override');
       }
 
+      const created = await response.json();
+      const product = products.find((p) => p.id === formData.productId);
+      const withPrice: ProductOverrideWithPrice = {
+        ...created,
+        overridePrice: Number(created.overridePrice),
+        productPrice: product?.price ?? 0,
+        productMinimumPrice: product?.minimumPrice ?? 0,
+      };
+      setOverrides((prev) => [withPrice, ...prev]);
       setCurrentPage(0);
-      await fetchOverrides();
       handleCloseModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to create override');
@@ -353,7 +361,15 @@ export default function OverridesPage() {
         throw new Error(errorData.userMessage || 'Failed to update override');
       }
 
-      await fetchOverrides();
+      const updated = await response.json();
+      const product = products.find((p) => p.id === overrideToEdit.productId);
+      const withPrice: ProductOverrideWithPrice = {
+        ...updated,
+        overridePrice: Number(updated.overridePrice),
+        productPrice: product?.price ?? 0,
+        productMinimumPrice: product?.minimumPrice ?? 0,
+      };
+      setOverrides((prev) => prev.map((o) => (o.id === withPrice.id ? withPrice : o)));
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err.message || 'Failed to update override');
@@ -379,7 +395,8 @@ export default function OverridesPage() {
         throw new Error('Failed to delete override');
       }
 
-      await fetchOverrides();
+      const idToRemove = overrideToDelete.id;
+      setOverrides((prev) => prev.filter((o) => o.id !== idToRemove));
       setOverrideToDelete(null);
     } catch (err: any) {
       setError(err.message || 'Failed to delete override');
