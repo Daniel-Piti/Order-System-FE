@@ -839,8 +839,13 @@ export default function ProductsPage() {
         );
       }
 
-      // Success - refresh products and close modal
-      await fetchProducts();
+      // Success - add new product from response to state (no full refetch)
+      const newProduct = result.product;
+      setProducts((prev) => [newProduct, ...prev]);
+      setProductImages((prev) => ({
+        ...prev,
+        [newProduct.id]: newProduct.images?.map((i) => i.url) ?? [],
+      }));
       handleCloseModal();
     } catch (err: any) {
       setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to create product');

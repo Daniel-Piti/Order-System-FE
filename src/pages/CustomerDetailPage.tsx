@@ -748,20 +748,11 @@ export default function CustomerDetailPage() {
           order={invoiceOrder}
           isOpen={!!invoiceOrder}
           onClose={() => setInvoiceOrder(null)}
-          onSuccess={() => {
+          onSuccess={(response) => {
             if (invoiceOrder) {
-              setCheckedOrders((prev) => {
-                const next = new Set(prev);
-                next.delete(invoiceOrder.id);
-                return next;
-              });
-              setOrderInvoiceUrls((prev) => {
-                const next = new Map(prev);
-                next.delete(invoiceOrder.id);
-                return next;
-              });
+              setOrderInvoiceUrls((prev) => new Map(prev).set(invoiceOrder.id, response.pdfUrl));
+              setCheckedOrders((prev) => new Set(prev).add(invoiceOrder.id));
             }
-            fetchOrders(ordersPageNum);
             setInvoiceOrder(null);
           }}
         />

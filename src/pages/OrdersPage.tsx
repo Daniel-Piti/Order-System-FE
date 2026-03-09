@@ -1317,21 +1317,11 @@ export default function OrdersPage() {
           order={invoiceOrder}
           isOpen={!!invoiceOrder}
           onClose={() => setInvoiceOrder(null)}
-          onSuccess={() => {
+          onSuccess={(response) => {
             if (invoiceOrder) {
-              // After creating invoice, we need to re-check this order
-              setCheckedOrders(prev => {
-                const updated = new Set(prev);
-                updated.delete(invoiceOrder.id);
-                return updated;
-              });
-              setOrderInvoiceUrls(prev => {
-                const updated = new Map(prev);
-                updated.delete(invoiceOrder.id);
-                return updated;
-              });
+              setOrderInvoiceUrls(prev => new Map(prev).set(invoiceOrder.id, response.pdfUrl));
+              setCheckedOrders(prev => new Set(prev).add(invoiceOrder.id));
             }
-            fetchOrders(currentPage);
             setInvoiceOrder(null);
           }}
         />

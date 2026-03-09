@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
-import { invoiceAPI, type CreateInvoiceRequest } from '../services/api';
+import { invoiceAPI, type CreateInvoiceRequest, type CreateInvoiceResponse } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 import type { Order } from '../services/api';
 
@@ -9,7 +9,7 @@ interface InvoiceCreationModalProps {
   order: Order;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (response: CreateInvoiceResponse) => void;
 }
 
 export default function InvoiceCreationModal({
@@ -128,8 +128,8 @@ export default function InvoiceCreationModal({
         allocationNumber: allocationRequired ? (allocationNumber.trim() || null) : null,
       };
 
-      await invoiceAPI.createInvoice(request);
-      onSuccess();
+      const response = await invoiceAPI.createInvoice(request);
+      onSuccess(response);
       onClose();
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || err.message || 'נכשל ביצירת החשבונית';
