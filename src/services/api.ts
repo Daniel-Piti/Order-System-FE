@@ -406,11 +406,6 @@ export interface LocationRequest {
 }
 
 export const locationAPI = {
-  getAllLocations: async (): Promise<Location[]> => {
-    const response = await api.get<Location[]>('/locations');
-    return response.data;
-  },
-
   createLocation: async (data: LocationRequest): Promise<Location> => {
     const response = await api.post<Location>('/locations', data);
     return response.data;
@@ -778,6 +773,11 @@ export interface UploadProductImagesResponse {
 export const productAPI = {
   getAllProducts: async (): Promise<Product[]> => {
     const response = await api.get<Product[]>('/products');
+    return response.data;
+  },
+
+  getProduct: async (productId: string): Promise<Product> => {
+    const response = await api.get<Product>(`/products/${productId}`);
     return response.data;
   },
 

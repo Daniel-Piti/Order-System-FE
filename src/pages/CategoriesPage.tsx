@@ -193,9 +193,8 @@ export default function CategoriesPage() {
     try {
       setIsSubmitting(true);
 
-      await categoryAPI.createCategory(categoryName.trim());
-
-      await fetchCategories();
+      const newCategory = await categoryAPI.createCategory(categoryName.trim());
+      setCategories((prev) => [...prev, newCategory]);
       handleCloseModal();
     } catch (err: any) {
       const rawMessage =
@@ -233,9 +232,8 @@ export default function CategoriesPage() {
 
     try {
       setIsSubmitting(true);
-      await categoryAPI.updateCategory(categoryToEdit.id, categoryName.trim());
-
-      await fetchCategories();
+      const updated = await categoryAPI.updateCategory(categoryToEdit.id, categoryName.trim());
+      setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       handleCloseEditModal();
     } catch (err: any) {
       const rawMessage =
@@ -258,9 +256,9 @@ export default function CategoriesPage() {
 
     try {
       setIsDeleting(true);
-      await categoryAPI.deleteCategory(categoryToDelete.id);
-
-      await fetchCategories();
+      const idToRemove = categoryToDelete.id;
+      await categoryAPI.deleteCategory(idToRemove);
+      setCategories((prev) => prev.filter((c) => c.id !== idToRemove));
       setCategoryToDelete(null);
     } catch (err: any) {
       const rawMessage =

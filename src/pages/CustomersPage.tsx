@@ -226,8 +226,9 @@ export default function CustomersPage() {
 
     try {
       setIsSubmitting(true);
-      await customerAPI.deleteCustomer(customerToDelete.id);
-      await fetchCustomers();
+      const idToRemove = customerToDelete.id;
+      await customerAPI.deleteCustomer(idToRemove);
+      setCustomers((prev) => prev.filter((c) => c.id !== idToRemove));
       handleCloseDeleteModal();
     } catch (err: any) {
       setFormError(err.response?.data?.userMessage || err.message || 'Failed to delete customer');
@@ -350,8 +351,8 @@ export default function CustomersPage() {
         stateId: formData.stateId,
         discountPercentage: formData.discountPercentage,
       };
-      await customerAPI.createCustomer(payload);
-      await fetchCustomers();
+      const newCustomer = await customerAPI.createCustomer(payload);
+      setCustomers((prev) => [...prev, newCustomer]);
       handleCloseModal();
     } catch (err: any) {
       setFormError(err.response?.data?.userMessage || err.message || 'Failed to create customer');
@@ -448,8 +449,8 @@ export default function CustomersPage() {
         stateId: editFormData.stateId,
         discountPercentage: editFormData.discountPercentage,
       };
-      await customerAPI.updateCustomer(customerToEdit.id, payload);
-      await fetchCustomers();
+      const updated = await customerAPI.updateCustomer(customerToEdit.id, payload);
+      setCustomers((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err.response?.data?.userMessage || err.message || 'Failed to update customer');

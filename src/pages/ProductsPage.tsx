@@ -662,7 +662,6 @@ export default function ProductsPage() {
 
     try {
       setIsSubmitting(true);
-      let updatedProduct: Product | null = null;
       if (productDataChanged) {
         const productInfo: ProductInfo = {
           name: editFormData.name,
@@ -672,7 +671,7 @@ export default function ProductsPage() {
           price: finalPrice,
           description: editFormData.description ?? '',
         };
-        updatedProduct = await productAPI.updateProductInfo(productToEdit.id, productInfo);
+        await productAPI.updateProductInfo(productToEdit.id, productInfo);
       }
 
       if (imagesToDelete.length > 0) {
@@ -713,7 +712,9 @@ export default function ProductsPage() {
         }
       }
 
-      await fetchProducts();
+      const updated = await productAPI.getProduct(productToEdit.id);
+      setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      setProductImages((prev) => ({ ...prev, [updated.id]: updated.images?.map((i) => i.url) ?? [] }));
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to update product');

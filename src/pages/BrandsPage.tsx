@@ -347,7 +347,7 @@ export default function BrandsPage() {
         }
       }
 
-      await fetchBrands();
+      setBrands((prev) => [...prev, result.brand]);
       handleCloseModal();
     } catch (err: any) {
       setFormError(translateBrandError(err.message || '') || 'נכשל ביצירת המותג');
@@ -377,12 +377,16 @@ export default function BrandsPage() {
     try {
       setIsSubmitting(true);
 
+      let updatedBrand: Brand = { ...brandToEdit, name: brandName.trim() };
+
       // 1. Update name only (PUT /brands/{id})
-      await brandAPI.updateBrand(brandToEdit.id, { name: brandName.trim() });
+      const nameResult = await brandAPI.updateBrand(brandToEdit.id, { name: brandName.trim() });
+      updatedBrand = nameResult.brand;
 
       // 2. Remove image if user chose to remove (DELETE /brands/{id}/image)
       if (removeImage) {
         await brandAPI.removeBrandImage(brandToEdit.id);
+        updatedBrand = { ...updatedBrand, imageUrl: null };
       }
 
       // 3. Set new image if user selected a file (POST /brands/{id}/image + upload to S3)
@@ -410,9 +414,10 @@ export default function BrandsPage() {
             throw new Error('נכשל בהעלאת התמונה ל-S3');
           }
         }
+        updatedBrand = result.brand;
       }
 
-      await fetchBrands();
+      setBrands((prev) => prev.map((b) => (b.id === updatedBrand.id ? updatedBrand : b)));
       handleCloseEditModal();
     } catch (err: any) {
       setFormError(translateBrandError(err.message || '') || 'נכשל בעדכון המותג');
@@ -429,7 +434,8 @@ export default function BrandsPage() {
       const token = localStorage.getItem('authToken');
       
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
-      const response = await fetch(`${API_BASE_URL}/brands/${brandToDelete.id}`, {
+      const idToRemove = brandToDelete.id;
+      const response = await fetch(`${API_BASE_URL}/brands/${idToRemove}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -449,7 +455,7 @@ export default function BrandsPage() {
         throw new Error(errorMessage);
       }
 
-      await fetchBrands();
+      setBrands((prev) => prev.filter((b) => b.id !== idToRemove));
       setBrandToDelete(null);
     } catch (err: any) {
       setError(translateBrandError(err.message || '') || 'נכשל במחיקת המותג');
