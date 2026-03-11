@@ -147,6 +147,8 @@ export default function AgentProductsPage() {
     });
   }, [products, searchQuery]);
 
+  const totalElements = products.length;
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-24" dir="rtl">
       <div className="glass-card rounded-3xl p-6 md:p-8">
