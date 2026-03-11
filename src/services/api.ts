@@ -919,6 +919,14 @@ export const invoiceAPI = {
     const response = await api.post<Record<string, string>>('/invoices/by-order-ids', orderIds);
     return response.data;
   },
+
+  downloadInvoicesDocument: async (from: string, to: string): Promise<Blob> => {
+    const response = await api.get('/invoices/document', {
+      params: { from, to },
+      responseType: 'blob',
+    });
+    return response.data as Blob;
+  },
 };
 
 export interface CreateInvoiceRequest {

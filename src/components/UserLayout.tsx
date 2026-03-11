@@ -30,6 +30,7 @@ export default function UserLayout() {
     { name: 'פרופיל מנהל', path: '/dashboard/profile', icon: '👤' },
     { name: 'פרופיל עסק', path: '/dashboard/business-data', icon: '🏢' },
     { name: 'הזמנות', path: '/dashboard/orders', icon: '📦' },
+    { name: 'דוחות ומסמכים', path: '/dashboard/documents', icon: '📄' },
     { name: 'מידע עסקי', path: '/dashboard/business-info', icon: '📊' },
     { name: 'סוכנים', path: '/dashboard/agents', icon: '🧑‍🤝‍🧑' },
     { name: 'לקוחות', path: '/dashboard/customers', icon: '👥' },

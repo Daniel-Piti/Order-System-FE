@@ -18,6 +18,7 @@ import UserLayout from './components/UserLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
+import DocumentsReportsPage from './pages/DocumentsReportsPage';
 import CustomersPage from './pages/CustomersPage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
 import AgentCustomerDetailPage from './pages/AgentCustomerDetailPage';
@@ -94,6 +95,7 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="business-data" element={<BusinessDataPage />} />
           <Route path="orders" element={<OrdersPage />} />
+          <Route path="documents" element={<DocumentsReportsPage />} />
           <Route path="business-info" element={<BusinessInfoPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="customers/:customerId" element={<CustomerDetailPage />} />
