@@ -153,7 +153,12 @@ export default function AgentCustomerDetailPage() {
     } catch (err: unknown) {
       const e = err as { response?: { data?: { userMessage?: string }; status: number }; message?: string };
       const msg = e?.response?.data?.userMessage || (e?.message as string) || 'שגיאה ביצירת קישור';
-      setError(msg === 'Cannot create order. Please add at least one location first.' ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.' : msg);
+      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
+      setError(
+        msg === 'Cannot create order. Please add at least one location first.' || msg === 'You have minimum one locations'
+          ? noLocationsHebrew
+          : msg
+      );
       if (e?.response?.status === 401 || e?.response?.status === 403) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');

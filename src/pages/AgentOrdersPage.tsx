@@ -140,10 +140,11 @@ export default function AgentOrdersPage() {
       setOrders((prev) => [newOrder, ...prev]);
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
-      // Translate specific error messages to Hebrew
+      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
       const translatedMessage =
-        errorMessage === 'Cannot create order. Please add at least one location first.'
-          ? 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.'
+        errorMessage === 'Cannot create order. Please add at least one location first.' ||
+        errorMessage === 'You have minimum one locations'
+          ? noLocationsHebrew
           : errorMessage;
       setError(translatedMessage);
     } finally {
