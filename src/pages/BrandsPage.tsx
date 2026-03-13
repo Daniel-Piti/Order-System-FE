@@ -379,9 +379,12 @@ export default function BrandsPage() {
 
       let updatedBrand: Brand = { ...brandToEdit, name: brandName.trim() };
 
-      // 1. Update name only (PUT /brands/{id})
-      const nameResult = await brandAPI.updateBrand(brandToEdit.id, { name: brandName.trim() });
-      updatedBrand = nameResult.brand;
+      // 1. Update name only when it changed (PUT /brands/{id})
+      const nameChanged = brandName.trim() !== brandToEdit.name;
+      if (nameChanged) {
+        const nameResult = await brandAPI.updateBrand(brandToEdit.id, { name: brandName.trim() });
+        updatedBrand = nameResult;
+      }
 
       // 2. Remove image if user chose to remove (DELETE /brands/{id}/image)
       if (removeImage) {
@@ -420,7 +423,8 @@ export default function BrandsPage() {
       setBrands((prev) => prev.map((b) => (b.id === updatedBrand.id ? updatedBrand : b)));
       handleCloseEditModal();
     } catch (err: any) {
-      setFormError(translateBrandError(err.message || '') || 'נכשל בעדכון המותג');
+      const msg = err?.response?.data?.userMessage ?? err?.message ?? '';
+      setFormError(translateBrandError(msg) || 'נכשל בעדכון המותג');
     } finally {
       setIsSubmitting(false);
     }

@@ -722,10 +722,6 @@ export interface CreateBrandResponse {
   preSignedUrl?: string | null;
 }
 
-export interface UpdateBrandNameResponse {
-  brand: Brand;
-}
-
 export interface UpdateBrandImageResponse {
   brand: Brand;
   preSignedUrl: string;
@@ -738,9 +734,9 @@ export const brandAPI = {
     return response.data;
   },
 
-  /** Update brand name only. Use removeBrandImage / setBrandImage for image changes. */
-  updateBrand: async (brandId: number, data: { name: string }): Promise<UpdateBrandNameResponse> => {
-    const response = await api.put<UpdateBrandNameResponse>(`/brands/${brandId}`, data);
+  /** Update brand name only. Use removeBrandImage / setBrandImage for image changes. Returns the updated brand. */
+  updateBrand: async (brandId: number, data: { name: string }): Promise<Brand> => {
+    const response = await api.put<Brand>(`/brands/${brandId}`, data);
     return response.data;
   },
 
