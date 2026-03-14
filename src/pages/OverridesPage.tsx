@@ -453,6 +453,12 @@ export default function OverridesPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800">מחירים מיוחדים</h1>
             <p className="text-gray-600 mt-1">נהל מחירים מותאמים אישית ללקוחות</p>
+            <p
+              className="mt-3 px-3 py-2 text-sm font-bold text-orange-800 bg-orange-50 border border-orange-200 rounded-lg max-w-md"
+              role="note"
+            >
+              מחירים מיוחדים מחושבים לפני הנחת האחוזים של הלקוח.
+            </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}

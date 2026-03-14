@@ -381,6 +381,12 @@ export default function AgentOverridesPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-800">המחירים המיוחדים שלי</h1>
             <p className="text-gray-600 mt-1">התאם מחירים ללקוחות שלך</p>
+            <p
+              className="mt-3 px-3 py-2 text-sm font-bold text-orange-800 bg-orange-50 border border-orange-200 rounded-lg max-w-md"
+              role="note"
+            >
+              מחירים מיוחדים מחושבים לפני הנחת האחוזים של הלקוח.
+            </p>
           </div>
           <button
             onClick={handleOpenModal}
