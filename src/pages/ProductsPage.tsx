@@ -933,7 +933,7 @@ export default function ProductsPage() {
                     <option value="">הכל</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
-                        {category.category}
+                        {category.name}
                       </option>
                     ))}
                   </select>
@@ -1304,7 +1304,7 @@ export default function ProductsPage() {
                   <option value="">ללא</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.category}
+                      {category.name}
                     </option>
                   ))}
                 </select>
@@ -1582,7 +1582,7 @@ export default function ProductsPage() {
                   <option value="">ללא</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.category}
+                      {category.name}
                     </option>
                   ))}
                 </select>

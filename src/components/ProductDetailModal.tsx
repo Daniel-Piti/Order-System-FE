@@ -319,7 +319,7 @@ export default function ProductDetailModal({
                   <div className="flex flex-wrap gap-2">
                     {category && (
                       <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100/80 backdrop-blur-sm text-purple-700 border border-purple-200/50">
-                        {category.category}
+                        {category.name}
                       </span>
                     )}
                     {brand && (

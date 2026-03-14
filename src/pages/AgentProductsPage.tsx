@@ -197,7 +197,7 @@ export default function AgentProductsPage() {
                 <option value="">הכל</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
-                    {category.category}
+                    {category.name}
                   </option>
                 ))}
               </select>

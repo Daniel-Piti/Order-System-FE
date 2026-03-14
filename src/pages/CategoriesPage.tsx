@@ -51,11 +51,11 @@ export default function CategoriesPage() {
     const query = searchQuery.trim().toLowerCase();
 
     const filteredCategories = query
-      ? categories.filter((category) => category.category.toLowerCase().includes(query))
+      ? categories.filter((category) => category.name.toLowerCase().includes(query))
       : categories;
 
     const sortedCategories = [...filteredCategories].sort((a, b) => {
-      const comparison = a.category.localeCompare(b.category);
+      const comparison = a.name.localeCompare(b.name);
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
@@ -170,7 +170,7 @@ export default function CategoriesPage() {
 
   const handleEditCategory = (category: Category) => {
     setCategoryToEdit(category);
-    setCategoryName(category.category.slice(0, MAX_CATEGORY_NAME_LENGTH));
+    setCategoryName(category.name.slice(0, MAX_CATEGORY_NAME_LENGTH));
     setIsEditModalOpen(true);
   };
 
@@ -480,8 +480,8 @@ export default function CategoriesPage() {
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0 flex items-center gap-3">
-                        <h3 className="text-base font-bold text-gray-800 truncate" title={category.category}>
-                          {category.category}
+                        <h3 className="text-base font-bold text-gray-800 truncate" title={category.name}>
+                          {category.name}
                         </h3>
                         <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                           {productCountByCategory.get(category.id) || 0} {productCountByCategory.get(category.id) === 1 ? 'מוצר' : 'מוצרים'}
@@ -740,7 +740,7 @@ export default function CategoriesPage() {
 
             <div className="mb-6">
               <p className="text-gray-700 mb-4 break-words">
-                האם אתה בטוח שברצונך למחוק את הקטגוריה <span className="font-semibold">{categoryToDelete.category}</span>? פעולה זו לא ניתנת לביטול.
+                האם אתה בטוח שברצונך למחוק את הקטגוריה <span className="font-semibold">{categoryToDelete.name}</span>? פעולה זו לא ניתנת לביטול.
               </p>
               <div className="glass-card bg-yellow-50/50 border-yellow-200 rounded-xl p-4">
                 <div className="flex items-start gap-2">

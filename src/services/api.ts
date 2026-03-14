@@ -425,7 +425,7 @@ export const locationAPI = {
 export interface Category {
   id: number;
   managerId: string;
-  category: string;
+  name: string;
 }
 
 export interface Brand {
@@ -699,14 +699,14 @@ export const orderAPI = {
 export const categoryAPI = {
   createCategory: async (categoryName: string): Promise<Category> => {
     const response = await api.post<Category>('/categories', {
-      category: categoryName,
+      name: categoryName,
     });
     return response.data;
   },
 
   updateCategory: async (categoryId: number, categoryName: string): Promise<Category> => {
     const response = await api.put<Category>(`/categories/${categoryId}`, {
-      category: categoryName,
+      name: categoryName,
     });
     return response.data;
   },

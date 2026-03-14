@@ -697,7 +697,7 @@ export default function StorePage() {
                         onChange={() => handleCategoryToggle(category.id)}
                         className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                       />
-                      <span className="text-sm text-gray-700 flex-1">{category.category}</span>
+                      <span className="text-sm text-gray-700 flex-1">{category.name}</span>
                     </label>
                   ))}
                   
@@ -1075,7 +1075,7 @@ export default function StorePage() {
                             onChange={() => handleCategoryToggle(category.id)}
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
                           />
-                          <span className="text-sm text-gray-700 flex-1">{category.category}</span>
+                          <span className="text-sm text-gray-700 flex-1">{category.name}</span>
                         </label>
                       ))}
                       
