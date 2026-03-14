@@ -698,29 +698,33 @@ export default function CustomersPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center font-medium border-l border-gray-200" headers="customer-discount">
                           {customer.discountPercentage}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-left border-l border-gray-200" headers="customer-actions">
-                          <div className="inline-flex items-center gap-2" role="group" aria-label={`פעולות עבור לקוח ${customer.name}`}>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleEditCustomer(customer); }}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
-                              aria-label={`ערוך לקוח ${customer.name}`}
-                            >
-                              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(customer); }}
-                              className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
-                              aria-label={`מחק לקוח ${customer.name}`}
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
-                              </svg>
-                            </button>
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap text-center border-l border-gray-200" headers="customer-actions">
+                          {customer.agentId == null ? (
+                            <div className="inline-flex items-center gap-2" role="group" aria-label={`פעולות עבור לקוח ${customer.name}`}>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleEditCustomer(customer); }}
+                                className="glass-button p-2 rounded-lg text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                                aria-label={`ערוך לקוח ${customer.name}`}
+                              >
+                                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCustomer(customer); }}
+                                className="glass-button p-2 rounded-lg text-sm font-semibold text-red-600 border border-red-200 hover:border-red-300 transition-colors inline-flex items-center justify-center focus-visible:outline-3 focus-visible:outline-red-600 focus-visible:outline-offset-2"
+                                aria-label={`מחק לקוח ${customer.name}`}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
+                                </svg>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">—</span>
+                          )}
                         </td>
                       </tr>
                     );

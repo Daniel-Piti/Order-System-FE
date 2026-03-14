@@ -364,17 +364,19 @@ export default function CustomerDetailPage() {
               <span className="font-semibold text-gray-900">{customer.discountPercentage}%</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsEditOpen(true)}
-            className="w-fit shrink-0 glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 inline-flex items-center gap-2"
-            aria-label="ערוך לקוח"
-          >
-            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-            ערוך לקוח
-          </button>
+          {customer.agentId == null && (
+            <button
+              type="button"
+              onClick={() => setIsEditOpen(true)}
+              className="w-fit shrink-0 glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 border border-indigo-200 hover:border-indigo-300 inline-flex items-center gap-2"
+              aria-label="ערוך לקוח"
+            >
+              <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              ערוך לקוח
+            </button>
+          )}
         </div>
       </div>
 

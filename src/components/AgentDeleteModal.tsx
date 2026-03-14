@@ -75,7 +75,7 @@ export default function AgentDeleteModal({
               <span className="font-semibold text-gray-900">{agentName ?? 'הסוכן הזה'}</span>?
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              פעולה זו לא ניתנת לביטול. הנתונים שלו וכל הלקוחות הקשורים יוסרו לצמיתות.
+              פעולה זו לא ניתנת לביטול. כל הלקוחות של הסוכן יימחקו לצמיתות יחד איתו.
             </p>
           </div>
         </div>
