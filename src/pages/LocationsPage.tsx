@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddLocationModal from '../components/AddLocationModal';
 import EditLocationModal from '../components/EditLocationModal';
-import { managerAPI, publicAPI } from '../services/api';
+import { managerAPI, publicAPI, locationAPI } from '../services/api';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface Location {
   id: number;
@@ -84,24 +82,17 @@ export default function LocationsPage() {
     try {
       setIsDeleting(true);
       setDeleteError('');
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/locations/${locationToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'נכשל במחיקת הסניף');
-      }
-
+      await locationAPI.deleteLocation(locationToDelete.id);
       const idToRemove = locationToDelete.id;
       setLocations((prev) => prev.filter((l) => l.id !== idToRemove));
       setLocationToDelete(null);
     } catch (err: any) {
-      setDeleteError(err.message || 'נכשל במחיקת הסניף');
+      setDeleteError(
+        err.response?.data?.userMessage ||
+          err.response?.data?.message ||
+          err.message ||
+          'נכשל במחיקת הסניף'
+      );
     } finally {
       setIsDeleting(false);
     }

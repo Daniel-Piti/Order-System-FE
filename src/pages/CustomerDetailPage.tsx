@@ -195,7 +195,9 @@ export default function CustomerDetailPage() {
       const msg = e?.response?.data?.userMessage || (e?.message as string) || 'שגיאה ביצירת קישור';
       const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
       setError(
-        msg === 'Cannot create order. Please add at least one location first.' || msg === 'You have minimum one locations'
+        msg === 'Cannot create order. Please add at least one location first.' ||
+          msg === 'You have minimum one locations' ||
+          msg === 'You must have at least one location'
           ? noLocationsHebrew
           : msg
       );

@@ -132,9 +132,9 @@ export const managerAPI = {
     return response.data;
   },
 
-  deleteManager: async (id: string, email: string): Promise<string> => {
+  deleteManager: async (managerId: string, email: string): Promise<string> => {
     const response = await api.delete<string>('/managers', {
-      params: { id, email },
+      params: { managerId, email },
     });
     return response.data;
   },

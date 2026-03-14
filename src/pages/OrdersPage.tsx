@@ -220,7 +220,8 @@ export default function OrdersPage() {
       const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
       const translatedMessage =
         errorMessage === 'Cannot create order. Please add at least one location first.' ||
-        errorMessage === 'You have minimum one locations'
+        errorMessage === 'You have minimum one locations' ||
+        errorMessage === 'You must have at least one location'
           ? noLocationsHebrew
           : errorMessage;
       setError(translatedMessage);
