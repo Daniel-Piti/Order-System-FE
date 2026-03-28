@@ -932,8 +932,8 @@ export const invoiceAPI = {
     pageSize: number = 20,
     sortBy: string = 'createdAt',
     sortOrder: string = 'DESC',
-  ): Promise<PageResponse<InvoiceWithOrderTotal>> => {
-    const response = await api.get<PageResponse<InvoiceWithOrderTotal>>('/invoices/search', {
+  ): Promise<PageResponse<InvoiceDto>> => {
+    const response = await api.get<PageResponse<InvoiceDto>>('/invoices/search', {
       params: { from, to, pageNumber, pageSize, sortBy, sortOrder },
     });
     return response.data;
@@ -953,28 +953,16 @@ export interface CreateInvoiceResponse {
   pdfUrl: string;
 }
 
-/** Domain invoice (matches BE [Invoice]) */
-export interface Invoice {
+/** BE [InvoiceDto] — essentials + public PDF URL */
+export interface InvoiceDto {
   id: number;
-  managerId: string;
   orderId: string;
+  customerId?: string | null;
+  orderTotalPrice: number;
   invoiceSequenceNumber: number;
   paymentMethod: 'CREDIT_CARD' | 'CASH';
-  paymentProof: string;
-  allocationNumber?: string | null;
-  s3Key?: string | null;
-  fileName?: string | null;
-  fileSizeBytes?: number | null;
-  mimeType?: string | null;
   createdAt: string;
-  updatedAt: string;
-}
-
-/** BE [InvoiceWithOrderTotal] — invoice + public PDF URL + order total */
-export interface InvoiceWithOrderTotal {
-  invoice: Invoice;
   pdfUrl: string;
-  orderTotalPrice: number;
 }
 
 export default api;

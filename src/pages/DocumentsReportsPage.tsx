@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { invoiceAPI, type InvoiceWithOrderTotal } from '../services/api';
+import { invoiceAPI, type InvoiceDto } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import Spinner from '../components/Spinner';
 import { formatPrice } from '../utils/formatPrice';
@@ -24,7 +24,7 @@ export default function DocumentsReportsPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
-  const [results, setResults] = useState<InvoiceWithOrderTotal[]>([]);
+  const [results, setResults] = useState<InvoiceDto[]>([]);
 
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -227,11 +227,11 @@ export default function DocumentsReportsPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {results.map((row) => (
-                      <tr key={`${row.invoice.orderId}-${row.invoice.invoiceSequenceNumber}`} className="hover:bg-gray-50/70">
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoice.invoiceSequenceNumber}</td>
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoice.orderId}</td>
+                      <tr key={`${row.orderId}-${row.invoiceSequenceNumber}`} className="hover:bg-gray-50/70">
+                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoiceSequenceNumber}</td>
+                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.orderId}</td>
                         <td className="px-4 py-3 text-sm text-gray-800 text-center">
-                          {formatOrderDateShortWithTime(row.invoice.createdAt)}
+                          {formatOrderDateShortWithTime(row.createdAt)}
                         </td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.orderTotalPrice)}</td>
                         <td className="px-4 py-3 text-center">
