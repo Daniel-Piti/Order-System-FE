@@ -46,6 +46,17 @@ export function formatOrderDateShort(dateString: string): string {
   return `${day}/${month}/${year}`;
 }
 
+/** Short date with time for cards (e.g. "15/01/25 14:30") */
+export function formatOrderDateShortWithTime(dateString: string): string {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString().slice(-2);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
 export interface OrderCardDateInfo {
   label: string;
   date: string;

@@ -349,14 +349,14 @@ export const agentAPI = {
 
   // Agent Orders API
   getAllOrders: async (
-    page: number = 0,
-    size: number = 20,
+    pageNumber: number = 0,
+    pageSize: number = 20,
     sortBy: string = 'createdAt',
-    sortDirection: string = 'DESC',
+    sortOrder: string = 'DESC',
     status?: string,
     customerId?: string | null
   ): Promise<PageResponse<Order>> => {
-    const params: Record<string, unknown> = { page, size, sortBy, sortDirection };
+    const params: Record<string, unknown> = { pageNumber, pageSize, sortBy, sortOrder };
     if (status) params.status = status;
     if (customerId != null) params.customerId = customerId;
     const response = await api.get<PageResponse<Order>>('/agent/orders', { params });
@@ -608,17 +608,18 @@ export interface BusinessStats {
 
 export const orderAPI = {
   getAllOrders: async (
-    page: number = 0,
-    size: number = 20,
+    pageNumber: number = 0,
+    pageSize: number = 20,
     sortBy: string = 'createdAt',
-    sortDirection: string = 'DESC',
+    sortOrder: string = 'DESC',
     status?: string,
-    filterAgent: boolean = false,
+    orderSource?: 'MANAGER' | 'AGENT' | 'PUBLIC' | null,
     agentId?: string | null,
     customerId?: string | null
   ): Promise<PageResponse<Order>> => {
-    const params: Record<string, unknown> = { page, size, sortBy, sortDirection, filterAgent };
+    const params: Record<string, unknown> = { pageNumber, pageSize, sortBy, sortOrder };
     if (status) params.status = status;
+    if (orderSource != null) params.orderSource = orderSource;
     if (agentId !== undefined && agentId !== null && agentId !== '') params.agentId = agentId;
     if (customerId != null) params.customerId = customerId;
     const response = await api.get<PageResponse<Order>>('/orders', { params });
@@ -923,6 +924,20 @@ export const invoiceAPI = {
     });
     return response.data as Blob;
   },
+
+  searchInvoices: async (
+    from: string,
+    to: string,
+    pageNumber: number = 0,
+    pageSize: number = 20,
+    sortBy: string = 'createdAt',
+    sortOrder: string = 'DESC',
+  ): Promise<PageResponse<InvoiceWithOrderTotal>> => {
+    const response = await api.get<PageResponse<InvoiceWithOrderTotal>>('/invoices/search', {
+      params: { from, to, pageNumber, pageSize, sortBy, sortOrder },
+    });
+    return response.data;
+  },
 };
 
 export interface CreateInvoiceRequest {
@@ -936,6 +951,30 @@ export interface CreateInvoiceResponse {
   invoiceId: number;
   invoiceName: string;
   pdfUrl: string;
+}
+
+/** Domain invoice (matches BE [Invoice]) */
+export interface Invoice {
+  id: number;
+  managerId: string;
+  orderId: string;
+  invoiceSequenceNumber: number;
+  paymentMethod: 'CREDIT_CARD' | 'CASH';
+  paymentProof: string;
+  allocationNumber?: string | null;
+  s3Key?: string | null;
+  fileName?: string | null;
+  fileSizeBytes?: number | null;
+  mimeType?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** BE [InvoiceWithOrderTotal] — invoice + public PDF URL + order total */
+export interface InvoiceWithOrderTotal {
+  invoice: Invoice;
+  pdfUrl: string;
+  orderTotalPrice: number;
 }
 
 export default api;

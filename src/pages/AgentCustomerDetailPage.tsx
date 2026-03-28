@@ -6,7 +6,7 @@ import PaginationBar from '../components/PaginationBar';
 import CustomerEditModal from '../components/CustomerEditModal';
 import OrderViewModal from '../components/OrderViewModal';
 import { formatPrice } from '../utils/formatPrice';
-import { getStatusLabel, getStatusColor, formatOrderDateShort, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
+import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 
@@ -423,7 +423,7 @@ export default function AgentCustomerDetailPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 text-center">
-                        {formatOrderDateShort(order.createdAt)}
+                        {formatOrderDateShortWithTime(order.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">
                         {formatPrice(order.totalPrice)}

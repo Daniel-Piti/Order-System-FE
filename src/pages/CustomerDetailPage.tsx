@@ -1,13 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { customerAPI, orderAPI, invoiceAPI } from '../services/api';
-import type { Customer, Order } from '../services/api';
+import { customerAPI, orderAPI, invoiceAPI, agentAPI } from '../services/api';
+import type { Customer, Order, Agent } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import CustomerEditModal from '../components/CustomerEditModal';
 import OrderViewModal from '../components/OrderViewModal';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
 import { formatPrice } from '../utils/formatPrice';
-import { getStatusLabel, getStatusColor, formatOrderDateShort, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
+import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 
@@ -42,6 +42,7 @@ export default function CustomerDetailPage() {
   const [discountValue, setDiscountValue] = useState('');
   const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
   const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const { backdropProps: cancelConfirmBackdropProps, contentProps: cancelConfirmContentProps } = useModalBackdrop(() => setShowCancelConfirm(false));
   const { backdropProps: discountModalBackdropProps, contentProps: discountModalContentProps } = useModalBackdrop(() => setDiscountOrder(null));
 
@@ -76,7 +77,7 @@ export default function CustomerDetailPage() {
         'createdAt',
         'DESC',
         undefined,
-        false,
+        null,
         null,
         customerId
       );
@@ -92,6 +93,18 @@ export default function CustomerDetailPage() {
   useEffect(() => {
     fetchCustomer();
   }, [fetchCustomer]);
+
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const data = await agentAPI.getAgentsForManager();
+        setAgents(data);
+      } catch {
+        // ignore
+      }
+    };
+    loadAgents();
+  }, []);
 
   useEffect(() => {
     fetchOrders();
@@ -454,6 +467,7 @@ export default function CustomerDetailPage() {
                   <tr>
                     <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">ID</th>
                     <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">סטטוס</th>
+                    <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">מקור</th>
                     <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">תאריך יצירה</th>
                     <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">סה״כ</th>
                     <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600 w-32">פעולות</th>
@@ -481,7 +495,19 @@ export default function CustomerDetailPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 text-center">
-                        {formatOrderDateShort(order.createdAt)}
+                        {order.orderSource === 'MANAGER'
+                          ? 'אני'
+                          : order.orderSource === 'AGENT' && order.agentId
+                            ? (() => {
+                                const agent = agents.find((a) => a.id === order.agentId);
+                                return agent ? `${agent.firstName} ${agent.lastName}` : 'סוכן';
+                              })()
+                            : order.orderSource === 'PUBLIC'
+                              ? 'אונליין'
+                              : '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800 text-center">
+                        {formatOrderDateShortWithTime(order.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">
                         {formatPrice(order.totalPrice)}

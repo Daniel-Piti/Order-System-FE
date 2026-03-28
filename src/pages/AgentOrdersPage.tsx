@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { agentAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
-import { getStatusLabel, getStatusColor, getCardStyles, formatOrderDate, formatOrderDateShort, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
+import { getStatusLabel, getStatusColor, getCardStyles, formatOrderDate, formatOrderDateShortWithTime, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 
 export default function AgentOrdersPage() {
@@ -329,7 +329,6 @@ export default function AgentOrdersPage() {
                 dir="ltr"
               >
                 <option value="createdAt">תאריך יצירה</option>
-                <option value="status">סטטוס</option>
                 <option value="totalPrice">מחיר כולל</option>
               </select>
             </div>
@@ -540,7 +539,7 @@ export default function AgentOrdersPage() {
                   <p className="text-xs text-gray-500 font-medium text-center">
                     <span className="truncate">
                       <span>{getOrderCardDate(order)!.label}</span>
-                      <span>{formatOrderDateShort(getOrderCardDate(order)!.date)}</span>
+                      <span>{formatOrderDateShortWithTime(getOrderCardDate(order)!.date)}</span>
                     </span>
                   </p>
                 ) : null}

@@ -5,7 +5,7 @@ import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer,
 import PaginationBar from '../components/PaginationBar';
 import OrderViewModal from '../components/OrderViewModal';
 import { formatPrice } from '../utils/formatPrice';
-import { getStatusLabel, getStatusColor, getCardStyles, getLabelStyles, formatOrderDateShort, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
+import { getStatusLabel, getStatusColor, getCardStyles, getLabelStyles, formatOrderDateShortWithTime, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
@@ -120,11 +120,10 @@ export default function OrdersPage() {
     setIsLoading(true);
     setError('');
     try {
-      // Determine filterAgent and agentId based on agentFilter
-      const filterAgent = agentFilter !== ''; // If agentFilter is not empty, we're filtering by agent
-      const agentId = agentFilter === '' || agentFilter === 'manager' 
-        ? null 
-        : agentFilter;
+      // Determine orderSource and agentId based on agentFilter
+      // '' = all (orderSource=null), 'manager' = manager only (MANAGER), otherwise = specific agent (AGENT + agentId)
+      const orderSource = agentFilter === '' ? null : agentFilter === 'manager' ? 'MANAGER' : 'AGENT';
+      const agentId = orderSource === 'AGENT' ? agentFilter : null;
 
       const pageResponse = await orderAPI.getAllOrders(
         page,
@@ -132,7 +131,7 @@ export default function OrdersPage() {
         sortBy,
         sortDirection,
         statusFilter || undefined,
-        filterAgent,
+        orderSource,
         agentId
       );
       const fetchedOrders = pageResponse?.content || [];
@@ -436,7 +435,6 @@ export default function OrdersPage() {
                 dir="ltr"
               >
                 <option value="createdAt">תאריך יצירה</option>
-                <option value="status">סטטוס</option>
                 <option value="totalPrice">מחיר כולל</option>
               </select>
             </div>
@@ -524,20 +522,18 @@ export default function OrdersPage() {
             const cardStyles = getCardStyles(order.status);
             const labelStyles = getLabelStyles(order.status);
             const orderAgent = order.agentId ? agents.find(agent => agent.id === order.agentId) : null;
-            // Show "Me" if filtering by this agent (agentFilter matches this order's agentId)
-            const isMe = agentFilter !== '' && agentFilter !== 'manager' && order.agentId === agentFilter;
-            // Show "Me" label for manager's own orders (orderSource === 'MANAGER' and agentId === null)
-            const isManagerOrder = order.orderSource === 'MANAGER' && order.agentId === null;
-            // Show label for public orders (orderSource === 'PUBLIC')
+            // "אני" only for manager's own orders (orderSource === 'MANAGER' and no agent)
+            const isManagerOrder = order.orderSource === 'MANAGER' && order.agentId == null;
             const isPublicOrder = order.orderSource === 'PUBLIC';
-            
+            const agentLabel = isManagerOrder ? 'אני' : (orderAgent ? `${orderAgent.firstName} ${orderAgent.lastName}` : null);
+
             return (
             <div key={order.id} className="flex flex-col w-full sm:max-w-[260px] items-center group">
               {/* Agent/Manager/Public Label - Outside and attached at top */}
-              {(orderAgent || isManagerOrder || isPublicOrder) && (
+              {(agentLabel || isPublicOrder) && (
                 <div className={`w-[80%] px-3 py-1.5 ${labelStyles.bg} border-l-2 border-r-2 border-t-2 ${labelStyles.border} ${labelStyles.borderHover} rounded-t-xl backdrop-blur-sm transition-all duration-300 -mb-[2px]`}>
                   <p className={`text-xs font-semibold ${labelStyles.text} text-center truncate`}>
-                    {isPublicOrder ? '- אונליין -' : isManagerOrder ? 'אני' : isMe ? 'אני' : `${orderAgent!.firstName} ${orderAgent!.lastName}`}
+                    {isPublicOrder ? '- אונליין -' : agentLabel}
                   </p>
                 </div>
               )}
@@ -666,7 +662,7 @@ export default function OrdersPage() {
                   <p className="text-xs text-gray-500 font-medium text-center">
                     <span className="truncate">
                       <span>{getOrderCardDate(order)!.label}</span>
-                      <span>{formatOrderDateShort(getOrderCardDate(order)!.date)}</span>
+                      <span>{formatOrderDateShortWithTime(getOrderCardDate(order)!.date)}</span>
                     </span>
                   </p>
                 ) : null}
