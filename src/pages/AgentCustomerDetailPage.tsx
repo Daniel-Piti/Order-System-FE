@@ -146,8 +146,8 @@ export default function AgentCustomerDetailPage() {
       const params = new URLSearchParams({
         pageNumber: overridesPageNum.toString(),
         pageSize: overridesPageSize.toString(),
-        sortBy: 'customer_id',
-        sortOrder: 'asc',
+        sortBy: 'updated_at',
+        sortOrder: 'desc',
         customerId,
       });
       const response = await fetch(`${API_BASE_URL}/agent/product-overrides?${params.toString()}`, {

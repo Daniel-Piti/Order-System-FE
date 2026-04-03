@@ -87,8 +87,8 @@ export default function AgentOverridesPage() {
       const params = new URLSearchParams({
         pageNumber: currentPage.toString(),
         pageSize: pageSize.toString(),
-        sortBy: 'customer_id',
-        sortOrder: 'asc',
+        sortBy: 'updated_at',
+        sortOrder: 'desc',
       });
       if (productFilter) params.append('productId', productFilter);
       if (customerFilter) params.append('customerId', customerFilter);

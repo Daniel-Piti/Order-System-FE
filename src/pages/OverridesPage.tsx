@@ -83,8 +83,8 @@ export default function OverridesPage() {
       const params = new URLSearchParams({
         pageNumber: currentPage.toString(),
         pageSize: pageSize.toString(),
-        sortBy: 'customer_id',
-        sortOrder: 'asc',
+        sortBy: 'updated_at',
+        sortOrder: 'desc',
       });
       
       if (productFilter) {
