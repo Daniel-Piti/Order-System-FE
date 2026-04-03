@@ -24,6 +24,7 @@ export default function AgentOverridesPage() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [productFilter, setProductFilter] = useState<string>('');
+  const [customerFilter, setCustomerFilter] = useState<string>('');
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,7 +63,7 @@ export default function AgentOverridesPage() {
       fetchCustomers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentInfo, currentPage, pageSize, productFilter]);
+  }, [agentInfo, currentPage, pageSize, productFilter, customerFilter]);
 
   const fetchAgentInfo = async () => {
     try {
@@ -90,6 +91,7 @@ export default function AgentOverridesPage() {
         sortOrder: 'asc',
       });
       if (productFilter) params.append('productId', productFilter);
+      if (customerFilter) params.append('customerId', customerFilter);
 
       const response = await fetch(`${API_BASE_URL}/agent/product-overrides?${params.toString()}`, {
         headers: {
@@ -159,6 +161,11 @@ export default function AgentOverridesPage() {
 
   const handleProductFilterChange = (value: string) => {
     setProductFilter(value);
+    setCurrentPage(0);
+  };
+
+  const handleCustomerFilterChange = (value: string) => {
+    setCustomerFilter(value);
     setCurrentPage(0);
   };
 
@@ -400,7 +407,7 @@ export default function AgentOverridesPage() {
         </div>
       </div>
 
-      {(overrides.length > 0 || productFilter) && (
+      {(overrides.length > 0 || productFilter || customerFilter) && (
         <div className="glass-card rounded-3xl p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 md:ml-auto">
@@ -417,6 +424,24 @@ export default function AgentOverridesPage() {
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name} - {formatPrice(product.price)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Customer Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700" dir="rtl">לקוח:</span>
+                <select
+                  value={customerFilter}
+                  onChange={(e) => handleCustomerFilterChange(e.target.value)}
+                  className="glass-select pl-8 pr-4 py-2 rounded-xl text-sm font-semibold text-gray-800 cursor-pointer w-48"
+                  dir="ltr"
+                >
+                  <option value="">הכל</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
                     </option>
                   ))}
                 </select>
@@ -447,7 +472,7 @@ export default function AgentOverridesPage() {
       ) : overrides.length === 0 ? (
         <div className="glass-card rounded-3xl p-12 text-center">
           <div className="flex flex-col items-center space-y-4">
-            {productFilter ? (
+            {productFilter || customerFilter ? (
               <>
                 <div className="p-6 rounded-full bg-gray-100/50">
                   <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -456,10 +481,13 @@ export default function AgentOverridesPage() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800">לא נמצאו מחירים מיוחדים תואמים</h2>
                 <p className="text-gray-600 max-w-md">
-                  לא נמצאו מחירים מיוחדים עבור המוצר שנבחר.
+                  לא נמצאו מחירים מיוחדים עבור המסננים שנבחרו.
                 </p>
                 <button
-                  onClick={() => setProductFilter('')}
+                  onClick={() => {
+                    setProductFilter('');
+                    setCustomerFilter('');
+                  }}
                   className="glass-button mt-4 px-8 py-3 rounded-xl font-semibold text-gray-800 hover:shadow-lg transition-all"
                 >
                   נקה מסנן

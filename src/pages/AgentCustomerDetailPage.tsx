@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { agentAPI } from '../services/api';
-import type { Customer, Order } from '../services/api';
+import { agentAPI, publicAPI } from '../services/api';
+import type { Customer, Order, PageResponse } from '../services/api';
+import type { ProductOverrideWithPrice } from '../utils/types';
 import PaginationBar from '../components/PaginationBar';
 import CustomerEditModal from '../components/CustomerEditModal';
 import OrderViewModal from '../components/OrderViewModal';
@@ -9,8 +10,11 @@ import { formatPrice } from '../utils/formatPrice';
 import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
+import CloseButton from '../components/CloseButton';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const MAX_PRICE = 1_000_000;
 
 export default function AgentCustomerDetailPage() {
   const { customerId } = useParams<{ customerId: string }>();
@@ -19,6 +23,31 @@ export default function AgentCustomerDetailPage() {
   const [ordersPage, setOrdersPage] = useState<{ content: Order[]; totalPages: number }>({ content: [], totalPages: 0 });
   const [ordersPageNum, setOrdersPageNum] = useState(0);
   const [ordersPageSize, setOrdersPageSize] = useState(10);
+  const [overridesPage, setOverridesPage] = useState<{ content: ProductOverrideWithPrice[]; totalPages: number }>({
+    content: [],
+    totalPages: 0,
+  });
+  const [overridesPageNum, setOverridesPageNum] = useState(0);
+  const [overridesPageSize, setOverridesPageSize] = useState(10);
+  const [isLoadingOverrides, setIsLoadingOverrides] = useState(true);
+  const [overrideProducts, setOverrideProducts] = useState<
+    { id: string; name: string; price: number; minimumPrice: number }[]
+  >([]);
+  const [overrideToEdit, setOverrideToEdit] = useState<ProductOverrideWithPrice | null>(null);
+  const [overrideToDelete, setOverrideToDelete] = useState<ProductOverrideWithPrice | null>(null);
+  const [editOverridePrice, setEditOverridePrice] = useState('');
+  const [overridePriceFieldError, setOverridePriceFieldError] = useState('');
+  const [overrideEditFormError, setOverrideEditFormError] = useState('');
+  const [showOverrideEditErrors, setShowOverrideEditErrors] = useState(false);
+  const [isSubmittingOverride, setIsSubmittingOverride] = useState(false);
+  const [isDeletingOverride, setIsDeletingOverride] = useState(false);
+  const [isAddOverrideModalOpen, setIsAddOverrideModalOpen] = useState(false);
+  const [addOverrideForm, setAddOverrideForm] = useState({ productId: '', overridePrice: '' });
+  const [addModalProductSearch, setAddModalProductSearch] = useState('');
+  const [addOverrideFieldErrors, setAddOverrideFieldErrors] = useState<Record<string, string>>({});
+  const [addOverrideFormError, setAddOverrideFormError] = useState('');
+  const [showAddOverrideErrors, setShowAddOverrideErrors] = useState(false);
+  const [isSubmittingAddOverride, setIsSubmittingAddOverride] = useState(false);
   const [isLoadingCustomer, setIsLoadingCustomer] = useState(true);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [error, setError] = useState('');
@@ -38,6 +67,28 @@ export default function AgentCustomerDetailPage() {
   const [isUpdatingDiscount, setIsUpdatingDiscount] = useState(false);
   const { backdropProps: cancelConfirmBackdropProps, contentProps: cancelConfirmContentProps } = useModalBackdrop(() => setShowCancelConfirm(false));
   const { backdropProps: discountModalBackdropProps, contentProps: discountModalContentProps } = useModalBackdrop(() => setDiscountOrder(null));
+  const handleCloseOverrideEditModal = () => {
+    setOverrideToEdit(null);
+    setEditOverridePrice('');
+    setOverridePriceFieldError('');
+    setOverrideEditFormError('');
+    setShowOverrideEditErrors(false);
+  };
+  const { backdropProps: overrideEditBackdropProps, contentProps: overrideEditContentProps } =
+    useModalBackdrop(handleCloseOverrideEditModal);
+  const { backdropProps: overrideDeleteBackdropProps, contentProps: overrideDeleteContentProps } = useModalBackdrop(() =>
+    setOverrideToDelete(null),
+  );
+  const handleCloseAddOverrideModal = () => {
+    setIsAddOverrideModalOpen(false);
+    setAddOverrideForm({ productId: '', overridePrice: '' });
+    setAddModalProductSearch('');
+    setAddOverrideFieldErrors({});
+    setAddOverrideFormError('');
+    setShowAddOverrideErrors(false);
+  };
+  const { backdropProps: addOverrideBackdropProps, contentProps: addOverrideContentProps } =
+    useModalBackdrop(handleCloseAddOverrideModal);
 
   const fetchCustomer = useCallback(async () => {
     if (!customerId) return;
@@ -86,6 +137,223 @@ export default function AgentCustomerDetailPage() {
       setIsLoadingOrders(false);
     }
   }, [customerId, ordersPageNum, ordersPageSize, navigate]);
+
+  const fetchOverrides = useCallback(async () => {
+    if (!customerId) return;
+    try {
+      setIsLoadingOverrides(true);
+      const token = localStorage.getItem('authToken');
+      const params = new URLSearchParams({
+        pageNumber: overridesPageNum.toString(),
+        pageSize: overridesPageSize.toString(),
+        sortBy: 'customer_id',
+        sortOrder: 'asc',
+        customerId,
+      });
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.userMessage || 'Failed to load overrides');
+      }
+      const data: PageResponse<ProductOverrideWithPrice> = await response.json();
+      setOverridesPage({ content: data.content, totalPages: data.totalPages });
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      if (e?.message?.includes('401')) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        navigate('/login/agent');
+      }
+    } finally {
+      setIsLoadingOverrides(false);
+    }
+  }, [customerId, overridesPageNum, overridesPageSize, navigate]);
+
+  const prevOverridesCustomerIdRef = useRef<string | undefined>();
+
+  useEffect(() => {
+    if (!customerId) return;
+    const switched =
+      prevOverridesCustomerIdRef.current !== undefined &&
+      prevOverridesCustomerIdRef.current !== customerId;
+    prevOverridesCustomerIdRef.current = customerId;
+    if (switched) {
+      setOverridesPageNum(0);
+      return;
+    }
+    fetchOverrides();
+  }, [customerId, overridesPageNum, overridesPageSize, fetchOverrides]);
+
+  useEffect(() => {
+    if (!customer?.managerId) return;
+    publicAPI.products
+      .getAllByManagerId(customer.managerId)
+      .then((list) =>
+        setOverrideProducts(
+          list.map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            minimumPrice: (p as { minimumPrice?: number }).minimumPrice ?? 0,
+          })),
+        ),
+      )
+      .catch(() => setOverrideProducts([]));
+  }, [customer?.managerId]);
+
+  const overrideProductById = useMemo(
+    () => new Map(overrideProducts.map((p) => [p.id, p])),
+    [overrideProducts],
+  );
+
+  const getOverrideProductName = (productId: string) => overrideProductById.get(productId)?.name ?? productId;
+
+  const getOverrideCatalogPrice = (productId: string, fallback: number) =>
+    overrideProductById.get(productId)?.price ?? fallback;
+
+  const selectedProductForAddOverride = addOverrideForm.productId
+    ? overrideProductById.get(addOverrideForm.productId)
+    : undefined;
+
+  const filteredProductsForAddModal = useMemo(() => {
+    const q = addModalProductSearch.trim().toLowerCase();
+    if (!q) return overrideProducts;
+    return overrideProducts.filter((p) => p.name.toLowerCase().includes(q));
+  }, [overrideProducts, addModalProductSearch]);
+
+  const handleOpenAddOverrideModal = () => {
+    setAddOverrideForm({ productId: '', overridePrice: '' });
+    setAddModalProductSearch('');
+    setAddOverrideFieldErrors({});
+    setAddOverrideFormError('');
+    setShowAddOverrideErrors(false);
+    setIsAddOverrideModalOpen(true);
+  };
+
+  const validateEditOverridePrice = (value: string): string => {
+    if (!value.trim()) return 'נדרש להזין מחיר מותאם';
+    if (isNaN(Number(value)) || Number(value) < 0) return 'מחיר מותאם חייב להיות מספר חיובי תקין';
+    if (Number(value) > MAX_PRICE) return 'מחיר מותאם לא יכול לעלות על 1,000,000';
+    const decimalParts = value.split('.');
+    if (decimalParts.length > 1 && decimalParts[1].length > 2) {
+      return 'מחיר מותאם יכול לכלול עד 2 ספרות אחרי הנקודה';
+    }
+    return '';
+  };
+
+  const handleOpenOverrideEdit = (row: ProductOverrideWithPrice) => {
+    setOverrideToEdit(row);
+    setEditOverridePrice(row.overridePrice.toString());
+    setOverrideEditFormError('');
+    setOverridePriceFieldError('');
+    setShowOverrideEditErrors(false);
+  };
+
+  const handleSubmitOverrideEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!overrideToEdit) return;
+    setShowOverrideEditErrors(true);
+    setOverrideEditFormError('');
+    const fieldErr = validateEditOverridePrice(editOverridePrice);
+    setOverridePriceFieldError(fieldErr);
+    if (fieldErr) return;
+
+    const newPrice = Math.min(Number(editOverridePrice), MAX_PRICE);
+    if (Math.abs(newPrice - overrideToEdit.overridePrice) <= 0.001) {
+      handleCloseOverrideEditModal();
+      return;
+    }
+
+    try {
+      setIsSubmittingOverride(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides/override/${overrideToEdit.id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ overridePrice: newPrice }),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error((errData as { userMessage?: string }).userMessage || 'עדכון נכשל');
+      }
+      handleCloseOverrideEditModal();
+      await fetchOverrides();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'עדכון נכשל';
+      setOverrideEditFormError(msg);
+    } finally {
+      setIsSubmittingOverride(false);
+    }
+  };
+
+  const handleDeleteOverrideConfirm = async () => {
+    if (!overrideToDelete) return;
+    try {
+      setIsDeletingOverride(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides/override/${overrideToDelete.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('מחיקה נכשלה');
+      setOverrideToDelete(null);
+      await fetchOverrides();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'מחיקה נכשלה';
+      setError(msg);
+    } finally {
+      setIsDeletingOverride(false);
+    }
+  };
+
+  const handleAddOverrideSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerId) return;
+    setAddOverrideFormError('');
+    setShowAddOverrideErrors(true);
+
+    const errors: Record<string, string> = {};
+    if (!addOverrideForm.productId) errors.productId = 'נדרש לבחור מוצר';
+    const priceErr = validateEditOverridePrice(addOverrideForm.overridePrice);
+    if (priceErr) errors.overridePrice = priceErr;
+
+    setAddOverrideFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      setIsSubmittingAddOverride(true);
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/agent/product-overrides`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: addOverrideForm.productId,
+          customerId,
+          overridePrice: Math.min(Number(addOverrideForm.overridePrice), MAX_PRICE),
+        }),
+      });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error((errData as { userMessage?: string }).userMessage || 'יצירה נכשלה');
+      }
+      handleCloseAddOverrideModal();
+      setOverridesPageNum(0);
+      await fetchOverrides();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'יצירה נכשלה';
+      setAddOverrideFormError(msg);
+    } finally {
+      setIsSubmittingAddOverride(false);
+    }
+  };
 
   useEffect(() => {
     fetchCustomer();
@@ -520,6 +788,484 @@ export default function AgentCustomerDetailPage() {
         )}
         </div>
       </div>
+
+      <div className="glass-card rounded-3xl p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800">מחירים מיוחדים ללקוח</h2>
+            <p className="text-sm text-gray-600 mt-1">מחירים מותאמים למוצרים עבור לקוח זה</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 justify-end sm:justify-start">
+            <button
+              type="button"
+              onClick={handleOpenAddOverrideModal}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-md transition-all border-0"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              הוסף מחיר מיוחד
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">הצג:</span>
+              <select
+                value={overridesPageSize}
+                onChange={(e) => {
+                  setOverridesPageSize(Number(e.target.value));
+                  setOverridesPageNum(0);
+                }}
+                className="glass-select pl-3 pr-8 py-2 rounded-xl text-sm w-20"
+                dir="ltr"
+              >
+                {PAGE_SIZE_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {isLoadingOverrides ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-10 w-10 border-2 border-sky-600 border-t-transparent rounded-full" />
+          </div>
+        ) : overridesPage.content.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">אין מחירים מיוחדים מוגדרים ללקוח זה.</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto rounded-t-xl border border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200" aria-label="מחירים מיוחדים ללקוח">
+                <thead className="bg-white/30 border-b border-gray-200/50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-700">
+                      מוצר
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-700">
+                      מחיר מינימלי
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-700">
+                      מחיר מותאם
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-700 w-28">
+                      פעולות
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200/50">
+                  {overridesPage.content.map((row) => (
+                    <tr key={row.id} className="hover:bg-white/20 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-800 text-center">
+                        <span className="inline-block max-w-[220px] truncate" title={getOverrideProductName(row.productId)}>
+                          {getOverrideProductName(row.productId)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800 text-center">
+                        {formatPrice(row.productMinimumPrice ?? row.productPrice)}
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-center">
+                        {formatPrice(row.overridePrice)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenOverrideEdit(row)}
+                            className="glass-button p-2 rounded-lg hover:shadow-md transition-all"
+                            title="ערוך"
+                            aria-label="ערוך מחיר מיוחד"
+                          >
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOverrideToDelete(row)}
+                            className="glass-button p-2 rounded-lg hover:shadow-md transition-all border-red-500 hover:border-red-600"
+                            title="מחק"
+                            aria-label="מחק מחיר מיוחד"
+                          >
+                            <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <PaginationBar
+              currentPage={overridesPageNum}
+              totalPages={overridesPage.totalPages}
+              onPageChange={setOverridesPageNum}
+              showCondition={overridesPage.totalPages > 1}
+              fixed={false}
+              rtl
+            />
+          </>
+        )}
+      </div>
+
+      {isAddOverrideModalOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          dir="rtl"
+          {...addOverrideBackdropProps}
+        >
+          <div
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            {...addOverrideContentProps}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">הוסף מחיר מיוחד</h2>
+              <CloseButton onClick={handleCloseAddOverrideModal} />
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              הלקוח: <span className="font-semibold text-gray-800">{customer?.name ?? '—'}</span>
+            </p>
+
+            {addOverrideFormError && (
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
+                {addOverrideFormError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddOverrideSubmit} className="space-y-3.5" noValidate>
+              <div>
+                <label htmlFor="agent-customer-detail-add-override-product-search" className="block text-xs font-medium text-gray-700 mb-1.5">
+                  מוצר *
+                </label>
+                <div className="relative mb-2">
+                  <svg
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    id="agent-customer-detail-add-override-product-search"
+                    type="text"
+                    placeholder="חפש מוצרים..."
+                    value={addModalProductSearch}
+                    onChange={(e) => setAddModalProductSearch(e.target.value)}
+                    className="glass-input w-full pr-10 pl-10 py-2 rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    dir="rtl"
+                    aria-label="חפש מוצרים"
+                  />
+                  {addModalProductSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setAddModalProductSearch('')}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="נקה חיפוש"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <div
+                  className={`rounded-xl border overflow-hidden ${
+                    showAddOverrideErrors && addOverrideFieldErrors.productId ? 'border-red-400 ring-2 ring-red-400/30' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="space-y-1 max-h-40 overflow-y-auto p-1.5 bg-gray-50/50">
+                    {filteredProductsForAddModal.length === 0 && addModalProductSearch ? (
+                      <div className="text-center py-6 text-gray-500">
+                        <p className="text-xs">לא נמצאו מוצרים</p>
+                        <button
+                          type="button"
+                          onClick={() => setAddModalProductSearch('')}
+                          className="text-xs text-sky-600 hover:text-sky-700 mt-1"
+                        >
+                          נקה חיפוש
+                        </button>
+                      </div>
+                    ) : filteredProductsForAddModal.length === 0 && !addModalProductSearch ? (
+                      <div className="text-center py-6 text-gray-500">
+                        <p className="text-xs">{overrideProducts.length === 0 ? 'טוען מוצרים...' : 'אין מוצרים להצגה'}</p>
+                      </div>
+                    ) : (
+                      filteredProductsForAddModal.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => {
+                            setAddOverrideForm((prev) => ({ ...prev, productId: product.id }));
+                            if (showAddOverrideErrors && addOverrideFieldErrors.productId) {
+                              setAddOverrideFieldErrors((prev) => ({ ...prev, productId: '' }));
+                            }
+                          }}
+                          className={`w-full text-right px-3 py-2.5 rounded-lg transition-all flex items-center gap-2.5 ${
+                            addOverrideForm.productId === product.id
+                              ? 'bg-sky-100 border-2 border-sky-500 shadow-sm'
+                              : 'bg-white hover:bg-gray-50 border border-transparent'
+                          }`}
+                        >
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                              addOverrideForm.productId === product.id ? 'border-sky-600 bg-sky-600' : 'border-gray-300'
+                            }`}
+                          >
+                            {addOverrideForm.productId === product.id && (
+                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 font-medium text-gray-800 text-sm truncate">{product.name}</div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+                {showAddOverrideErrors && addOverrideFieldErrors.productId && (
+                  <p className="text-red-500 text-xs mt-1">{addOverrideFieldErrors.productId}</p>
+                )}
+                {selectedProductForAddOverride && (
+                  <div className="mt-3 p-3 bg-sky-50/60 border border-sky-200 rounded-xl text-sm text-sky-900">
+                    <p className="font-semibold">{selectedProductForAddOverride.name}</p>
+                    <p className="mt-1 text-xs text-sky-800">
+                      מחיר מינימלי: {formatPrice(selectedProductForAddOverride.minimumPrice)}
+                    </p>
+                    <p className="mt-1 text-xs text-sky-800">מחיר בסיס: {formatPrice(selectedProductForAddOverride.price)}</p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="agent-customer-detail-add-override-price" className="block text-xs font-medium text-gray-700 mb-1.5">
+                  מחיר מותאם *
+                </label>
+                <div className="relative">
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <input
+                    id="agent-customer-detail-add-override-price"
+                    name="overridePrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={MAX_PRICE}
+                    value={addOverrideForm.overridePrice}
+                    onChange={(e) => {
+                      let nextValue = e.target.value;
+                      if (nextValue.includes('.')) {
+                        const parts = nextValue.split('.');
+                        if (parts[1] && parts[1].length > 2) {
+                          nextValue = `${parts[0]}.${parts[1].substring(0, 2)}`;
+                        }
+                      }
+                      const numericValue = Number(nextValue);
+                      if (nextValue !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                        nextValue = MAX_PRICE.toString();
+                      }
+                      setAddOverrideForm((prev) => ({ ...prev, overridePrice: nextValue }));
+                      if (showAddOverrideErrors && addOverrideFieldErrors.overridePrice) {
+                        setAddOverrideFieldErrors((prev) => ({ ...prev, overridePrice: '' }));
+                      }
+                    }}
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition-all ${
+                      showAddOverrideErrors && addOverrideFieldErrors.overridePrice ? 'border-red-400 focus:ring-red-400/50' : ''
+                    }`}
+                    placeholder="0.00"
+                    dir="ltr"
+                    disabled={isSubmittingAddOverride}
+                  />
+                </div>
+                {showAddOverrideErrors && addOverrideFieldErrors.overridePrice && (
+                  <p className="text-red-500 text-xs mt-1">{addOverrideFieldErrors.overridePrice}</p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4 justify-end">
+                <button
+                  type="button"
+                  onClick={handleCloseAddOverrideModal}
+                  disabled={isSubmittingAddOverride}
+                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800"
+                >
+                  ביטול
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingAddOverride}
+                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 border border-sky-700 disabled:opacity-50"
+                >
+                  {isSubmittingAddOverride ? 'יוצר...' : 'צור מחיר מיוחד'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {overrideToEdit && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          dir="rtl"
+          {...overrideEditBackdropProps}
+        >
+          <div
+            className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white/90 backdrop-blur-xl shadow-xl"
+            {...overrideEditContentProps}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">עריכת מחיר מיוחד</h2>
+              <CloseButton onClick={handleCloseOverrideEditModal} />
+            </div>
+
+            <div className="mb-4 p-4 bg-gray-100/50 rounded-xl space-y-2">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">מוצר:</span> {getOverrideProductName(overrideToEdit.productId)}
+              </p>
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">מחיר מקורי:</span>{' '}
+                {formatPrice(getOverrideCatalogPrice(overrideToEdit.productId, overrideToEdit.productPrice))}
+              </p>
+            </div>
+
+            {overrideEditFormError && (
+              <div className="mb-4 p-3 bg-red-50/80 border border-red-200/60 rounded-xl text-red-600 text-sm">
+                {overrideEditFormError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitOverrideEdit} className="space-y-3.5" noValidate>
+              <div>
+                <label htmlFor="agent-customer-detail-override-price" className="block text-xs font-medium text-gray-700 mb-1.5">
+                  מחיר מותאם חדש *
+                </label>
+                <div className="relative">
+                  <span className="absolute right-3 top-2.5 text-gray-700 text-sm font-semibold z-10">₪</span>
+                  <input
+                    id="agent-customer-detail-override-price"
+                    name="overridePrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max={MAX_PRICE}
+                    value={editOverridePrice}
+                    onChange={(e) => {
+                      let nextValue = e.target.value;
+                      if (nextValue.includes('.')) {
+                        const parts = nextValue.split('.');
+                        if (parts[1] && parts[1].length > 2) {
+                          nextValue = `${parts[0]}.${parts[1].substring(0, 2)}`;
+                        }
+                      }
+                      const numericValue = Number(nextValue);
+                      if (nextValue !== '' && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+                        nextValue = MAX_PRICE.toString();
+                      }
+                      setEditOverridePrice(nextValue);
+                      if (showOverrideEditErrors && overridePriceFieldError) {
+                        setOverridePriceFieldError('');
+                      }
+                    }}
+                    className={`glass-input w-full pr-7 pl-3.5 py-2.5 rounded-xl text-sm text-gray-800 text-center focus:outline-none focus:ring-2 focus:ring-sky-500/50 transition-all ${
+                      showOverrideEditErrors && overridePriceFieldError ? 'border-red-400 focus:ring-red-400/50' : ''
+                    }`}
+                    placeholder="0.00"
+                    dir="ltr"
+                    disabled={isSubmittingOverride}
+                  />
+                </div>
+                {showOverrideEditErrors && overridePriceFieldError && (
+                  <p className="text-red-500 text-xs mt-1">{overridePriceFieldError}</p>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4 justify-end">
+                <button
+                  type="button"
+                  onClick={handleCloseOverrideEditModal}
+                  disabled={isSubmittingOverride}
+                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-800"
+                >
+                  ביטול
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingOverride}
+                  className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 border border-sky-700 disabled:opacity-50"
+                >
+                  {isSubmittingOverride ? 'מעדכן...' : 'שמור'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {overrideToDelete && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          {...overrideDeleteBackdropProps}
+        >
+          <div className="glass-card rounded-3xl p-6 md:p-8 w-full max-w-md bg-white/85" {...overrideDeleteContentProps} dir="rtl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">מחק מחיר מיוחד</h2>
+              <button
+                type="button"
+                onClick={() => setOverrideToDelete(null)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                disabled={isDeletingOverride}
+              >
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">האם אתה בטוח שברצונך למחוק את המחיר המיוחד הזה?</p>
+              <div className="p-4 bg-gray-100/50 rounded-xl space-y-2 text-sm text-gray-600">
+                <p>
+                  <span className="font-semibold">מוצר:</span> {getOverrideProductName(overrideToDelete.productId)}
+                </p>
+                <p>
+                  <span className="font-semibold">מחיר מקורי:</span>{' '}
+                  {formatPrice(getOverrideCatalogPrice(overrideToDelete.productId, overrideToDelete.productPrice))}
+                </p>
+                <p>
+                  <span className="font-semibold">מחיר מותאם:</span> {formatPrice(overrideToDelete.overridePrice)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setOverrideToDelete(null)}
+                disabled={isDeletingOverride}
+                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-gray-800 disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteOverrideConfirm}
+                disabled={isDeletingOverride}
+                className="glass-button flex-1 py-2 px-4 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border-red-700 disabled:opacity-50"
+              >
+                {isDeletingOverride ? 'מוחק...' : 'מחק'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {viewingOrder && (
         <OrderViewModal
