@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { invoiceAPI, type InvoiceDto } from '../services/api';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { customerAPI, invoiceAPI, type Customer, type InvoiceDto } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import Spinner from '../components/Spinner';
 import { formatPrice } from '../utils/formatPrice';
@@ -30,8 +30,67 @@ export default function DocumentsReportsPage() {
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  /** `all` = no customer filter; `pick` = filter by chosen customer (search + select). */
+  const [customerScope, setCustomerScope] = useState<'all' | 'pick'>('all');
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [pickedCustomer, setPickedCustomer] = useState<Customer | null>(null);
+  const [customerListOpen, setCustomerListOpen] = useState(false);
+  const customerPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    customerAPI
+      .getAllCustomers()
+      .then((list) => {
+        if (!cancelled) setCustomers(list);
+      })
+      .catch(() => {
+        if (!cancelled) setCustomers([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const onDocMouseDown = (e: MouseEvent) => {
+      const el = customerPickerRef.current;
+      if (el && !el.contains(e.target as Node)) setCustomerListOpen(false);
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, []);
+
+  const sortedCustomers = useMemo(
+    () => customers.slice().sort((a, b) => a.name.localeCompare(b.name, 'he')),
+    [customers],
+  );
+
+  const filteredCustomersForPicker = useMemo(() => {
+    const q = customerSearch.trim().toLowerCase();
+    const digits = (s: string) => s.replace(/\D/g, '');
+    const base = sortedCustomers;
+    if (!q) return base.slice(0, 80);
+    return base.filter((c) => {
+      if (c.name.toLowerCase().includes(q)) return true;
+      if (c.email.toLowerCase().includes(q)) return true;
+      const qd = digits(q);
+      if (qd.length > 0 && digits(c.phoneNumber).includes(qd)) return true;
+      return false;
+    }).slice(0, 80);
+  }, [sortedCustomers, customerSearch]);
+
+  const effectiveCustomerId =
+    customerScope === 'pick' && pickedCustomer ? pickedCustomer.id : undefined;
+
   const canDownload = Boolean(fromDate && toDate && !isDownloading);
-  const canSearch = Boolean(fromDate && toDate && !isSearching);
+  const canSearch = Boolean(
+    fromDate &&
+      toDate &&
+      !isSearching &&
+      (customerScope === 'all' || pickedCustomer != null),
+  );
 
   const handleDownload = async () => {
     if (!fromDate || !toDate) return;
@@ -57,10 +116,22 @@ export default function DocumentsReportsPage() {
 
   const runSearch = async (nextPageNumber: number = 0) => {
     if (!fromDate || !toDate) return;
+    if (customerScope === 'pick' && !pickedCustomer) {
+      setError('נא לבחור לקוח מהרשימה (או לעבור ל״כל הלקוחות״).');
+      return;
+    }
     setIsSearching(true);
     setError('');
     try {
-      const page = await invoiceAPI.searchInvoices(fromDate, toDate, nextPageNumber, pageSize, 'createdAt', 'DESC');
+      const page = await invoiceAPI.searchInvoices(
+        fromDate,
+        toDate,
+        nextPageNumber,
+        pageSize,
+        'createdAt',
+        'DESC',
+        effectiveCustomerId,
+      );
       setResults(page.content ?? []);
       setTotalPages(page.totalPages ?? 0);
       setPageNumber(nextPageNumber);
@@ -81,7 +152,7 @@ export default function DocumentsReportsPage() {
     setResults([]);
     setTotalPages(0);
     setHasSearched(false);
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate, customerScope, pickedCustomer?.id]);
 
   useEffect(() => {
     // If user already searched and changes page size, re-run search for same date range
@@ -109,7 +180,7 @@ export default function DocumentsReportsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">מתאריך</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">מתאריך:</label>
             <input
               type="date"
               value={fromDate}
@@ -120,7 +191,7 @@ export default function DocumentsReportsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">עד תאריך</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">עד תאריך:</label>
             <input
               type="date"
               value={toDate}
@@ -128,6 +199,166 @@ export default function DocumentsReportsPage() {
               className="glass-input w-full px-4 py-2 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               dir="ltr"
             />
+          </div>
+        </div>
+
+        <h2 className="mt-6 text-sm font-semibold text-gray-800">סינון לפי לקוח</h2>
+        <div className="mt-2 rounded-2xl border border-gray-200/70 bg-gradient-to-b from-white/70 to-white/40 backdrop-blur-sm p-5 md:p-7 shadow-sm ring-1 ring-gray-900/5">
+          <div ref={customerPickerRef}>
+            {/* LTR row: chip on the left, toggle on the right; whole group centered */}
+            <div
+              className="flex flex-wrap items-center justify-center gap-3 md:gap-4"
+              dir="ltr"
+            >
+              {customerScope === 'pick' && pickedCustomer && (
+                <div
+                  className="flex w-fit max-w-[min(100%,20rem)] shrink-0 items-center gap-2 rounded-2xl border border-indigo-200/80 bg-white px-2 py-1.5 shadow-sm ring-1 ring-indigo-900/5"
+                  dir="rtl"
+                >
+                  <span className="min-w-0 max-w-[14rem] truncate py-0.5 ps-1 text-sm font-medium leading-snug text-gray-900 sm:max-w-[18rem]">
+                    {pickedCustomer.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPickedCustomer(null);
+                      setCustomerSearch('');
+                      setCustomerListOpen(true);
+                      setPageNumber(0);
+                    }}
+                    className="ms-0.5 shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-700"
+                    aria-label="נקה בחירת לקוח"
+                    title="נקה בחירה"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              <div
+                className="inline-flex rounded-2xl border border-gray-200/90 bg-white/80 p-1 gap-0.5 shadow-sm"
+                role="group"
+                aria-label="סינון לקוח"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerScope('all');
+                    setPickedCustomer(null);
+                    setCustomerSearch('');
+                    setCustomerListOpen(false);
+                    setPageNumber(0);
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all min-w-[7.5rem] ${
+                    customerScope === 'all'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-50/90'
+                  }`}
+                >
+                  כל הלקוחות
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomerScope('pick');
+                    setPickedCustomer(null);
+                    setCustomerSearch('');
+                    setCustomerListOpen(true);
+                    setPageNumber(0);
+                  }}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all min-w-[7.5rem] ${
+                    customerScope === 'pick'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-50/90'
+                  }`}
+                >
+                  לקוח מסוים
+                </button>
+              </div>
+            </div>
+
+            {customerScope === 'pick' && !pickedCustomer && (
+              <>
+                <div className="my-5 border-t border-gray-200/60" aria-hidden />
+                <div className="mx-auto flex w-full max-w-2xl flex-col gap-3">
+                    <div className="rounded-2xl border border-gray-200/90 bg-white overflow-hidden shadow-md ring-1 ring-gray-900/[0.06]">
+                      <div
+                        className={`relative ${
+                          customerListOpen && filteredCustomersForPicker.length > 0 ? 'border-b border-gray-200/80' : ''
+                        }`}
+                      >
+                        <svg
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          aria-hidden
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                        <input
+                          id="invoice-customer-search"
+                          type="text"
+                          autoComplete="off"
+                          placeholder="הקלד לחיפוש…"
+                          value={customerSearch}
+                          onChange={(e) => {
+                            setCustomerSearch(e.target.value);
+                            setCustomerListOpen(true);
+                            setPageNumber(0);
+                          }}
+                          onFocus={() => setCustomerListOpen(true)}
+                          className="w-full border-0 rounded-none pr-12 pl-4 py-3.5 text-base text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500/80 bg-transparent"
+                          dir="rtl"
+                          aria-label="חיפוש לקוח"
+                          aria-autocomplete="list"
+                          aria-expanded={customerListOpen}
+                          aria-controls="invoice-customer-suggestions"
+                        />
+                      </div>
+                      {customerListOpen && filteredCustomersForPicker.length > 0 && (
+                        <ul
+                          id="invoice-customer-suggestions"
+                          role="listbox"
+                          className="max-h-64 overflow-y-auto w-full py-1.5"
+                        >
+                          {filteredCustomersForPicker.map((c) => (
+                            <li key={c.id} role="option">
+                              <button
+                                type="button"
+                                className="w-full text-center px-4 py-3 text-base font-medium text-gray-900 hover:bg-indigo-50/90 transition-colors"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => {
+                                  setPickedCustomer(c);
+                                  setCustomerSearch('');
+                                  setCustomerListOpen(false);
+                                  setPageNumber(0);
+                                }}
+                              >
+                                {c.name}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    {customerListOpen &&
+                      customerSearch.trim() &&
+                      filteredCustomersForPicker.length === 0 &&
+                      customers.length > 0 && (
+                        <p className="w-full text-center text-sm text-amber-800 bg-amber-50/90 border border-amber-200/80 rounded-xl px-4 py-3">
+                          לא נמצאו לקוחות התואמים לחיפוש. נסה טקסט אחר.
+                        </p>
+                      )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

@@ -932,10 +932,11 @@ export const invoiceAPI = {
     pageSize: number = 20,
     sortBy: string = 'createdAt',
     sortOrder: string = 'DESC',
+    customerId?: string | null,
   ): Promise<PageResponse<InvoiceDto>> => {
-    const response = await api.get<PageResponse<InvoiceDto>>('/invoices/search', {
-      params: { from, to, pageNumber, pageSize, sortBy, sortOrder },
-    });
+    const params: Record<string, unknown> = { from, to, pageNumber, pageSize, sortBy, sortOrder };
+    if (customerId != null && customerId !== '') params.customerId = customerId;
+    const response = await api.get<PageResponse<InvoiceDto>>('/invoices/search', { params });
     return response.data;
   },
 };
