@@ -458,13 +458,13 @@ export default function DocumentsReportsPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
                     {results.map((row) => (
-                      <tr key={`${row.orderId}-${row.invoiceSequenceNumber}`} className="hover:bg-gray-50/70">
+                      <tr key={row.id} className="hover:bg-gray-50/70">
                         <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoiceSequenceNumber}</td>
                         <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.orderId}</td>
                         <td className="px-4 py-3 text-sm text-gray-800 text-center">
                           {formatOrderDateShortWithTime(row.createdAt)}
                         </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.orderTotalPrice)}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.totalAmount)}</td>
                         <td className="px-4 py-3 text-center">
                           <button
                             type="button"

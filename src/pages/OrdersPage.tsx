@@ -9,6 +9,7 @@ import { getStatusLabel, getStatusColor, getCardStyles, getLabelStyles, formatOr
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { primaryInvoicePdfUrl } from '../utils/invoiceUtils';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -77,19 +78,16 @@ export default function OrdersPage() {
       });
 
       try {
-        // Batch check invoices for all orders at once
-        const invoiceMap = await invoiceAPI.getInvoicesByOrderIds(orderIdsToCheck);
-        
-        // Update invoice URLs from the batch response
-        if (Object.keys(invoiceMap).length > 0) {
-          setOrderInvoiceUrls(prev => {
-            const updated = new Map(prev);
-            Object.entries(invoiceMap).forEach(([orderId, url]) => {
-              updated.set(orderId, url);
-            });
-            return updated;
-          });
-        }
+        const invoicesByOrderId = await invoiceAPI.getInvoicesByOrderIds(orderIdsToCheck);
+        setOrderInvoiceUrls((prev) => {
+          const updated = new Map(prev);
+          for (const orderId of orderIdsToCheck) {
+            const list = invoicesByOrderId[orderId] ?? [];
+            const url = primaryInvoicePdfUrl(list);
+            if (url) updated.set(orderId, url);
+          }
+          return updated;
+        });
       } catch (err: any) {
         // Log error but don't fail silently
         console.error('Error checking invoices for orders:', err);

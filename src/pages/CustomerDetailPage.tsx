@@ -12,6 +12,7 @@ import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderR
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import CloseButton from '../components/CloseButton';
+import { primaryInvoicePdfUrl } from '../utils/invoiceUtils';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -387,14 +388,16 @@ export default function CustomerDetailPage() {
     });
     invoiceAPI
       .getInvoicesByOrderIds(orderIds)
-      .then((invoiceMap) => {
-        if (Object.keys(invoiceMap).length > 0) {
-          setOrderInvoiceUrls((prev) => {
-            const next = new Map(prev);
-            Object.entries(invoiceMap).forEach(([orderId, url]) => next.set(orderId, url));
-            return next;
-          });
-        }
+      .then((invoicesByOrderId) => {
+        setOrderInvoiceUrls((prev) => {
+          const next = new Map(prev);
+          for (const orderId of orderIds) {
+            const list = invoicesByOrderId[orderId] ?? [];
+            const url = primaryInvoicePdfUrl(list);
+            if (url) next.set(orderId, url);
+          }
+          return next;
+        });
       })
       .catch((err) => console.error('Error checking invoices:', err))
       .finally(() => {

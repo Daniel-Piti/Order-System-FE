@@ -912,8 +912,9 @@ export const invoiceAPI = {
     return response.data;
   },
 
-  getInvoicesByOrderIds: async (orderIds: string[]): Promise<Record<string, string>> => {
-    const response = await api.post<Record<string, string>>('/invoices/by-order-ids', orderIds);
+  /** Each requested order id maps to all invoice documents for that order (empty array if none). */
+  getInvoicesByOrderIds: async (orderIds: string[]): Promise<Record<string, InvoiceDto[]>> => {
+    const response = await api.post<Record<string, InvoiceDto[]>>('/invoices/by-order-ids', orderIds);
     return response.data;
   },
 
@@ -959,7 +960,9 @@ export interface InvoiceDto {
   id: number;
   orderId: string;
   customerId?: string | null;
-  orderTotalPrice: number;
+  totalAmount: number;
+  invoiceType: 'INVOICE' | 'CREDIT_NOTE';
+  linkedInvoiceId?: number | null;
   invoiceSequenceNumber: number;
   paymentMethod: 'CREDIT_CARD' | 'CASH';
   createdAt: string;
