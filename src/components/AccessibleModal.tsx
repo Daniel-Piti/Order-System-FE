@@ -11,6 +11,8 @@ interface AccessibleModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   dir?: 'rtl' | 'ltr';
   className?: string;
+  /** Override default overlay (e.g. higher z-index when stacking over another modal). */
+  overlayClassName?: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export default function AccessibleModal({
   size = 'md',
   dir = 'rtl',
   className = '',
+  overlayClassName,
 }: AccessibleModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -91,7 +94,10 @@ export default function AccessibleModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className={
+        overlayClassName ??
+        'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm'
+      }
       dir={dir}
       role="dialog"
       aria-modal="true"

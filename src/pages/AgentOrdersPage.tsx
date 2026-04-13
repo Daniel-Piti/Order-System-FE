@@ -3,7 +3,7 @@ import Spinner from '../components/Spinner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { agentAPI, type Order, type Customer } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
-import { formatPrice } from '../utils/formatPrice';
+import { formatPrice, formatPriceNegative } from '../utils/formatPrice';
 import { getStatusLabel, getStatusColor, getCardStyles, formatOrderDate, formatOrderDateShortWithTime, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 
@@ -527,7 +527,7 @@ export default function AgentOrdersPage() {
                 })()}
                 <div className="flex items-baseline justify-between gap-2 min-w-0">
                   <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
+                  <span dir="ltr" className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right inline-block">
                     {formatPrice(order.totalPrice)}
                   </span>
                 </div>
@@ -1061,10 +1061,27 @@ export default function AgentOrdersPage() {
                     </div>
                   );
                 })()}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
-                  <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
-                  <span className="text-lg font-bold text-indigo-600">{formatPrice(viewingOrder.totalPrice)}</span>
-                </div>
+                {(() => {
+                  const credited = viewingOrder.totalCreditedAmount ?? 0;
+                  return (
+                    <>
+                      {credited > 0 && (
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                          <span className="text-sm text-gray-600">זיכויים</span>
+                          <span dir="ltr" className="text-sm font-semibold text-amber-800 tabular-nums">
+                            {formatPriceNegative(credited)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                        <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
+                        <span dir="ltr" className="text-lg font-bold text-indigo-600 tabular-nums">
+                          {formatPrice(viewingOrder.totalPrice)}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
 

@@ -558,6 +558,8 @@ export interface Order {
   products: ProductDataForOrder[];
   productsVersion: number;
   totalPrice: number;
+  /** Sum of credit-note amounts already applied (from API when present). */
+  totalCreditedAmount?: number;
   discount: number;
   vat: number;
   linkExpiresAt: string;
@@ -940,6 +942,16 @@ export const invoiceAPI = {
     const response = await api.get<PageResponse<InvoiceDto>>('/invoices/search', { params });
     return response.data;
   },
+
+  createCreditNoteByAmount: async (
+    data: CreateCreditNoteByAmountRequest,
+  ): Promise<CreateCreditNoteByAmountResponse> => {
+    const response = await api.post<CreateCreditNoteByAmountResponse>(
+      '/invoices/credit-notes/by-amount',
+      data,
+    );
+    return response.data;
+  },
 };
 
 export interface CreateInvoiceRequest {
@@ -955,6 +967,19 @@ export interface CreateInvoiceResponse {
   pdfUrl: string;
 }
 
+export interface CreateCreditNoteByAmountRequest {
+  invoiceId: number;
+  amount: number;
+  allocationNumber?: string | null;
+}
+
+export interface CreateCreditNoteByAmountResponse {
+  invoiceId: number;
+  invoiceSequenceNumber: number;
+  pdfUrl?: string | null;
+  invoiceName?: string | null;
+}
+
 /** BE [InvoiceDto] — essentials + public PDF URL */
 export interface InvoiceDto {
   id: number;
@@ -965,6 +990,7 @@ export interface InvoiceDto {
   linkedInvoiceId?: number | null;
   invoiceSequenceNumber: number;
   paymentMethod: 'CREDIT_CARD' | 'CASH';
+  allocationNumber?: string | null;
   createdAt: string;
   pdfUrl: string;
 }

@@ -1,15 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Spinner from '../components/Spinner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer, type Agent } from '../services/api';
+import { orderAPI, customerAPI, agentAPI, invoiceAPI, type Order, type Customer, type Agent, type InvoiceDto } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import OrderViewModal from '../components/OrderViewModal';
 import { formatPrice } from '../utils/formatPrice';
 import { getStatusLabel, getStatusColor, getCardStyles, getLabelStyles, formatOrderDateShortWithTime, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
+import CreditNoteModal from '../components/CreditNoteModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
-import { primaryInvoicePdfUrl } from '../utils/invoiceUtils';
+import { primaryInvoicePdfUrl, primaryTaxInvoiceMeta } from '../utils/invoiceUtils';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -29,9 +30,16 @@ export default function OrdersPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [creditNoteOrder, setCreditNoteOrder] = useState<Order | null>(null);
   const [orderInvoiceUrls, setOrderInvoiceUrls] = useState<Map<string, string>>(new Map());
+  const [orderInvoicePrimaryMeta, setOrderInvoicePrimaryMeta] = useState<
+    Map<string, { invoiceId: number; allocationNumber: string | null }>
+  >(new Map());
   const [checkedOrders, setCheckedOrders] = useState<Set<string>>(new Set()); // Track which orders we've checked (even if no invoice)
   const [loadingInvoiceUrls, setLoadingInvoiceUrls] = useState<Set<string>>(new Set());
+  /** Full invoice rows per order (tax + credit notes) for modal list + card URLs */
+  const [orderInvoicesByOrderId, setOrderInvoicesByOrderId] = useState<Map<string, InvoiceDto[]>>(new Map());
+  const [loadingOrderInvoicesForModal, setLoadingOrderInvoicesForModal] = useState(false);
   const [discountOrder, setDiscountOrder] = useState<Order | null>(null);
   const [discountValue, setDiscountValue] = useState<string>('');
   const [discountMode, setDiscountMode] = useState<'number' | 'percentage'>('number');
@@ -88,6 +96,22 @@ export default function OrdersPage() {
           }
           return updated;
         });
+        setOrderInvoicePrimaryMeta((prev) => {
+          const updated = new Map(prev);
+          for (const orderId of orderIdsToCheck) {
+            const list = invoicesByOrderId[orderId] ?? [];
+            const meta = primaryTaxInvoiceMeta(list);
+            if (meta) updated.set(orderId, meta);
+          }
+          return updated;
+        });
+        setOrderInvoicesByOrderId((prev) => {
+          const updated = new Map(prev);
+          for (const orderId of orderIdsToCheck) {
+            updated.set(orderId, invoicesByOrderId[orderId] ?? []);
+          }
+          return updated;
+        });
       } catch (err: any) {
         // Log error but don't fail silently
         console.error('Error checking invoices for orders:', err);
@@ -113,6 +137,44 @@ export default function OrdersPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders]);
+
+  // When opening a DONE order, reload invoices so the modal shows tax + credit notes
+  useEffect(() => {
+    if (!viewingOrder || viewingOrder.status !== 'DONE') {
+      setLoadingOrderInvoicesForModal(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingOrderInvoicesForModal(true);
+    invoiceAPI
+      .getInvoicesByOrderIds([viewingOrder.id])
+      .then((map) => {
+        if (cancelled) return;
+        const list = map[viewingOrder.id] ?? [];
+        setOrderInvoicesByOrderId((prev) => new Map(prev).set(viewingOrder.id, list));
+        const url = primaryInvoicePdfUrl(list);
+        setOrderInvoiceUrls((prev) => {
+          const next = new Map(prev);
+          if (url) next.set(viewingOrder.id, url);
+          else next.delete(viewingOrder.id);
+          return next;
+        });
+        const meta = primaryTaxInvoiceMeta(list);
+        setOrderInvoicePrimaryMeta((prev) => {
+          const next = new Map(prev);
+          if (meta) next.set(viewingOrder.id, meta);
+          else next.delete(viewingOrder.id);
+          return next;
+        });
+      })
+      .catch((err) => console.error('Error loading invoices for order modal:', err))
+      .finally(() => {
+        if (!cancelled) setLoadingOrderInvoicesForModal(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewingOrder?.id, viewingOrder?.status]);
 
   const fetchOrders = async (page: number = 0) => {
     setIsLoading(true);
@@ -647,7 +709,7 @@ export default function OrdersPage() {
                   })()}
                   <div className="flex items-baseline justify-between gap-2 min-w-0">
                     <span className="hidden sm:block text-xs font-medium text-gray-600 uppercase tracking-wide flex-shrink-0">סה״כ</span>
-                    <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right">
+                    <span dir="ltr" className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate min-w-0 w-full sm:w-auto text-center sm:text-right inline-block">
                       {formatPrice(order.totalPrice)}
                     </span>
                   </div>
@@ -1037,6 +1099,14 @@ export default function OrdersPage() {
         <OrderViewModal
           order={viewingOrder}
           onClose={closeViewModal}
+          invoiceDocuments={
+            viewingOrder.status === 'DONE'
+              ? {
+                  loading: loadingOrderInvoicesForModal,
+                  items: orderInvoicesByOrderId.get(viewingOrder.id) ?? [],
+                }
+              : null
+          }
           actions={{
             onCancel: () => {
               setOrderIdPendingCancel(viewingOrder.id);
@@ -1055,6 +1125,14 @@ export default function OrdersPage() {
             onClose: closeViewModal,
             cancellingOrderId,
             updatingOrderId,
+            showCreateCreditNote:
+              viewingOrder.status === 'DONE' &&
+              (loadingInvoiceUrls.has(viewingOrder.id) ||
+                orderInvoicePrimaryMeta.has(viewingOrder.id)),
+            createCreditNoteDisabled:
+              loadingInvoiceUrls.has(viewingOrder.id) ||
+              !orderInvoicePrimaryMeta.has(viewingOrder.id),
+            onCreateCreditNote: () => setCreditNoteOrder(viewingOrder),
           }}
         />
       )}
@@ -1338,12 +1416,64 @@ export default function OrdersPage() {
           order={invoiceOrder}
           isOpen={!!invoiceOrder}
           onClose={() => setInvoiceOrder(null)}
-          onSuccess={(response) => {
+          onSuccess={async (response) => {
             if (invoiceOrder) {
               setOrderInvoiceUrls(prev => new Map(prev).set(invoiceOrder.id, response.pdfUrl));
+              setOrderInvoicePrimaryMeta((prev) =>
+                new Map(prev).set(invoiceOrder.id, {
+                  invoiceId: response.invoiceId,
+                  allocationNumber: response.primaryInvoiceAllocationNumber ?? null,
+                }),
+              );
               setCheckedOrders(prev => new Set(prev).add(invoiceOrder.id));
+              try {
+                const invMap = await invoiceAPI.getInvoicesByOrderIds([invoiceOrder.id]);
+                const list = invMap[invoiceOrder.id] ?? [];
+                setOrderInvoicesByOrderId((prev) => new Map(prev).set(invoiceOrder.id, list));
+              } catch (e) {
+                console.error('Failed to refresh invoice list after create:', e);
+              }
             }
             setInvoiceOrder(null);
+          }}
+        />
+      )}
+
+      {creditNoteOrder && orderInvoicePrimaryMeta.has(creditNoteOrder.id) && (
+        <CreditNoteModal
+          order={creditNoteOrder}
+          invoiceId={orderInvoicePrimaryMeta.get(creditNoteOrder.id)!.invoiceId}
+          primaryAllocationNumber={
+            orderInvoicePrimaryMeta.get(creditNoteOrder.id)!.allocationNumber
+          }
+          isOpen={!!creditNoteOrder}
+          onClose={() => setCreditNoteOrder(null)}
+          onSuccess={async () => {
+            const orderId = creditNoteOrder.id;
+            try {
+              const [invMap, freshOrder] = await Promise.all([
+                invoiceAPI.getInvoicesByOrderIds([orderId]),
+                orderAPI.getOrderById(orderId),
+              ]);
+              const list = invMap[orderId] ?? [];
+              const url = primaryInvoicePdfUrl(list);
+              const meta = primaryTaxInvoiceMeta(list);
+              setOrderInvoiceUrls((prev) => {
+                const next = new Map(prev);
+                if (url) next.set(orderId, url);
+                return next;
+              });
+              setOrderInvoicePrimaryMeta((prev) => {
+                const next = new Map(prev);
+                if (meta) next.set(orderId, meta);
+                return next;
+              });
+              setOrderInvoicesByOrderId((prev) => new Map(prev).set(orderId, list));
+              setOrders((prev) => prev.map((o) => (o.id === orderId ? freshOrder : o)));
+              setViewingOrder((prev) => (prev?.id === orderId ? freshOrder : prev));
+            } catch (e) {
+              console.error('Failed to refresh order after credit note:', e);
+            }
           }}
         />
       )}

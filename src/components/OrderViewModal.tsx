@@ -1,8 +1,9 @@
 import { useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import type { Order } from '../services/api';
-import { formatPrice } from '../utils/formatPrice';
-import { getStatusLabel, getStatusColor, formatOrderDate } from '../utils/orderUtils';
+import type { InvoiceDto, Order } from '../services/api';
+import Spinner from './Spinner';
+import { formatPrice, formatPriceNegative } from '../utils/formatPrice';
+import { getStatusLabel, getStatusColor, formatOrderDate, formatOrderDateShortWithTime } from '../utils/orderUtils';
 
 export interface OrderViewModalActions {
   onCancel: () => void;
@@ -12,6 +13,10 @@ export interface OrderViewModalActions {
   onClose: () => void;
   cancellingOrderId?: string | null;
   updatingOrderId?: string | null;
+  /** DONE orders: open credit-note flow (only shown when parent sets visibility). */
+  onCreateCreditNote?: () => void;
+  createCreditNoteDisabled?: boolean;
+  showCreateCreditNote?: boolean;
 }
 
 export interface OrderViewModalProps {
@@ -23,6 +28,12 @@ export interface OrderViewModalProps {
   children?: React.ReactNode;
   onOpenInOrders?: () => void;
   openInOrdersLabel?: string;
+  /** DONE orders: tax invoices + credit notes (e.g. manager orders page). */
+  invoiceDocuments?: { loading: boolean; items: InvoiceDto[] } | null;
+}
+
+function sortInvoicesForDisplay(items: InvoiceDto[]): InvoiceDto[] {
+  return [...items].sort((a, b) => a.invoiceSequenceNumber - b.invoiceSequenceNumber);
 }
 
 export default function OrderViewModal({
@@ -32,8 +43,10 @@ export default function OrderViewModal({
   children,
   onOpenInOrders,
   openInOrdersLabel = 'פתח בהזמנות',
+  invoiceDocuments = null,
 }: OrderViewModalProps) {
   const mousedownOnBackdropRef = useRef(false);
+  const credited = order.totalCreditedAmount ?? 0;
 
   // Portal to document.body so the modal is outside layout (no transform/overflow ancestors).
   // Ensures fixed inset-0 always covers the full viewport from any page.
@@ -239,9 +252,19 @@ export default function OrderViewModal({
                 </div>
               );
             })()}
+            {credited > 0 && (
+              <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
+                <span className="text-sm text-gray-600">זיכויים</span>
+                <span dir="ltr" className="text-sm font-semibold text-amber-800 tabular-nums">
+                  {formatPriceNegative(credited)}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
               <span className="text-base font-semibold text-gray-800">מחיר כולל</span>
-              <span className="text-lg font-bold text-indigo-600">{formatPrice(order.totalPrice)}</span>
+              <span dir="ltr" className="text-lg font-bold text-indigo-600 tabular-nums">
+                {formatPrice(order.totalPrice)}
+              </span>
             </div>
           </div>
         </div>
@@ -290,6 +313,74 @@ export default function OrderViewModal({
             </div>
           </div>
         </div>
+
+        {/* Invoices & credit notes (manager / DONE) */}
+        {invoiceDocuments != null && order.status === 'DONE' && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">חשבוניות ומסמכים</h3>
+            <div className="glass-card rounded-xl overflow-hidden">
+              {invoiceDocuments.loading ? (
+                <div className="py-6 flex justify-center">
+                  <Spinner size="sm" />
+                </div>
+              ) : sortInvoicesForDisplay(invoiceDocuments.items).length === 0 ? (
+                <p className="px-4 py-3 text-sm text-gray-500 italic text-center">אין חשבוניות עדיין</p>
+              ) : (
+                <ul className="divide-y divide-gray-200/50">
+                  {sortInvoicesForDisplay(invoiceDocuments.items).map((inv) => {
+                    const isCredit = inv.invoiceType === 'CREDIT_NOTE';
+                    const badge = isCredit
+                      ? 'bg-amber-100/80 text-amber-900'
+                      : 'bg-indigo-100/80 text-indigo-900';
+                    const label = isCredit ? 'זיכוי' : 'חשבונית';
+                    return (
+                      <li
+                        key={inv.id}
+                        className="flex items-center gap-2 sm:gap-3 px-3 py-2 hover:bg-white/30 transition-colors"
+                      >
+                        <span
+                          className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${badge}`}
+                        >
+                          {label}
+                        </span>
+                        <div className="min-w-0 flex-1 text-xs text-gray-600 leading-snug">
+                          <span className="font-mono font-semibold text-gray-800">#{inv.invoiceSequenceNumber}</span>
+                          <span className="text-gray-400 mx-1">·</span>
+                          <span>{formatOrderDateShortWithTime(inv.createdAt)}</span>
+                        </div>
+                        <span
+                          dir="ltr"
+                          className={`shrink-0 inline-block text-sm font-semibold tabular-nums ${isCredit ? 'text-amber-800' : 'text-indigo-800'}`}
+                        >
+                          {isCredit ? formatPriceNegative(inv.totalAmount) : formatPrice(inv.totalAmount)}
+                        </span>
+                        <div className="shrink-0 w-9 flex justify-center items-center">
+                          {inv.pdfUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => window.open(inv.pdfUrl, '_blank', 'noopener,noreferrer')}
+                              className="p-1.5 rounded-lg text-gray-600 hover:bg-white/60 hover:text-indigo-700 transition-colors flex items-center justify-center"
+                              title="פתח PDF"
+                              aria-label="פתח PDF"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </button>
+                          ) : (
+                            <span className="text-xs text-gray-400 tabular-nums flex items-center justify-center min-h-[28px]" title="אין PDF">
+                              —
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap justify-center gap-3 items-center">
           {children !== undefined ? (
@@ -350,6 +441,35 @@ export default function OrderViewModal({
                     </button>
                   )}
                 </>
+              )}
+              {order.status === 'DONE' && actions.showCreateCreditNote && actions.onCreateCreditNote && (
+                <button
+                  type="button"
+                  onClick={actions.onCreateCreditNote}
+                  disabled={!!actions.createCreditNoteDisabled}
+                  title={
+                    actions.createCreditNoteDisabled
+                      ? 'טוען נתוני חשבונית…'
+                      : 'צור זיכוי מס'
+                  }
+                  className={`glass-button px-6 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 border-2 ${
+                    actions.createCreditNoteDisabled
+                      ? 'text-gray-400 border-gray-300 cursor-not-allowed bg-gray-50'
+                      : 'text-amber-800 border-amber-600 bg-amber-50 hover:shadow-lg'
+                  }`}
+                >
+                  {actions.createCreditNoteDisabled ? (
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" aria-hidden>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V2C6.477 2 2 6.477 2 12h2zm2 5.291A7.962 7.962 0 014 12H2c0 3.042 1.135 5.824 3 7.938l1-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  )}
+                  <span>צור זיכוי</span>
+                </button>
               )}
               <button
                 type="button"

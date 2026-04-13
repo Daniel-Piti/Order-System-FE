@@ -5,11 +5,16 @@ import { invoiceAPI, type CreateInvoiceRequest, type CreateInvoiceResponse } fro
 import { formatPrice } from '../utils/formatPrice';
 import type { Order } from '../services/api';
 
+/** Must match backend InvoiceHelper: allocation required when net total is strictly above this (ILS). */
+const ALLOCATION_NUMBER_TOTAL_THRESHOLD = 5000;
+
 interface InvoiceCreationModalProps {
   order: Order;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (response: CreateInvoiceResponse) => void;
+  onSuccess: (
+    response: CreateInvoiceResponse & { primaryInvoiceAllocationNumber?: string | null },
+  ) => void;
 }
 
 export default function InvoiceCreationModal({
@@ -26,17 +31,8 @@ export default function InvoiceCreationModal({
   const [showAllocationHelp, setShowAllocationHelp] = useState(false);
   const helpTooltipRef = useRef<HTMLDivElement>(null);
 
-  // Check if allocation number is required
-  const isAllocationNumberRequired = (): boolean => {
-    if (!order.doneAt) return false;
-    
-    const doneDate = new Date(order.doneAt);
-    const year = doneDate.getFullYear();
-    const month = doneDate.getMonth() + 1; // JavaScript months are 0-indexed
-
-    const threshold = (year < 2026 || (year === 2026 && month < 6)) ? 10000 : 5000;
-    return order.totalPrice >= threshold;
-  };
+  const isAllocationNumberRequired = (): boolean =>
+    order.totalPrice > ALLOCATION_NUMBER_TOTAL_THRESHOLD;
 
   const allocationRequired = isAllocationNumberRequired();
 
@@ -129,7 +125,10 @@ export default function InvoiceCreationModal({
       };
 
       const response = await invoiceAPI.createInvoice(request);
-      onSuccess(response);
+      const primaryInvoiceAllocationNumber = allocationRequired
+        ? (allocationNumber.trim() || null)
+        : null;
+      onSuccess({ ...response, primaryInvoiceAllocationNumber });
       onClose();
     } catch (err: any) {
       const errorMessage = err.response?.data?.userMessage || err.message || 'נכשל ביצירת החשבונית';
@@ -271,15 +270,10 @@ export default function InvoiceCreationModal({
                       onClick={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                     >
-                      {(() => {
-                        const doneDate = order.doneAt ? new Date(order.doneAt) : new Date();
-                        const year = doneDate.getFullYear();
-                        const month = doneDate.getMonth() + 1;
-                        const threshold = (year < 2026 || (year === 2026 && month < 6)) ? 10000 : 5000;
-                        return (
+                      {(() => (
                           <>
                             <p className="mb-2 text-gray-700">
-                              הזמנות עם סכום כולל של {formatPrice(threshold)} ומעלה נדרשות למספר הקצאה.
+                              הזמנות עם סכום כולל מעל {formatPrice(ALLOCATION_NUMBER_TOTAL_THRESHOLD)} נדרשות למספר הקצאה.
                             </p>
                             <a
                               href="https://www.youtube.com/watch?v=rQKsFJ9ug1g&t=139s"
@@ -291,8 +285,7 @@ export default function InvoiceCreationModal({
                               קישור להסבר הנפקת מספר הקצאה
                             </a>
                           </>
-                        );
-                      })()}
+                        ))()}
                     </div>
                   </>
                 )}
