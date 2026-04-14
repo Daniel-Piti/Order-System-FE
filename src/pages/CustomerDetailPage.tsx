@@ -1,18 +1,19 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { customerAPI, orderAPI, invoiceAPI, agentAPI, productAPI } from '../services/api';
-import type { Customer, Order, Agent, PageResponse } from '../services/api';
+import type { Customer, Order, Agent, InvoiceDto, PageResponse } from '../services/api';
 import type { ProductOverrideWithPrice } from '../utils/types';
 import PaginationBar from '../components/PaginationBar';
 import CustomerEditModal from '../components/CustomerEditModal';
 import OrderViewModal from '../components/OrderViewModal';
 import InvoiceCreationModal from '../components/InvoiceCreationModal';
+import CreditNoteModal from '../components/CreditNoteModal';
 import { formatPrice } from '../utils/formatPrice';
 import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderRowClass, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import CloseButton from '../components/CloseButton';
-import { primaryInvoicePdfUrl } from '../utils/invoiceUtils';
+import { primaryInvoicePdfUrl, primaryTaxInvoiceMeta } from '../utils/invoiceUtils';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -64,7 +65,13 @@ export default function CustomerDetailPage() {
   const [loadingInvoiceUrls, setLoadingInvoiceUrls] = useState<Set<string>>(new Set());
   const [checkedOrders, setCheckedOrders] = useState<Set<string>>(new Set());
   const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
+  const [creditNoteOrder, setCreditNoteOrder] = useState<Order | null>(null);
   const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+  const [orderInvoicePrimaryMeta, setOrderInvoicePrimaryMeta] = useState<
+    Map<string, { invoiceId: number; allocationNumber: string | null }>
+  >(new Map());
+  const [orderInvoicesByOrderId, setOrderInvoicesByOrderId] = useState<Map<string, InvoiceDto[]>>(new Map());
+  const [loadingOrderInvoicesForModal, setLoadingOrderInvoicesForModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [orderIdPendingCancel, setOrderIdPendingCancel] = useState<string | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
@@ -398,6 +405,22 @@ export default function CustomerDetailPage() {
           }
           return next;
         });
+        setOrderInvoicePrimaryMeta((prev) => {
+          const next = new Map(prev);
+          for (const orderId of orderIds) {
+            const list = invoicesByOrderId[orderId] ?? [];
+            const meta = primaryTaxInvoiceMeta(list);
+            if (meta) next.set(orderId, meta);
+          }
+          return next;
+        });
+        setOrderInvoicesByOrderId((prev) => {
+          const next = new Map(prev);
+          for (const orderId of orderIds) {
+            next.set(orderId, invoicesByOrderId[orderId] ?? []);
+          }
+          return next;
+        });
       })
       .catch((err) => console.error('Error checking invoices:', err))
       .finally(() => {
@@ -413,6 +436,44 @@ export default function CustomerDetailPage() {
         });
       });
   }, [ordersPage.content]);
+
+  useEffect(() => {
+    if (!viewingOrder || viewingOrder.status !== 'DONE') {
+      setLoadingOrderInvoicesForModal(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingOrderInvoicesForModal(true);
+    invoiceAPI
+      .getInvoicesByOrderIds([viewingOrder.id])
+      .then((invoicesByOrderId) => {
+        if (cancelled) return;
+        const list = invoicesByOrderId[viewingOrder.id] ?? [];
+        setOrderInvoicesByOrderId((prev) => new Map(prev).set(viewingOrder.id, list));
+        const url = primaryInvoicePdfUrl(list);
+        setOrderInvoiceUrls((prev) => {
+          const next = new Map(prev);
+          if (url) next.set(viewingOrder.id, url);
+          else next.delete(viewingOrder.id);
+          return next;
+        });
+        const meta = primaryTaxInvoiceMeta(list);
+        setOrderInvoicePrimaryMeta((prev) => {
+          const next = new Map(prev);
+          if (meta) next.set(viewingOrder.id, meta);
+          else next.delete(viewingOrder.id);
+          return next;
+        });
+      })
+      .catch((err) => console.error('Error loading invoices for order modal:', err))
+      .finally(() => {
+        if (!cancelled) setLoadingOrderInvoicesForModal(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [viewingOrder?.id, viewingOrder?.status]);
 
   useEffect(() => {
     if (!generatedLink) {
@@ -780,6 +841,14 @@ export default function CustomerDetailPage() {
                         {order.discount > 0 && (
                           <span className="text-red-600 text-xs mr-1" aria-label={`הנחה ${formatPrice(order.discount)}`}>
                             {' '}({formatPrice(order.discount)} הנחה)
+                          </span>
+                        )}
+                        {(order.totalCreditedAmount ?? 0) > 0 && (
+                          <span
+                            className="text-amber-700 text-xs mr-1"
+                            aria-label={`זיכוי ${formatPrice(order.totalCreditedAmount ?? 0)}`}
+                          >
+                            {' '}({formatPrice(order.totalCreditedAmount ?? 0)} זיכוי)
                           </span>
                         )}
                       </td>
@@ -1419,6 +1488,14 @@ export default function CustomerDetailPage() {
         <OrderViewModal
           order={viewingOrder}
           onClose={() => setViewingOrder(null)}
+          invoiceDocuments={
+            viewingOrder.status === 'DONE'
+              ? {
+                  loading: loadingOrderInvoicesForModal,
+                  items: orderInvoicesByOrderId.get(viewingOrder.id) ?? [],
+                }
+              : null
+          }
           actions={{
             onCancel: () => {
               setOrderIdPendingCancel(viewingOrder.id);
@@ -1437,6 +1514,13 @@ export default function CustomerDetailPage() {
             onClose: () => setViewingOrder(null),
             cancellingOrderId,
             updatingOrderId,
+            showCreateCreditNote:
+              viewingOrder.status === 'DONE' &&
+              (loadingInvoiceUrls.has(viewingOrder.id) || orderInvoicePrimaryMeta.has(viewingOrder.id)),
+            createCreditNoteDisabled:
+              loadingInvoiceUrls.has(viewingOrder.id) ||
+              !orderInvoicePrimaryMeta.has(viewingOrder.id),
+            onCreateCreditNote: () => setCreditNoteOrder(viewingOrder),
           }}
         />
       )}
@@ -1547,9 +1631,55 @@ export default function CustomerDetailPage() {
           onSuccess={(response) => {
             if (invoiceOrder) {
               setOrderInvoiceUrls((prev) => new Map(prev).set(invoiceOrder.id, response.pdfUrl));
+              setOrderInvoicePrimaryMeta((prev) =>
+                new Map(prev).set(invoiceOrder.id, {
+                  invoiceId: response.invoiceId,
+                  allocationNumber: response.primaryInvoiceAllocationNumber ?? null,
+                }),
+              );
               setCheckedOrders((prev) => new Set(prev).add(invoiceOrder.id));
             }
             setInvoiceOrder(null);
+          }}
+        />
+      )}
+
+      {creditNoteOrder && orderInvoicePrimaryMeta.has(creditNoteOrder.id) && (
+        <CreditNoteModal
+          order={creditNoteOrder}
+          invoiceId={orderInvoicePrimaryMeta.get(creditNoteOrder.id)!.invoiceId}
+          primaryAllocationNumber={orderInvoicePrimaryMeta.get(creditNoteOrder.id)!.allocationNumber}
+          isOpen={!!creditNoteOrder}
+          onClose={() => setCreditNoteOrder(null)}
+          onSuccess={async () => {
+            const orderId = creditNoteOrder.id;
+            try {
+              const [invMap, freshOrder] = await Promise.all([
+                invoiceAPI.getInvoicesByOrderIds([orderId]),
+                orderAPI.getOrderById(orderId),
+              ]);
+              const list = invMap[orderId] ?? [];
+              const url = primaryInvoicePdfUrl(list);
+              const meta = primaryTaxInvoiceMeta(list);
+              setOrderInvoiceUrls((prev) => {
+                const next = new Map(prev);
+                if (url) next.set(orderId, url);
+                return next;
+              });
+              setOrderInvoicePrimaryMeta((prev) => {
+                const next = new Map(prev);
+                if (meta) next.set(orderId, meta);
+                return next;
+              });
+              setOrderInvoicesByOrderId((prev) => new Map(prev).set(orderId, list));
+              setOrdersPage((prev) => ({
+                ...prev,
+                content: prev.content.map((o) => (o.id === orderId ? freshOrder : o)),
+              }));
+              setViewingOrder((prev) => (prev?.id === orderId ? freshOrder : prev));
+            } catch (e) {
+              console.error('Failed to refresh order after credit note:', e);
+            }
           }}
         />
       )}
