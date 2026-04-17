@@ -211,6 +211,33 @@ export default function OrderViewModal({
           </div>
         </div>
 
+        {/* Returned / Credited Products */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">מוצרים שזוכו</h3>
+          <div className="glass-card rounded-xl overflow-hidden">
+            {(order.creditedProducts ?? []).length === 0 ? (
+              <p className="text-sm text-gray-500 italic p-4">אין מוצרים שזוכו עדיין</p>
+            ) : (
+              <div className="divide-y divide-gray-200/50">
+                {(order.creditedProducts ?? []).map((product, index) => (
+                  <div key={`${product.productId}-${index}`} className="p-3 flex items-start justify-between gap-3 hover:bg-white/20 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 break-words break-all">{product.productName}</p>
+                      <p className="text-xs text-amber-700 break-words break-all">כמות שזוכה: {product.quantity}</p>
+                    </div>
+                    <div className="text-left break-words break-all">
+                      <p className="text-sm font-semibold text-amber-800 break-words break-all">
+                        {formatPrice(product.pricePerUnit * product.quantity)}
+                      </p>
+                      <p className="text-xs text-gray-600 break-words break-all">{formatPrice(product.pricePerUnit)} לכל יחידה</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Summary */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-gray-700 mb-3">סיכום הזמנה</h3>

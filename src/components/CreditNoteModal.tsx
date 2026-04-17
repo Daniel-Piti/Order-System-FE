@@ -74,6 +74,7 @@ export default function CreditNoteModal({
   const [amountStr, setAmountStr] = useState('');
   const [allocationNumber, setAllocationNumber] = useState('');
   const [notes, setNotes] = useState('');
+  const [creditQuantities, setCreditQuantities] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -81,6 +82,9 @@ export default function CreditNoteModal({
   /** Net remaining on order (BE); max next credit is at most this when cap follows gross. */
   const maxAmount = Math.max(0, order.totalPrice);
   const grossOrderTotal = order.totalPrice + credited;
+  const creditedProductsMap = new Map(
+    (order.creditedProducts ?? []).map((p) => [p.productId, p.quantity]),
+  );
 
   const primaryHasAllocation =
     primaryAllocationNumber != null && String(primaryAllocationNumber).trim() !== '';
@@ -91,23 +95,46 @@ export default function CreditNoteModal({
       setAmountStr('');
       setAllocationNumber('');
       setNotes('');
+      setCreditQuantities({});
       setError('');
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const initialQuantities: Record<string, number> = {};
+    order.products.forEach((product, index) => {
+      initialQuantities[`${product.productId}-${index}`] = 0;
+    });
+    setCreditQuantities(initialQuantities);
+  }, [isOpen, order.products]);
 
   const handleAmountChange = (v: string) => {
     const sanitized = sanitizeAmountInput(v);
     setAmountStr(clampAmountToMax(sanitized, maxAmount));
   };
 
+  const creditAmountByProducts = order.products.reduce((sum, product, index) => {
+    const key = `${product.productId}-${index}`;
+    const alreadyCreditedQty = creditedProductsMap.get(product.productId) ?? 0;
+    const remainingQty = Math.max(0, product.quantity - alreadyCreditedQty);
+    const qty = Math.max(0, Math.min(remainingQty, creditQuantities[key] ?? 0));
+    return sum + (qty * product.pricePerUnit);
+  }, 0);
+
+  const hasAnyCreditedProducts = Object.values(creditQuantities).some((q) => q > 0);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (mode !== 'byAmount') return;
+    if (mode !== 'byAmount' && mode !== 'byOrder') return;
 
-    const n = parseFloat(amountStr.replace(/,/g, ''));
+    const n =
+      mode === 'byAmount'
+        ? parseFloat(amountStr.replace(/,/g, ''))
+        : Math.round(creditAmountByProducts * 100) / 100;
     if (Number.isNaN(n) || n <= 0) {
-      setError('יש להזין סכום חיובי');
+      setError(mode === 'byAmount' ? 'יש להזין סכום חיובי' : 'יש לבחור לפחות מוצר אחד לזיכוי');
       return;
     }
     if (n > maxAmount + 1e-9) {
@@ -132,12 +159,35 @@ export default function CreditNoteModal({
 
     setIsSubmitting(true);
     try {
-      const response = await invoiceAPI.createCreditNoteByAmount({
-        invoiceId,
-        amount: rounded,
-        allocationNumber: primaryHasAllocation ? allocationNumber.trim() : null,
-        notes: normalizedNotes,
-      });
+      const response =
+        mode === 'byAmount'
+          ? await invoiceAPI.createCreditNoteByAmount({
+              invoiceId,
+              amount: rounded,
+              allocationNumber: primaryHasAllocation ? allocationNumber.trim() : null,
+              notes: normalizedNotes,
+            })
+          : await invoiceAPI.createCreditNoteByProducts({
+              invoiceId,
+              products: order.products
+                .map((product, index) => {
+                  const key = `${product.productId}-${index}`;
+                  const alreadyCreditedQty = creditedProductsMap.get(product.productId) ?? 0;
+                  const remainingQty = Math.max(0, product.quantity - alreadyCreditedQty);
+                  const selectedQty = Math.max(
+                    0,
+                    Math.min(remainingQty, creditQuantities[key] ?? 0),
+                  );
+                  return {
+                    productId: product.productId,
+                    quantity: selectedQty,
+                    pricePerUnit: product.pricePerUnit,
+                  };
+                })
+                .filter((item) => item.quantity > 0),
+              allocationNumber: primaryHasAllocation ? allocationNumber.trim() : null,
+              notes: normalizedNotes,
+            });
       onSuccess(response);
       onClose();
     } catch (err: unknown) {
@@ -177,7 +227,10 @@ export default function CreditNoteModal({
           <div className="flex items-stretch gap-2 p-1 bg-gray-50 rounded-xl border border-gray-200">
             <button
               type="button"
-              onClick={() => setMode('byAmount')}
+              onClick={() => {
+                setMode('byAmount');
+                setError('');
+              }}
               className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition-all ${
                 mode === 'byAmount'
                   ? 'bg-amber-600 text-white shadow-md'
@@ -188,12 +241,17 @@ export default function CreditNoteModal({
             </button>
             <button
               type="button"
-              disabled
-              className="flex-1 px-3 py-2 rounded-lg font-semibold text-sm bg-gray-100 text-gray-400 cursor-not-allowed border border-dashed border-gray-300"
-              title="בקרוב"
+              onClick={() => {
+                setMode('byOrder');
+                setError('');
+              }}
+              className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition-all ${
+                mode === 'byOrder'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
+              }`}
             >
               זיכוי לפי עדכון הזמנה
-              <span className="block text-xs font-normal mt-0.5">בקרוב</span>
             </button>
           </div>
         </div>
@@ -298,6 +356,141 @@ export default function CreditNoteModal({
                   </>
                 ) : (
                   'צור זיכוי'
+                )}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {mode === 'byOrder' && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
+              <div className="flex justify-between gap-2">
+                <span>סכום זיכוי לפי מוצרים</span>
+                <span className="font-bold">{formatPrice(creditAmountByProducts)}</span>
+              </div>
+              <div className="flex justify-between gap-2 mt-1 text-amber-800">
+                <span>מקסימום זיכוי להזמנה</span>
+                <span>{formatPrice(maxAmount)}</span>
+              </div>
+              {creditAmountByProducts > maxAmount + 1e-9 && (
+                <p className="mt-2 text-xs text-red-700">
+                  סכום הזיכוי שנבחר גבוה מהמקסימום המותר להזמנה.
+                </p>
+              )}
+            </div>
+
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <div className="max-h-64 overflow-y-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-right text-xs font-semibold text-gray-600">מוצר</th>
+                      <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600">כמות בהזמנה</th>
+                      <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600">כמות שזוכו</th>
+                      <th className="px-3 py-2 text-center text-xs font-semibold text-gray-600">כמות לזיכוי</th>
+                      <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600">סכום</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {order.products.map((product, index) => {
+                      const key = `${product.productId}-${index}`;
+                      const alreadyCreditedQty = creditedProductsMap.get(product.productId) ?? 0;
+                      const remainingQty = Math.max(0, product.quantity - alreadyCreditedQty);
+                      const selectedQty = Math.max(0, Math.min(remainingQty, creditQuantities[key] ?? 0));
+                      const rowTotal = selectedQty * product.pricePerUnit;
+                      return (
+                        <tr key={key}>
+                          <td className="px-3 py-2 text-sm text-gray-800">{product.productName}</td>
+                          <td className="px-3 py-2 text-center text-sm text-gray-700">{product.quantity}</td>
+                          <td className="px-3 py-2 text-center text-sm text-amber-700">{alreadyCreditedQty}</td>
+                          <td className="px-3 py-2 text-center">
+                            <input
+                              type="number"
+                              min={0}
+                              max={remainingQty}
+                              step={1}
+                              value={selectedQty}
+                              onChange={(e) => {
+                                const raw = parseInt(e.target.value || '0', 10);
+                                const next = Number.isNaN(raw) ? 0 : Math.max(0, Math.min(remainingQty, raw));
+                                setCreditQuantities((prev) => ({ ...prev, [key]: next }));
+                              }}
+                              className="w-20 px-2 py-1 border border-gray-300 rounded-lg text-sm text-center"
+                              dir="ltr"
+                              disabled={remainingQty === 0}
+                            />
+                            <p className="text-[10px] text-gray-500 mt-1">נותר: {remainingQty}</p>
+                          </td>
+                          <td className="px-3 py-2 text-sm text-gray-800 text-left" dir="ltr">
+                            {formatPrice(rowTotal)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {primaryHasAllocation && (
+              <div>
+                <label htmlFor="credit-allocation-by-order" className="block text-sm font-medium text-gray-700 mb-2">
+                  מספר הקצאה (9 ספרות)
+                </label>
+                <input
+                  id="credit-allocation-by-order"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={9}
+                  value={allocationNumber}
+                  onChange={(e) => setAllocationNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl font-mono"
+                  dir="ltr"
+                />
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="credit-note-notes-by-order" className="block text-sm font-medium text-gray-700 mb-2">
+                הערות לזיכוי (אופציונלי)
+              </label>
+              <textarea
+                id="credit-note-notes-by-order"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value.slice(0, 1000))}
+                maxLength={1000}
+                rows={4}
+                placeholder="הוסף הערות שיופיעו במסמך הזיכוי..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-800 resize-y"
+                dir="rtl"
+              />
+              <p className="text-xs text-gray-500 mt-1 text-left" dir="ltr">
+                {notes.length}/1000
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="glass-button px-4 py-2 rounded-xl text-sm font-semibold text-gray-700"
+              >
+                ביטול
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || !hasAnyCreditedProducts || creditAmountByProducts > maxAmount + 1e-9}
+                className="glass-button px-4 py-2 rounded-xl text-sm font-semibold border-2 border-amber-700 bg-amber-100 text-amber-900 hover:shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span>שולח…</span>
+                  </>
+                ) : (
+                  'צור זיכוי לפי מוצרים'
                 )}
               </button>
             </div>

@@ -556,6 +556,7 @@ export interface Order {
   customerStateId: string | null;
   status: 'EMPTY' | 'PLACED' | 'DONE' | 'EXPIRED' | 'CANCELLED';
   products: ProductDataForOrder[];
+  creditedProducts?: ProductDataForOrder[];
   productsVersion: number;
   totalPrice: number;
   /** Sum of credit-note amounts already applied (from API when present). */
@@ -952,6 +953,16 @@ export const invoiceAPI = {
     );
     return response.data;
   },
+
+  createCreditNoteByProducts: async (
+    data: CreateCreditNoteByProductsRequest,
+  ): Promise<CreateCreditNoteByAmountResponse> => {
+    const response = await api.post<CreateCreditNoteByAmountResponse>(
+      '/invoices/credit-notes/by-products',
+      data,
+    );
+    return response.data;
+  },
 };
 
 export interface CreateInvoiceRequest {
@@ -970,6 +981,19 @@ export interface CreateInvoiceResponse {
 export interface CreateCreditNoteByAmountRequest {
   invoiceId: number;
   amount: number;
+  allocationNumber?: string | null;
+  notes: string;
+}
+
+export interface CreditNoteProductItemRequest {
+  productId: string;
+  quantity: number;
+  pricePerUnit: number;
+}
+
+export interface CreateCreditNoteByProductsRequest {
+  invoiceId: number;
+  products: CreditNoteProductItemRequest[];
   allocationNumber?: string | null;
   notes: string;
 }
