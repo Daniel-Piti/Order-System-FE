@@ -3,6 +3,7 @@ import { validatePasswordChangeForm } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -50,13 +51,8 @@ export default function ChangePasswordModal({ isOpen, onClose, onSuccess, onUpda
       );
       onSuccess();
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בעדכון הסיסמה'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'changePassword'));
     } finally {
       setIsLoading(false);
     }

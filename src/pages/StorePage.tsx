@@ -5,6 +5,7 @@ import type { ProductPublic, Category, Brand, OrderPublic, Order } from '../serv
 import CheckoutFlow from '../components/CheckoutFlow';
 import ProductDetailModal from '../components/ProductDetailModal';
 import { formatPrice } from '../utils/formatPrice';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface CartItem {
   product: ProductPublic;
@@ -194,7 +195,7 @@ export default function StorePage() {
           } else if (err.response?.status === 404) {
             setError('הזמנה לא נמצאה');
           } else {
-            setError(err.response?.data?.userMessage || 'נכשל בטעינת ההזמנה');
+            setError(resolveApiErr(err, 'orderLoadStore'));
           }
           setIsLoading(false);
         }

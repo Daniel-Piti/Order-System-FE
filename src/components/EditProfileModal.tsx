@@ -4,6 +4,7 @@ import type { ValidationErrors } from '../utils/validation';
 import { managerAPI, type Manager } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -100,13 +101,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess, currentPr
       const updatedManager = await managerAPI.updateCurrentManager(payload);
       onSuccess(updatedManager);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בעדכון הפרופיל'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'managerProfileUpdate'));
     } finally {
       setIsLoading(false);
     }

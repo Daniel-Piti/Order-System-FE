@@ -7,6 +7,7 @@ import {
   type Order,
 } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 type CreditMode = 'byAmount' | 'byOrder';
 
@@ -191,12 +192,7 @@ export default function CreditNoteModal({
       onSuccess(response);
       onClose();
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { userMessage?: string } } }).response?.data
-              ?.userMessage
-          : undefined;
-      setError(msg || (err instanceof Error ? err.message : 'נכשל ביצירת הזיכוי'));
+      setError(resolveApiErr(err, 'creditNoteCreate'));
     } finally {
       setIsSubmitting(false);
     }

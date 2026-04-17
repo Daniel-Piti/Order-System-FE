@@ -11,6 +11,7 @@ import { getStatusLabel, getStatusColor, formatOrderDateShortWithTime, getOrderR
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import CloseButton from '../components/CloseButton';
+import { msgFromBody, resolveApiErr } from '../utils/apiErrorMessage';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -155,7 +156,7 @@ export default function AgentCustomerDetailPage() {
       });
       if (!response.ok) {
         const errBody = await response.json().catch(() => ({}));
-        throw new Error(errBody.userMessage || 'Failed to load overrides');
+        throw new Error(msgFromBody(errBody, 'overridesLoad'));
       }
       const data: PageResponse<ProductOverrideWithPrice> = await response.json();
       setOverridesPage({ content: data.content, totalPages: data.totalPages });
@@ -279,7 +280,7 @@ export default function AgentCustomerDetailPage() {
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error((errData as { userMessage?: string }).userMessage || 'עדכון נכשל');
+        throw new Error(msgFromBody(errData, 'overrideEditFailed'));
       }
       handleCloseOverrideEditModal();
       await fetchOverrides();
@@ -342,7 +343,7 @@ export default function AgentCustomerDetailPage() {
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error((errData as { userMessage?: string }).userMessage || 'יצירה נכשלה');
+        throw new Error(msgFromBody(errData, 'overrideCreateFailed'));
       }
       handleCloseAddOverrideModal();
       setOverridesPageNum(0);
@@ -419,16 +420,8 @@ export default function AgentCustomerDetailPage() {
       }));
       setOrdersPageNum(0);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string }; status: number }; message?: string };
-      const msg = e?.response?.data?.userMessage || (e?.message as string) || 'שגיאה ביצירת קישור';
-      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
-      setError(
-        msg === 'Cannot create order. Please add at least one location first.' ||
-          msg === 'You have minimum one locations' ||
-          msg === 'You must have at least one location'
-          ? noLocationsHebrew
-          : msg
-      );
+      const e = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'orderLinkGenerate'));
       if (e?.response?.status === 401 || e?.response?.status === 403) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
@@ -464,8 +457,8 @@ export default function AgentCustomerDetailPage() {
         content: prev.content.map((o) => (o.id === orderId ? cancelledOrder : o)),
       }));
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string } }; status?: number };
-      setError(e?.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
+      const e = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'orderCancel'));
       if (e?.response?.status === 401) navigate('/login/agent');
     } finally {
       setCancellingOrderId(null);
@@ -497,9 +490,8 @@ export default function AgentCustomerDetailPage() {
       setDiscountValue('');
       setDiscountMode('number');
     } catch (err: unknown) {
-      const er = err as { response?: { data?: { userMessage?: string } }; status?: number };
-      const msg = er?.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
-      setError(translateDiscountErrorMessage(msg));
+      const er = err as { response?: { status?: number } };
+      setError(translateDiscountErrorMessage(resolveApiErr(err, 'orderDiscount')));
       if (er?.response?.status === 401) navigate('/login/agent');
     } finally {
       setIsUpdatingDiscount(false);

@@ -3,6 +3,7 @@ import AccessibleModal from './AccessibleModal';
 import { agentAPI, type CustomerRequest, type Customer } from '../services/api';
 import { validateEmail, validatePhoneNumberDigitsOnly, validateRequiredWithMaxLength, validateDiscountPercentage, type ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AgentCustomerEditModalProps {
   isOpen: boolean;
@@ -186,13 +187,8 @@ export default function AgentCustomerEditModal({ isOpen, customer, onClose, onSu
     try {
       const updated = await agentAPI.updateCustomerForAgent(customer.id, formData);
       onSuccess(updated);
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.userMessage ||
-          err?.response?.data?.message ||
-          err?.message ||
-          'נכשל בעדכון לקוח'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'customerModalUpdate'));
     } finally {
       setIsSubmitting(false);
     }

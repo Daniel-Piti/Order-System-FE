@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { agentAPI, type Customer, type CustomerRequest } from '../services/api';
 import AccessibleModal from './AccessibleModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 import { validateRequiredWithMaxLength, validatePhoneNumberDigitsOnly, validateEmail, validateDiscountPercentage } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
@@ -163,13 +164,8 @@ export default function AgentCustomerAddModal({
       const newCustomer = await agentAPI.createCustomerForAgent(formData);
       onSuccess(newCustomer);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל ביצירת לקוח'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'agentCustomerCreate'));
     } finally {
       setIsSubmitting(false);
     }

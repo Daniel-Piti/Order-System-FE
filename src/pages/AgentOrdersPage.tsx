@@ -6,6 +6,7 @@ import PaginationBar from '../components/PaginationBar';
 import { formatPrice, formatPriceNegative } from '../utils/formatPrice';
 import { getStatusLabel, getStatusColor, getCardStyles, formatOrderDate, formatOrderDateShortWithTime, getOrderCardDate, translateDiscountErrorMessage } from '../utils/orderUtils';
 import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function AgentOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -138,16 +139,8 @@ export default function AgentOrdersPage() {
       setSelectedCustomerId(null);
       setCurrentPage(0);
       setOrders((prev) => [newOrder, ...prev]);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
-      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
-      const translatedMessage =
-        errorMessage === 'Cannot create order. Please add at least one location first.' ||
-        errorMessage === 'You have minimum one locations' ||
-        errorMessage === 'You must have at least one location'
-          ? noLocationsHebrew
-          : errorMessage;
-      setError(translatedMessage);
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderCreate'));
     } finally {
       setIsCreating(false);
     }
@@ -179,8 +172,8 @@ export default function AgentOrdersPage() {
       const cancelledOrder = await agentAPI.markOrderCancelled(orderId);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? cancelledOrder : o)));
       setViewingOrder((prev) => (prev?.id === orderId ? cancelledOrder : prev));
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderCancel'));
     } finally {
       setCancellingOrderId(null);
       setOrderIdPendingCancel(null);
@@ -218,9 +211,8 @@ export default function AgentOrdersPage() {
       setDiscountOrder(null);
       setDiscountValue('');
       setDiscountMode('number');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
-      setDiscountError(translateDiscountErrorMessage(errorMessage));
+    } catch (err: unknown) {
+      setDiscountError(translateDiscountErrorMessage(resolveApiErr(err, 'orderDiscount')));
     } finally {
       setIsUpdatingDiscount(false);
     }
@@ -230,8 +222,8 @@ export default function AgentOrdersPage() {
     try {
       const orderDetails = await agentAPI.getOrderById(order.id);
       setViewingOrder(orderDetails);
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל בטעינת פרטי ההזמנה');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderLoadDetails'));
       console.error('Error fetching order details:', err);
     }
   };

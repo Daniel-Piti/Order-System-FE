@@ -3,6 +3,7 @@ import AccessibleModal from './AccessibleModal';
 import { agentAPI } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm } from '../utils/validation';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AgentEditProfileModalProps {
   isOpen: boolean;
@@ -87,13 +88,8 @@ export default function AgentEditProfileModal({
       await agentAPI.updateCurrentAgent(formData);
       onSuccess();
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בעדכון הפרופיל'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'agentProfileUpdate'));
     } finally {
       setIsSubmitting(false);
     }

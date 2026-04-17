@@ -3,6 +3,7 @@ import AccessibleModal from './AccessibleModal';
 import type { CustomerRequest, Customer } from '../services/api';
 import { validateEmail, validatePhoneNumberDigitsOnly, validateRequiredWithMaxLength, validateDiscountPercentage, type ValidationErrors } from '../utils/validation';
 import Spinner from './Spinner';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface CustomerEditModalProps {
   isOpen: boolean;
@@ -154,8 +155,7 @@ export default function CustomerEditModal({ isOpen, customer, onClose, onSuccess
       const updated = await updateCustomer(customer.id, formData);
       onSuccess(updated);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string; message?: string }; status?: number }; message?: string };
-      setError(e?.response?.data?.userMessage ?? e?.response?.data?.message ?? (e?.message as string) ?? 'נכשל בעדכון לקוח');
+      setError(resolveApiErr(err, 'customerModalUpdate'));
     } finally {
       setIsSubmitting(false);
     }

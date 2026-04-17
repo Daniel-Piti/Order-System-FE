@@ -56,7 +56,7 @@ export default function AdminLoginPage() {
     let hasError = false;
 
     if (!trimmedAdminUserName) {
-      setAdminUserNameError('Please enter your admin username');
+      setAdminUserNameError('נא להזין שם משתמש מנהל');
       hasError = true;
     }
     
@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
     if (trimmedUserEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(trimmedUserEmail)) {
-        setUserEmailError('Please enter a valid user email address');
+        setUserEmailError('נא להזין כתובת אימייל משתמש תקינה');
         hasError = true;
       }
     }
@@ -88,11 +88,11 @@ export default function AdminLoginPage() {
       });
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userRole', 'admin');
-      announce('Login successful', 'polite');
+      announce('התחברות בוצעה בהצלחה', 'polite');
       navigate('/admin/dashboard');
-    } catch (err: any) {
+    } catch {
       // Always show the same message for security (prevent user enumeration)
-      const errorMsg = 'Invalid admin credentials';
+      const errorMsg = 'פרטי מנהל לא תקינים';
       setError(errorMsg);
       announce(errorMsg, 'assertive');
     } finally {

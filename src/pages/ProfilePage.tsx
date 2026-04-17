@@ -5,6 +5,7 @@ import EditProfileModal from '../components/EditProfileModal';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import { managerAPI } from '../services/api';
 import type { Manager } from '../services/api';
+import { preferHebrewNetworkMessage, resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Manager | null>(null);
@@ -24,26 +25,15 @@ export default function ProfilePage() {
       const manager = await managerAPI.getCurrentManager();
       setProfile(manager);
       setError('');
-    } catch (err: any) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
         return;
       }
-      const errorMessage = err.response?.data?.userMessage ||
-        err.response?.data?.message ||
-        err.message ||
-        'נכשל בטעינת הפרופיל';
-      
-      // Translate "Network Error" to Hebrew (check both message and axios error codes)
-      const isNetworkError = errorMessage === 'Network Error' || 
-        errorMessage?.includes('Network Error') ||
-        err.code === 'ERR_NETWORK' ||
-        err.code === 'ECONNABORTED';
-      
-      const translatedMessage = isNetworkError ? 'שגיאת רשת' : errorMessage;
-      
-      setError(translatedMessage);
+      const base = resolveApiErr(err, 'managerProfileLoad');
+      setError(preferHebrewNetworkMessage(err, base));
     } finally {
       setIsLoading(false);
     }

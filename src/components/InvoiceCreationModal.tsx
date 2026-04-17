@@ -3,6 +3,7 @@ import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 import { invoiceAPI, type CreateInvoiceRequest, type CreateInvoiceResponse } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 import type { Order } from '../services/api';
 
 /** Must match backend InvoiceHelper: allocation required when net total is strictly above this (ILS). */
@@ -130,9 +131,8 @@ export default function InvoiceCreationModal({
         : null;
       onSuccess({ ...response, primaryInvoiceAllocationNumber });
       onClose();
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || err.message || 'נכשל ביצירת החשבונית';
-      setError(errorMessage);
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'invoiceCreate'));
     } finally {
       setIsSubmitting(false);
     }

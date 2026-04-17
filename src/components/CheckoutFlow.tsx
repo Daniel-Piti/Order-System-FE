@@ -3,6 +3,7 @@ import { publicAPI, orderAPI, agentAPI } from '../services/api';
 import type { Location, ProductDataForOrder, OrderPublic, Order, UpdateOrderRequest } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface CheckoutFlowProps {
   orderId?: string; // Optional - if not provided, we'll create a new order
@@ -252,9 +253,9 @@ export default function CheckoutFlow({ orderId, userId, cart, order, editOrder, 
       setStep('success');
       // Clear cart but keep success screen visible
       onSuccess();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to place/update order:', err);
-      setError(err.response?.data?.userMessage || err.message || `נכשל ב${isEditMode ? 'עדכון' : 'יצירת'} ההזמנה`);
+      setError(resolveApiErr(err, isEditMode ? 'orderCheckoutUpdate' : 'orderCheckoutCreate'));
     } finally {
       setIsSubmitting(false);
     }

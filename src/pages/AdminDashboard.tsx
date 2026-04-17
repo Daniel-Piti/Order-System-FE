@@ -4,6 +4,7 @@ import { managerAPI, businessAPI } from '../services/api';
 import type { Manager, Business } from '../services/api';
 import AddManagerModal from '../components/AddManagerModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface ManagerWithBusiness extends Manager {
   business?: Business;
@@ -48,9 +49,10 @@ export default function AdminDashboard() {
 
       setManagers(managersWithBusiness);
       setError('');
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to load managers');
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'adminLoadManagers'));
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/admin');
       }
@@ -69,9 +71,10 @@ export default function AdminDashboard() {
       setManagers((prev) => prev.filter((m) => m.id !== idToRemove));
       setManagerToDelete(null);
       setDeleteConfirmText('');
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to delete manager');
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'adminDeleteManager'));
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/admin');
       }
@@ -100,9 +103,10 @@ export default function AdminDashboard() {
       setNewPassword('');
       setShowResetConfirmation(false);
       setResetConfirmText('');
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'Failed to reset password');
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'adminResetPassword'));
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/admin');
       }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AccessibleModal from './AccessibleModal';
 import { agentAPI } from '../services/api';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AgentCustomerDeleteModalProps {
   isOpen: boolean;
@@ -42,8 +43,8 @@ export default function AgentCustomerDeleteModal({
     try {
       await agentAPI.deleteCustomerForAgent(customerId);
       onDeleted();
-    } catch (err: any) {
-      setError(err?.response?.data?.userMessage || err?.message || 'נכשל במחיקת לקוח');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'customerDelete'));
       setIsSubmitting(false);
     }
   };

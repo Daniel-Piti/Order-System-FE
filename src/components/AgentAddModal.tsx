@@ -4,6 +4,7 @@ import AccessibleModal from './AccessibleModal';
 import { agentAPI, type Agent, type NewAgentRequest } from '../services/api';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentCreationForm, AGENT_FIELD_LIMITS } from '../utils/validation';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 /** Map backend agent error messages (English) to Hebrew for display */
 function translateAgentError(message: string): string {
@@ -107,13 +108,8 @@ export default function AgentAddModal({ isOpen, onClose, onSuccess }: AgentAddMo
       const newAgent = await agentAPI.createAgent(formData);
       onSuccess(newAgent);
       handleClose();
-    } catch (err: any) {
-      const raw =
-        err.response?.data?.userMessage ||
-        err.response?.data?.message ||
-        err.message ||
-        'נכשל ביצירת הסוכן';
-      setError(translateAgentError(raw));
+    } catch (err: unknown) {
+      setError(translateAgentError(resolveApiErr(err, 'agentCreate')));
     } finally {
       setIsSubmitting(false);
     }

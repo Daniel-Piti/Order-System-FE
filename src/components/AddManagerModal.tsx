@@ -5,6 +5,7 @@ import { managerAPI, businessAPI } from '../services/api';
 import type { Manager, Business } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AddManagerModalProps {
   isOpen: boolean;
@@ -140,8 +141,8 @@ export default function AddManagerModal({ isOpen, onClose, onSuccess }: AddManag
         onSuccess(manager, business);
         handleClose();
       }, 1000);
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || err.message || 'Failed to create manager and business');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'createManagerAndBusiness'));
       setStep('manager');
     } finally {
       setIsLoading(false);

@@ -8,6 +8,7 @@ import type { ProductWithBrand } from '../utils/types';
 import SparkMD5 from 'spark-md5';
 import Spinner from '../components/Spinner';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { messageFromFailureBody, resolveApiErr } from '../utils/apiErrorMessage';
 
 /** Map backend BrandFailureReason userMessage (English) to Hebrew for display */
 function translateBrandError(message: string): string {
@@ -56,7 +57,7 @@ async function calculateFileMD5(file: File): Promise<string> {
     };
 
     fileReader.onerror = function () {
-      reject(new Error('Failed to read file for MD5 calculation'));
+      reject(new Error('נכשל בקריאת הקובץ לחישוב הבדיקה'));
     };
 
     function loadNext() {
@@ -166,19 +167,15 @@ export default function BrandsPage() {
       const data = await publicAPI.brands.getAllByManagerId(managerId);
       setBrands(data);
       setCurrentPage(0); // Reset to first page when data changes (0-based)
-    } catch (err: any) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
         return;
       }
 
-      const message =
-        err.response?.data?.userMessage ||
-        err.response?.data?.message ||
-        err.message ||
-        'נכשל בטעינת המותגים';
-      setError(translateBrandError(message));
+      setError(translateBrandError(resolveApiErr(err, 'brandsLoad')));
     } finally {
       setIsLoading(false);
     }
@@ -349,8 +346,8 @@ export default function BrandsPage() {
 
       setBrands((prev) => [...prev, result.brand]);
       handleCloseModal();
-    } catch (err: any) {
-      setFormError(translateBrandError(err.message || '') || 'נכשל ביצירת המותג');
+    } catch (err: unknown) {
+      setFormError(translateBrandError(resolveApiErr(err, 'brandCreate')));
     } finally {
       setIsSubmitting(false);
     }
@@ -422,9 +419,8 @@ export default function BrandsPage() {
 
       setBrands((prev) => prev.map((b) => (b.id === updatedBrand.id ? updatedBrand : b)));
       handleCloseEditModal();
-    } catch (err: any) {
-      const msg = err?.response?.data?.userMessage ?? err?.message ?? '';
-      setFormError(translateBrandError(msg) || 'נכשל בעדכון המותג');
+    } catch (err: unknown) {
+      setFormError(translateBrandError(resolveApiErr(err, 'brandUpdate')));
     } finally {
       setIsSubmitting(false);
     }
@@ -451,8 +447,7 @@ export default function BrandsPage() {
         let errorMessage = 'נכשל במחיקת המותג';
         try {
           const errorData = JSON.parse(errorText);
-          const raw = errorData.userMessage || errorData.message || errorMessage;
-          errorMessage = translateBrandError(raw);
+          errorMessage = translateBrandError(messageFromFailureBody(errorData, errorMessage));
         } catch (parseError) {
           errorMessage = translateBrandError(errorText || errorMessage);
         }
@@ -461,8 +456,9 @@ export default function BrandsPage() {
 
       setBrands((prev) => prev.filter((b) => b.id !== idToRemove));
       setBrandToDelete(null);
-    } catch (err: any) {
-      setError(translateBrandError(err.message || '') || 'נכשל במחיקת המותג');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : resolveApiErr(err, 'brandDelete');
+      setError(translateBrandError(msg) || 'נכשל במחיקת המותג');
     } finally {
       setIsDeleting(false);
     }

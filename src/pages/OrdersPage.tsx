@@ -11,6 +11,7 @@ import InvoiceCreationModal from '../components/InvoiceCreationModal';
 import CreditNoteModal from '../components/CreditNoteModal';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import { primaryInvoicePdfUrl, primaryTaxInvoiceMeta } from '../utils/invoiceUtils';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -274,16 +275,8 @@ export default function OrdersPage() {
       setSelectedCustomerId(null);
       setCurrentPage(0);
       setOrders((prev) => [newOrder, ...prev]);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || 'נכשל ביצירת הזמנה';
-      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
-      const translatedMessage =
-        errorMessage === 'Cannot create order. Please add at least one location first.' ||
-        errorMessage === 'You have minimum one locations' ||
-        errorMessage === 'You must have at least one location'
-          ? noLocationsHebrew
-          : errorMessage;
-      setError(translatedMessage);
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderCreate'));
     } finally {
       setIsCreating(false);
     }
@@ -315,8 +308,8 @@ export default function OrdersPage() {
       const updatedOrder = await orderAPI.markOrderDone(orderId);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? updatedOrder : o)));
       setViewingOrder((prev) => (prev?.id === orderId ? updatedOrder : prev));
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל בסימון ההזמנה כהושלמה');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderMarkDone'));
     } finally {
       setUpdatingOrderId(null);
     }
@@ -352,8 +345,8 @@ export default function OrdersPage() {
       setDiscountOrder(null);
       setDiscountValue('');
       setDiscountMode('number');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
+    } catch (err: unknown) {
+      const errorMessage = resolveApiErr(err, 'orderDiscount');
       setError(translateDiscountErrorMessage(errorMessage));
     } finally {
       setIsUpdatingDiscount(false);
@@ -367,8 +360,8 @@ export default function OrdersPage() {
       const cancelledOrder = await orderAPI.markOrderCancelled(orderId);
       setOrders((prev) => prev.map((o) => (o.id === orderId ? cancelledOrder : o)));
       setViewingOrder((prev) => (prev?.id === orderId ? cancelledOrder : prev));
-    } catch (err: any) {
-      setError(err.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'orderCancel'));
     } finally {
       setCancellingOrderId(null);
       setOrderIdPendingCancel(null);

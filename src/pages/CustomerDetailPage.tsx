@@ -14,6 +14,7 @@ import { copyOrderLink, getOrderStoreLink } from '../utils/copyOrderLink';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
 import CloseButton from '../components/CloseButton';
 import { primaryInvoicePdfUrl, primaryTaxInvoiceMeta } from '../utils/invoiceUtils';
+import { msgFromBody, resolveApiErr } from '../utils/apiErrorMessage';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20];
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -164,7 +165,7 @@ export default function CustomerDetailPage() {
       const response = await fetch(`${API_BASE_URL}/product-overrides?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to load overrides');
+      if (!response.ok) throw new Error('נכשל בטעינת התאמות המחיר');
       const data: PageResponse<ProductOverrideWithPrice> = await response.json();
       setOverridesPage({ content: data.content, totalPages: data.totalPages });
     } catch (err: unknown) {
@@ -285,7 +286,7 @@ export default function CustomerDetailPage() {
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error((errData as { userMessage?: string }).userMessage || 'עדכון נכשל');
+        throw new Error(msgFromBody(errData, 'overrideEditFailed'));
       }
       handleCloseOverrideEditModal();
       await fetchOverrides();
@@ -348,7 +349,7 @@ export default function CustomerDetailPage() {
       });
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error((errData as { userMessage?: string }).userMessage || 'יצירה נכשלה');
+        throw new Error(msgFromBody(errData, 'overrideCreateFailed'));
       }
       handleCloseAddOverrideModal();
       setOverridesPageNum(0);
@@ -531,16 +532,8 @@ export default function CustomerDetailPage() {
       }));
       setOrdersPageNum(0);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string }; status: number }; message?: string };
-      const msg = e?.response?.data?.userMessage || (e?.message as string) || 'שגיאה ביצירת קישור';
-      const noLocationsHebrew = 'לא ניתן ליצור הזמנה. יש להוסיף לפחות מיקום אחד קודם.';
-      setError(
-        msg === 'Cannot create order. Please add at least one location first.' ||
-          msg === 'You have minimum one locations' ||
-          msg === 'You must have at least one location'
-          ? noLocationsHebrew
-          : msg
-      );
+      const e = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'orderLinkGenerate'));
       if (e?.response?.status === 401) navigate('/login/manager');
     } finally {
       setIsGeneratingLink(false);
@@ -573,8 +566,8 @@ export default function CustomerDetailPage() {
         content: prev.content.map((o) => (o.id === orderId ? updatedOrder : o)),
       }));
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string } }; status?: number };
-      setError(e?.response?.data?.userMessage || 'נכשל בסימון ההזמנה כהושלמה');
+      const e = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'orderMarkDone'));
       if (e?.response?.status === 401) navigate('/login/manager');
     } finally {
       setUpdatingOrderId(null);
@@ -592,8 +585,8 @@ export default function CustomerDetailPage() {
         content: prev.content.map((o) => (o.id === orderId ? cancelledOrder : o)),
       }));
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { userMessage?: string } }; status?: number };
-      setError(e?.response?.data?.userMessage || 'נכשל בביטול ההזמנה');
+      const e = err as { response?: { status?: number } };
+      setError(resolveApiErr(err, 'orderCancel'));
       if (e?.response?.status === 401) navigate('/login/manager');
     } finally {
       setCancellingOrderId(null);
@@ -625,9 +618,8 @@ export default function CustomerDetailPage() {
       setDiscountValue('');
       setDiscountMode('number');
     } catch (err: unknown) {
-      const er = err as { response?: { data?: { userMessage?: string } }; status?: number };
-      const msg = er?.response?.data?.userMessage || 'נכשל בעדכון ההנחה';
-      setError(translateDiscountErrorMessage(msg));
+      const er = err as { response?: { status?: number } };
+      setError(translateDiscountErrorMessage(resolveApiErr(err, 'orderDiscount')));
       if (er?.response?.status === 401) navigate('/login/manager');
     } finally {
       setIsUpdatingDiscount(false);

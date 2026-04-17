@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AccessibleModal from './AccessibleModal';
 import { agentAPI } from '../services/api';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AgentDeleteModalProps {
   isOpen: boolean;
@@ -42,8 +43,8 @@ export default function AgentDeleteModal({
     try {
       await agentAPI.deleteAgent(agentId);
       onDeleted();
-    } catch (err: any) {
-      setError(err?.response?.data?.userMessage || err?.message || 'Failed to delete agent');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'agentDelete'));
       setIsSubmitting(false);
     }
   };

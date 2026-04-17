@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { agentAPI, type Agent } from '../services/api';
 import AgentEditProfileModal from '../components/AgentEditProfileModal';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function AgentProfilePage() {
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -18,14 +19,15 @@ export default function AgentProfilePage() {
       const profile = await agentAPI.getCurrentAgent();
       setAgent(profile);
       setError('');
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
         navigate('/login/agent');
         return;
       }
-      setError(err.response?.data?.userMessage || err.message || 'נכשל בטעינת פרופיל הסוכן.');
+      setError(resolveApiErr(err, 'agentLoadProfile'));
     } finally {
       setIsLoading(false);
     }

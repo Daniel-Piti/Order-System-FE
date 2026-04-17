@@ -4,6 +4,7 @@ import AccessibleModal from './AccessibleModal';
 import { locationAPI, type Location } from '../services/api';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AddLocationModalProps {
   isOpen: boolean;
@@ -53,13 +54,8 @@ export default function AddLocationModal({ isOpen, onClose, onSuccess }: AddLoca
       const newLocation = await locationAPI.createLocation(payload);
       onSuccess(newLocation);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל ביצירת הסניף'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'locationCreate'));
     } finally {
       setIsLoading(false);
     }

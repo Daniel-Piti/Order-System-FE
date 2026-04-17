@@ -4,6 +4,7 @@ import Spinner from './Spinner';
 import { locationAPI, type Location } from '../services/api';
 import { validateLocationForm, LOCATION_FIELD_LIMITS } from '../utils/validation';
 import type { ValidationErrors } from '../utils/validation';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface EditLocationModalProps {
   isOpen: boolean;
@@ -75,13 +76,8 @@ export default function EditLocationModal({ isOpen, onClose, onSuccess, location
       const updatedLocation = await locationAPI.updateLocation(location.id, payload);
       onSuccess(updatedLocation);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בעדכון הסניף'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'locationUpdate'));
     } finally {
       setIsLoading(false);
     }

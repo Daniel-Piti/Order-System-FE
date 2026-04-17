@@ -4,6 +4,7 @@ import AccessibleModal from './AccessibleModal';
 import type { ValidationErrors } from '../utils/validation';
 import { validateAgentProfileForm, AGENT_FIELD_LIMITS } from '../utils/validation';
 import Spinner from './Spinner';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface AgentEditModalProps {
   isOpen: boolean;
@@ -108,13 +109,8 @@ export default function AgentEditModal({ isOpen, agent, onClose, onSuccess }: Ag
       const updatedAgent = await agentAPI.updateAgent(agent.id, formData);
       onSuccess(updatedAgent);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'Failed to update agent'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'agentUpdate'));
     } finally {
       setIsSubmitting(false);
     }

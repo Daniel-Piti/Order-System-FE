@@ -4,6 +4,7 @@ import AddLocationModal from '../components/AddLocationModal';
 import EditLocationModal from '../components/EditLocationModal';
 import { managerAPI, publicAPI, locationAPI } from '../services/api';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 interface Location {
   id: number;
@@ -42,19 +43,15 @@ export default function LocationsPage() {
       const manager = await managerAPI.getCurrentManager();
       const data = await publicAPI.locations.getAllByManagerId(manager.id);
       setLocations(data);
-    } catch (err: any) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
         return;
       }
 
-      const message =
-        err.response?.data?.userMessage ||
-        err.response?.data?.message ||
-        err.message ||
-        'נכשל בטעינת הסניפים';
-      setError(message);
+      setError(resolveApiErr(err, 'locationsLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -86,13 +83,8 @@ export default function LocationsPage() {
       const idToRemove = locationToDelete.id;
       setLocations((prev) => prev.filter((l) => l.id !== idToRemove));
       setLocationToDelete(null);
-    } catch (err: any) {
-      setDeleteError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל במחיקת הסניף'
-      );
+    } catch (err: unknown) {
+      setDeleteError(resolveApiErr(err, 'locationDelete'));
     } finally {
       setIsDeleting(false);
     }

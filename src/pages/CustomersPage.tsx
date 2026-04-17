@@ -12,6 +12,7 @@ import {
   validateDiscountPercentage,
 } from '../utils/validation';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 const MAX_CUSTOMER_NAME_LENGTH = 50;
 const MAX_CUSTOMER_PHONE_LENGTH = 10;
@@ -79,7 +80,7 @@ export default function CustomersPage() {
       const data = await customerAPI.getAllCustomers();
       setCustomers(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load customers');
+      setError(resolveApiErr(err, 'customersLoad'));
       if (err.message.includes('401')) {
         navigate('/login/manager');
       }
@@ -97,7 +98,7 @@ export default function CustomersPage() {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
       } else {
-        setError(prev => prev || err.response?.data?.userMessage || err.message || 'Failed to load agents');
+        setError((prev) => prev || resolveApiErr(err, 'loadAgentsList'));
       }
     }
   };
@@ -230,8 +231,8 @@ export default function CustomersPage() {
       await customerAPI.deleteCustomer(idToRemove);
       setCustomers((prev) => prev.filter((c) => c.id !== idToRemove));
       handleCloseDeleteModal();
-    } catch (err: any) {
-      setFormError(err.response?.data?.userMessage || err.message || 'Failed to delete customer');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'customerDelete'));
     } finally {
       setIsSubmitting(false);
     }
@@ -354,8 +355,8 @@ export default function CustomersPage() {
       const newCustomer = await customerAPI.createCustomer(payload);
       setCustomers((prev) => [...prev, newCustomer]);
       handleCloseModal();
-    } catch (err: any) {
-      setFormError(err.response?.data?.userMessage || err.message || 'Failed to create customer');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'customerCreate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -452,8 +453,8 @@ export default function CustomersPage() {
       const updated = await customerAPI.updateCustomer(customerToEdit.id, payload);
       setCustomers((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       handleCloseEditModal();
-    } catch (err: any) {
-      setFormError(err.response?.data?.userMessage || err.message || 'Failed to update customer');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'customerUpdate'));
     } finally {
       setIsSubmitting(false);
     }

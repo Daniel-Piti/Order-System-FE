@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { businessAPI } from '../services/api';
 import type { Business } from '../services/api';
 import EditBusinessModal from '../components/EditBusinessModal';
+import { preferHebrewNetworkMessage, resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function BusinessDataPage() {
   const [business, setBusiness] = useState<Business | null>(null);
@@ -22,26 +23,15 @@ export default function BusinessDataPage() {
       const businessData = await businessAPI.getMyBusiness();
       setBusiness(businessData);
       setError('');
-    } catch (err: any) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         navigate('/login/manager');
         return;
       }
-      const errorMessage = err.response?.data?.userMessage ||
-        err.response?.data?.message ||
-        err.message ||
-        'נכשל בטעינת נתוני העסק';
-      
-      // Translate "Network Error" to Hebrew
-      const isNetworkError = errorMessage === 'Network Error' || 
-        errorMessage?.includes('Network Error') ||
-        err.code === 'ERR_NETWORK' ||
-        err.code === 'ECONNABORTED';
-      
-      const translatedMessage = isNetworkError ? 'שגיאת רשת' : errorMessage;
-      
-      setError(translatedMessage);
+      const base = resolveApiErr(err, 'businessDataLoad');
+      setError(preferHebrewNetworkMessage(err, base));
     } finally {
       setIsLoading(false);
     }

@@ -7,6 +7,7 @@ import { formatPrice } from '../utils/formatPrice';
 import SparkMD5 from 'spark-md5';
 import Spinner from '../components/Spinner';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 // Helper function to calculate MD5 hash of a file and return as Base64
 async function calculateFileMD5(file: File): Promise<string> {
@@ -43,7 +44,7 @@ async function calculateFileMD5(file: File): Promise<string> {
     };
 
     fileReader.onerror = function () {
-      reject(new Error('Failed to read file for MD5 calculation'));
+      reject(new Error('נכשל בקריאת הקובץ לחישוב הבדיקה'));
     };
 
     function loadNext() {
@@ -185,9 +186,10 @@ export default function ProductsPage() {
         imagesMap[p.id] = p.images?.map((i) => i.url) ?? [];
       });
       setProductImages(imagesMap);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load products');
-      if (err.message?.includes('401')) {
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'productLoad'));
+      const e = err as { message?: string };
+      if (e.message?.includes('401')) {
         navigate('/login/manager');
       }
     } finally {
@@ -308,7 +310,7 @@ export default function ProductsPage() {
 
     // Check total count (existing + new)
     if (currentImages.length + newFiles.length > 5) {
-      setFormError(`Maximum 5 images allowed. You already have ${currentImages.length} image(s) selected.`);
+      setFormError(`ניתן להעלות עד 5 תמונות. כבר נבחרו ${currentImages.length} תמונות.`);
       return;
     }
 
@@ -317,14 +319,14 @@ export default function ProductsPage() {
       // Check file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+        errors.push(`${file.name}: סוג קובץ לא תקין. מותרים JPEG, PNG או WebP בלבד.`);
         return;
       }
 
       // Check file size (5MB = 5 * 1024 * 1024 bytes)
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        errors.push(`${file.name}: File size exceeds 5MB limit.`);
+        errors.push(`${file.name}: גודל הקובץ חורג מ-5MB.`);
         return;
       }
 
@@ -388,7 +390,7 @@ export default function ProductsPage() {
       // Check total count (existing visible + new to add)
       const currentImageCount = existingImages.length + newImagesToAdd.length;
       if (currentImageCount + newFiles.length > 5) {
-        setFormError(`Maximum 5 images allowed. Current: ${currentImageCount}, trying to add: ${newFiles.length}`);
+        setFormError(`ניתן להעלות עד 5 תמונות. כרגע: ${currentImageCount}, מנסים להוסיף: ${newFiles.length}`);
         return;
       }
 
@@ -396,13 +398,13 @@ export default function ProductsPage() {
       newFiles.forEach((file) => {
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-          errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+          errors.push(`${file.name}: סוג קובץ לא תקין. מותרים JPEG, PNG או WebP בלבד.`);
           return;
         }
 
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
-          errors.push(`${file.name}: File size exceeds 5MB limit.`);
+          errors.push(`${file.name}: גודל הקובץ חורג מ-5MB.`);
           return;
         }
 
@@ -451,7 +453,7 @@ export default function ProductsPage() {
     // Check total count (existing visible + new to add)
     const currentImageCount = existingImages.length + newImagesToAdd.length;
     if (currentImageCount + newFiles.length > 5) {
-      setFormError(`Maximum 5 images allowed. Current: ${currentImageCount}, trying to add: ${newFiles.length}`);
+      setFormError(`ניתן להעלות עד 5 תמונות. כרגע: ${currentImageCount}, מנסים להוסיף: ${newFiles.length}`);
       e.target.value = '';
       return;
     }
@@ -460,13 +462,13 @@ export default function ProductsPage() {
     newFiles.forEach((file) => {
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        errors.push(`${file.name}: Invalid file type. Only JPEG, PNG, and WebP are allowed.`);
+        errors.push(`${file.name}: סוג קובץ לא תקין. מותרים JPEG, PNG או WebP בלבד.`);
         return;
       }
 
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        errors.push(`${file.name}: File size exceeds 5MB limit.`);
+        errors.push(`${file.name}: גודל הקובץ חורג מ-5MB.`);
         return;
       }
 
@@ -626,7 +628,7 @@ export default function ProductsPage() {
     // Validate image count (existing visible + new to add)
     const currentImageCount = existingImages.length + newImagesToAdd.length;
     if (currentImageCount > 5) {
-      setFormError('Maximum 5 images allowed per product');
+      setFormError('ניתן להעלות עד 5 תמונות לכל מוצר');
       return;
     }
 
@@ -716,8 +718,8 @@ export default function ProductsPage() {
       setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setProductImages((prev) => ({ ...prev, [updated.id]: updated.images?.map((i) => i.url) ?? [] }));
       handleCloseEditModal();
-    } catch (err: any) {
-      setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to update product');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'productUpdate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -736,8 +738,8 @@ export default function ProductsPage() {
         return next;
       });
       setProductToDelete(null);
-    } catch (err: any) {
-      setError(err?.response?.data?.userMessage || err?.message || 'Failed to delete product');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'productDelete'));
     } finally {
       setIsDeleting(false);
     }
@@ -773,7 +775,7 @@ export default function ProductsPage() {
 
     // Validate image count
     if (selectedImages.length > 5) {
-      setFormError('Maximum 5 images allowed per product');
+      setFormError('ניתן להעלות עד 5 תמונות לכל מוצר');
       return;
     }
 
@@ -847,8 +849,8 @@ export default function ProductsPage() {
         [newProduct.id]: newProduct.images?.map((i) => i.url) ?? [],
       }));
       handleCloseModal();
-    } catch (err: any) {
-      setFormError(err?.response?.data?.userMessage || err?.message || 'Failed to create product');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'productCreate'));
     } finally {
       setIsSubmitting(false);
     }

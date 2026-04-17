@@ -6,6 +6,7 @@ import PaginationBar from '../components/PaginationBar';
 import { formatPrice } from '../utils/formatPrice';
 import type { ProductListItem, CustomerListItem, ProductOverride, ProductOverrideWithPrice } from '../utils/types';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { msgFromBody, resolveApiErr } from '../utils/apiErrorMessage';
 
 const MAX_PRICE = 1_000_000;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -69,11 +70,12 @@ export default function AgentOverridesPage() {
     try {
       const agent = await agentAPI.getCurrentAgent();
       setAgentInfo(agent);
-    } catch (err: any) {
-      if (err.message?.includes('401')) {
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      if (e.message?.includes('401')) {
         navigate('/login/agent');
       } else {
-        setError(err?.response?.data?.userMessage || err?.message || 'Failed to load agent profile');
+        setError(resolveApiErr(err, 'agentLoadProfile'));
       }
     }
   };
@@ -101,7 +103,7 @@ export default function AgentOverridesPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.userMessage || 'Failed to fetch overrides');
+        throw new Error(msgFromBody(errorData, 'overridesLoad'));
       }
 
       const data = await response.json();
@@ -241,7 +243,7 @@ export default function AgentOverridesPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.userMessage || 'Failed to create override');
+        throw new Error(msgFromBody(errorData, 'overridesCreate'));
       }
 
       const created = await response.json();
@@ -255,8 +257,8 @@ export default function AgentOverridesPage() {
       setOverrides((prev) => [withPrice, ...prev]);
       setCurrentPage(0);
       handleCloseModal();
-    } catch (err: any) {
-      setFormError(err?.message || 'נכשל ביצירת מחיר מיוחד');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'agentPriceOverrideCreate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -319,7 +321,7 @@ export default function AgentOverridesPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.userMessage || 'Failed to update override');
+        throw new Error(msgFromBody(errorData, 'overridesUpdate'));
       }
 
       const updated = await response.json();
@@ -332,8 +334,8 @@ export default function AgentOverridesPage() {
       };
       setOverrides((prev) => prev.map((o) => (o.id === withPrice.id ? withPrice : o)));
       handleCloseEditModal();
-    } catch (err: any) {
-      setFormError(err?.message || 'נכשל בעדכון מחיר מיוחד');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'agentPriceOverrideUpdate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -354,14 +356,14 @@ export default function AgentOverridesPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.userMessage || 'Failed to delete override');
+        throw new Error(msgFromBody(errorData, 'overridesDelete'));
       }
 
       const idToRemove = overrideToDelete.id;
       setOverrides((prev) => prev.filter((o) => o.id !== idToRemove));
       setOverrideToDelete(null);
-    } catch (err: any) {
-      setError(err?.message || 'נכשל במחיקת מחיר מיוחד');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'agentPriceOverrideDelete'));
     } finally {
       setIsDeleting(false);
     }

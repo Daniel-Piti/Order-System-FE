@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { agentAPI, publicAPI } from '../services/api';
 import type { ProductPublic, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 type SortDirection = 'ASC' | 'DESC';
 
@@ -28,14 +29,15 @@ export default function AgentProductsPage() {
       try {
         const agent = await agentAPI.getCurrentAgent();
         setManagerId(agent.managerId);
-      } catch (err: any) {
-        const status = err?.response?.status;
+      } catch (err: unknown) {
+        const ax = err as { response?: { status?: number } };
+        const status = ax.response?.status;
         if (status === 401 || status === 403) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('userRole');
           navigate('/login/agent');
         } else {
-          setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת פרטי הסוכן');
+          setError(resolveApiErr(err, 'agentLoadForProducts'));
         }
       }
     };
@@ -96,9 +98,9 @@ export default function AgentProductsPage() {
       setProductImageIndices(indexMap);
       setProductPrevImageIndices(prevIndexMap);
       setProductImageDirections({});
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load products for agent view:', err);
-      setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת מוצרים');
+      setError(resolveApiErr(err, 'agentProductsLoad'));
     } finally {
       setIsLoading(false);
     }

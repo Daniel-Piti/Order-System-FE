@@ -7,6 +7,7 @@ import PaginationBar from '../components/PaginationBar';
 import type { ProductOverrideWithPrice, ProductListItem, CustomerListItem, ProductOverride } from '../utils/types';
 import { formatPrice } from '../utils/formatPrice';
 import { useModalBackdrop } from '../hooks/useModalBackdrop';
+import { msgFromBody, resolveApiErr } from '../utils/apiErrorMessage';
 
 const MAX_PRICE = 1_000_000;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -101,16 +102,18 @@ export default function OverridesPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch overrides');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(msgFromBody(errorData, 'overridesLoad'));
       }
 
       const data: PageResponse<ProductOverrideWithPrice> = await response.json();
       
       setOverrides(data.content);
       setTotalPages(data.totalPages);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load overrides');
-      if (err.message.includes('401')) {
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'overridesLoad'));
+      const e = err as { message?: string };
+      if (e.message?.includes('401')) {
         navigate('/login/manager');
       }
     } finally {
@@ -184,7 +187,7 @@ export default function OverridesPage() {
     }
     const agent = agentMap.get(agentId);
     if (!agent) {
-      return 'Agent';
+      return 'סוכן';
     }
     return `${agent.firstName} ${agent.lastName}`.trim();
   };
@@ -269,8 +272,8 @@ export default function OverridesPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to create override');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(msgFromBody(errorData, 'overridesCreate'));
       }
 
       const created = await response.json();
@@ -284,8 +287,8 @@ export default function OverridesPage() {
       setOverrides((prev) => [withPrice, ...prev]);
       setCurrentPage(0);
       handleCloseModal();
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to create override');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'overridesCreate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -366,8 +369,8 @@ export default function OverridesPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.userMessage || 'Failed to update override');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(msgFromBody(errorData, 'overridesUpdate'));
       }
 
       const updated = await response.json();
@@ -380,8 +383,8 @@ export default function OverridesPage() {
       };
       setOverrides((prev) => prev.map((o) => (o.id === withPrice.id ? withPrice : o)));
       handleCloseEditModal();
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to update override');
+    } catch (err: unknown) {
+      setFormError(resolveApiErr(err, 'overridesUpdate'));
     } finally {
       setIsSubmitting(false);
     }
@@ -401,14 +404,15 @@ export default function OverridesPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete override');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(msgFromBody(errorData, 'overridesDelete'));
       }
 
       const idToRemove = overrideToDelete.id;
       setOverrides((prev) => prev.filter((o) => o.id !== idToRemove));
       setOverrideToDelete(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete override');
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'overridesDelete'));
     } finally {
       setIsDeleting(false);
     }

@@ -5,6 +5,7 @@ import AgentCustomerAddModal from '../components/AgentCustomerAddModal';
 import AgentCustomerDeleteModal from '../components/AgentCustomerDeleteModal';
 import AgentCustomerEditModal from '../components/AgentCustomerEditModal';
 import PaginationBar from '../components/PaginationBar';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50] as const;
 
@@ -30,15 +31,16 @@ export default function AgentCustomersPage() {
       const data = await agentAPI.getCustomersForAgent();
       setCustomers(data);
       setCurrentPage(0);
-    } catch (err: any) {
-      const status = err?.response?.status;
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      const status = ax.response?.status;
       if (status === 401 || status === 403) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
         navigate('/login/agent');
         return;
       }
-      setError(err?.response?.data?.userMessage || err?.message || 'נכשל בטעינת לקוחות');
+      setError(resolveApiErr(err, 'agentCustomersLoad'));
     } finally {
       setIsLoading(false);
     }

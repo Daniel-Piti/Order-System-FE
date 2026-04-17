@@ -5,6 +5,7 @@ import { businessAPI, type Business } from '../services/api';
 import Spinner from './Spinner';
 import AccessibleModal from './AccessibleModal';
 import SparkMD5 from 'spark-md5';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 // Helper function to calculate MD5 hash of a file and return as Base64
 async function calculateFileMD5(file: File): Promise<string> {
@@ -41,7 +42,7 @@ async function calculateFileMD5(file: File): Promise<string> {
     };
 
     fileReader.onerror = function () {
-      reject(new Error('Failed to read file for MD5 calculation'));
+      reject(new Error('נכשל בקריאת הקובץ לחישוב הבדיקה'));
     };
 
     function loadNext() {
@@ -219,13 +220,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
 
       onSuccess(updatedBusiness);
       handleClose();
-    } catch (err: any) {
-      setError(
-        err.response?.data?.userMessage ||
-          err.response?.data?.message ||
-          err.message ||
-          'נכשל בעדכון פרטי העסק'
-      );
+    } catch (err: unknown) {
+      setError(resolveApiErr(err, 'businessUpdate'));
     } finally {
       setIsLoading(false);
     }

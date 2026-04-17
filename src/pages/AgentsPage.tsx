@@ -4,6 +4,7 @@ import { agentAPI, type Agent } from '../services/api';
 import AgentAddModal from '../components/AgentAddModal';
 import AgentEditModal from '../components/AgentEditModal';
 import AgentDeleteModal from '../components/AgentDeleteModal';
+import { resolveApiErr } from '../utils/apiErrorMessage';
 
 export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -25,14 +26,15 @@ export default function AgentsPage() {
       const data = await agentAPI.getAgentsForManager();
       setAgents(data);
       setError('');
-    } catch (err: any) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err: unknown) {
+      const ax = err as { response?: { status?: number } };
+      if (ax.response?.status === 401 || ax.response?.status === 403) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
         navigate('/login/manager');
         return;
       }
-      setError(err.response?.data?.userMessage || err.message || 'Failed to load agents');
+      setError(resolveApiErr(err, 'loadAgentsList'));
     } finally {
       setIsLoading(false);
     }
