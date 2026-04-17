@@ -12,6 +12,21 @@ function toDateInputValue(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+function getInvoiceTypeMeta(invoiceType: InvoiceDto['invoiceType']) {
+  if (invoiceType === 'CREDIT_NOTE') {
+    return {
+      label: 'זיכוי',
+      className: 'bg-amber-100 text-amber-800 border border-amber-300',
+      rowClassName: 'bg-amber-50/60 hover:bg-amber-100/70',
+    };
+  }
+  return {
+    label: 'חשבונית',
+    className: 'bg-indigo-100 text-indigo-800 border border-indigo-300',
+    rowClassName: 'bg-indigo-50/50 hover:bg-indigo-100/70',
+  };
+}
+
 export default function DocumentsReportsPage() {
   const [fromDate, setFromDate] = useState(() => {
     const now = new Date();
@@ -450,6 +465,7 @@ export default function DocumentsReportsPage() {
                   <thead className="bg-indigo-50/70">
                     <tr>
                       <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">מס׳ חשבונית</th>
+                      <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">סוג</th>
                       <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">מזהה הזמנה</th>
                       <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">תאריך</th>
                       <th scope="col" className="px-4 py-3 text-center text-xs font-semibold text-gray-600">סכום הזמנה</th>
@@ -457,25 +473,33 @@ export default function DocumentsReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {results.map((row) => (
-                      <tr key={row.id} className="hover:bg-gray-50/70">
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoiceSequenceNumber}</td>
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.orderId}</td>
-                        <td className="px-4 py-3 text-sm text-gray-800 text-center">
-                          {formatOrderDateShortWithTime(row.createdAt)}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.totalAmount)}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => window.open(row.pdfUrl, '_blank')}
-                            className="glass-button px-3 py-2 rounded-xl text-xs font-semibold border border-indigo-300 bg-indigo-50 text-indigo-700 hover:shadow-md transition-all"
-                          >
-                            הצג חשבונית
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {results.map((row) => {
+                      const invoiceTypeMeta = getInvoiceTypeMeta(row.invoiceType);
+                      return (
+                        <tr key={row.id} className={`${invoiceTypeMeta.rowClassName} transition-colors`}>
+                          <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.invoiceSequenceNumber}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${invoiceTypeMeta.className}`}>
+                              {invoiceTypeMeta.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-gray-700 text-center">{row.orderId}</td>
+                          <td className="px-4 py-3 text-sm text-gray-800 text-center">
+                            {formatOrderDateShortWithTime(row.createdAt)}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.totalAmount)}</td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => window.open(row.pdfUrl, '_blank')}
+                              className="glass-button px-3 py-2 rounded-xl text-xs font-semibold border border-indigo-300 bg-indigo-50 text-indigo-700 hover:shadow-md transition-all"
+                            >
+                              הצג מסמך
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

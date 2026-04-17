@@ -971,6 +971,7 @@ export interface CreateCreditNoteByAmountRequest {
   invoiceId: number;
   amount: number;
   allocationNumber?: string | null;
+  notes: string;
 }
 
 export interface CreateCreditNoteByAmountResponse {

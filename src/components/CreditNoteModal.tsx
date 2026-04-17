@@ -73,6 +73,7 @@ export default function CreditNoteModal({
   const [mode, setMode] = useState<CreditMode>('byAmount');
   const [amountStr, setAmountStr] = useState('');
   const [allocationNumber, setAllocationNumber] = useState('');
+  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -89,6 +90,7 @@ export default function CreditNoteModal({
       setMode('byAmount');
       setAmountStr('');
       setAllocationNumber('');
+      setNotes('');
       setError('');
     }
   }, [isOpen]);
@@ -122,12 +124,19 @@ export default function CreditNoteModal({
       }
     }
 
+    const normalizedNotes = notes.trim();
+    if (normalizedNotes.length > 1000) {
+      setError('הערות יכולות להכיל עד 1000 תווים');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await invoiceAPI.createCreditNoteByAmount({
         invoiceId,
         amount: rounded,
         allocationNumber: primaryHasAllocation ? allocationNumber.trim() : null,
+        notes: normalizedNotes,
       });
       onSuccess(response);
       onClose();
@@ -248,6 +257,25 @@ export default function CreditNoteModal({
                 />
               </div>
             )}
+
+            <div>
+              <label htmlFor="credit-note-notes" className="block text-sm font-medium text-gray-700 mb-2">
+                הערות לזיכוי (אופציונלי)
+              </label>
+              <textarea
+                id="credit-note-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value.slice(0, 1000))}
+                maxLength={1000}
+                rows={4}
+                placeholder="הוסף הערות שיופיעו במסמך הזיכוי..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-xl text-sm text-gray-800 resize-y"
+                dir="rtl"
+              />
+              <p className="text-xs text-gray-500 mt-1 text-left" dir="ltr">
+                {notes.length}/1000
+              </p>
+            </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
