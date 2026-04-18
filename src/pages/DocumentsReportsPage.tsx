@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { customerAPI, invoiceAPI, type Customer, type InvoiceDto } from '../services/api';
 import PaginationBar from '../components/PaginationBar';
 import Spinner from '../components/Spinner';
-import { formatPrice } from '../utils/formatPrice';
+import { formatPrice, formatPriceNegative } from '../utils/formatPrice';
 import { formatOrderDateShortWithTime } from '../utils/orderUtils';
 
 function toDateInputValue(date: Date): string {
@@ -487,7 +487,14 @@ export default function DocumentsReportsPage() {
                           <td className="px-4 py-3 text-sm text-gray-800 text-center">
                             {formatOrderDateShortWithTime(row.createdAt)}
                           </td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-800 text-center">{formatPrice(row.totalAmount)}</td>
+                          <td
+                            dir="ltr"
+                            className="px-4 py-3 text-sm font-medium text-gray-800 text-center"
+                          >
+                            {row.invoiceType === 'CREDIT_NOTE'
+                              ? formatPriceNegative(row.totalAmount)
+                              : formatPrice(row.totalAmount)}
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <button
                               type="button"

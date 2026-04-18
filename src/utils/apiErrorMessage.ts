@@ -22,6 +22,8 @@ export type ApiErrorCode =
   | 'ORDER_STATUS_NOT_AS_EXPECTED'
   | 'ORDER_STATUS_NOT_ALLOWED'
   | 'INVOICE_ALREADY_EXISTS_FOR_ORDER'
+  | 'INVOICE_TOTAL_MUST_BE_POSITIVE'
+  | 'CREDIT_NOTE_TOTAL_MUST_BE_NEGATIVE'
   | 'INVOICE_ORDER_IDS_BATCH_SIZE_EXCEEDED'
   | 'INVALID_DATE_RANGE'
   | 'CREDIT_AMOUNT_EXCEEDS_ORDER_TOTAL'
@@ -95,6 +97,8 @@ export const API_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   ORDER_STATUS_NOT_AS_EXPECTED: 'סטטוס ההזמנה אינו מתאים לפעולה',
   ORDER_STATUS_NOT_ALLOWED: 'סטטוס ההזמנה אינו מאפשר את הפעולה',
   INVOICE_ALREADY_EXISTS_FOR_ORDER: 'כבר קיימת חשבונית להזמנה זו',
+  INVOICE_TOTAL_MUST_BE_POSITIVE: 'סכום החשבונית חייב להיות חיובי',
+  CREDIT_NOTE_TOTAL_MUST_BE_NEGATIVE: 'סכום הזיכוי חייב להיות שלילי',
   INVOICE_ORDER_IDS_BATCH_SIZE_EXCEEDED: 'יותר מדי מזהי הזמנות בבקשה',
   INVALID_DATE_RANGE: 'טווח תאריכים לא תקין',
   CREDIT_AMOUNT_EXCEEDS_ORDER_TOTAL: 'סכום הזיכוי חורג מהסכום שניתן לזכות',
