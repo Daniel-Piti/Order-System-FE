@@ -1,0 +1,44 @@
+# Manual deploy: GitHub → Actions → "Deploy frontend" → Run workflow
+name: Deploy frontend
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: il-central-1
+  S3_BUCKET: ordersystem-frontend
+  CLOUDFRONT_DIST_ID: E7I1BY322TTK8
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install and build
+        run: npm ci && npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Sync to S3
+        run: aws s3 sync dist/ "s3://${{ env.S3_BUCKET }}/" --delete --no-progress
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "${{ env.CLOUDFRONT_DIST_ID }}" --paths "/*"
