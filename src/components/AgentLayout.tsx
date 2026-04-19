@@ -121,14 +121,13 @@ export default function AgentLayout() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) =>
+                  className={({ isActive }: { isActive: boolean }) =>
                     `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 select-none focus-visible:outline-3 focus-visible:outline-blue-600 focus-visible:outline-offset-2 ${
                       isActive
                         ? 'backdrop-blur-2xl bg-sky-400/30 text-sky-900 font-semibold border border-sky-300/60 shadow-2xl shadow-sky-400/40 ring-2 ring-sky-200/30'
                         : 'backdrop-blur-xl bg-white/90 text-gray-800 hover:bg-white/95 border border-gray-300/70 hover:border-gray-400/80 shadow-xl shadow-gray-300/60 hover:shadow-2xl hover:shadow-gray-400/60'
                     }`
                   }
-                  aria-current={({ isActive }) => isActive ? 'page' : undefined}
                 >
                   <span className="text-xl" aria-hidden="true">{item.icon}</span>
                   <span>{item.name}</span>

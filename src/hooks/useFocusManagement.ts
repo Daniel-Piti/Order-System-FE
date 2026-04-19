@@ -1,4 +1,5 @@
-import { useEffect, useRef, RefObject } from 'react';
+import { useEffect, useRef } from 'react';
+import type { RefObject } from 'react';
 
 /**
  * Hook for managing focus in modals and dynamic content
@@ -11,7 +12,7 @@ export function useFocusManagement() {
    * Trap focus within a container element (e.g., modal)
    * Prevents focus from escaping the modal when using Tab/Shift+Tab
    */
-  const trapFocus = (containerRef: RefObject<HTMLElement>) => {
+  const trapFocus = (containerRef: RefObject<HTMLElement | null>) => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -92,7 +93,7 @@ export function useFocusManagement() {
   /**
    * Focus the first focusable element in a container
    */
-  const focusFirst = (containerRef: RefObject<HTMLElement>) => {
+  const focusFirst = (containerRef: RefObject<HTMLElement | null>) => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -108,7 +109,7 @@ export function useFocusManagement() {
   /**
    * Focus the last focusable element in a container
    */
-  const focusLast = (containerRef: RefObject<HTMLElement>) => {
+  const focusLast = (containerRef: RefObject<HTMLElement | null>) => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -135,7 +136,7 @@ export function useFocusManagement() {
  * Hook specifically for modal focus management
  * Combines saveFocus, trapFocus, and returnFocus in one hook
  */
-export function useModalFocus(containerRef: RefObject<HTMLElement>, isOpen: boolean) {
+export function useModalFocus(containerRef: RefObject<HTMLElement | null>, isOpen: boolean) {
   const { trapFocus, saveFocus, returnFocus } = useFocusManagement();
 
   useEffect(() => {

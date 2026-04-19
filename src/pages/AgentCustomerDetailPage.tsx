@@ -172,7 +172,7 @@ export default function AgentCustomerDetailPage() {
     }
   }, [customerId, overridesPageNum, overridesPageSize, navigate]);
 
-  const prevOverridesCustomerIdRef = useRef<string | undefined>();
+  const prevOverridesCustomerIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (!customerId) return;

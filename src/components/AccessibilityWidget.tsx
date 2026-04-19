@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAriaLive } from './AriaLiveRegionContext';
 
 interface AccessibilitySettings {
@@ -20,7 +20,7 @@ export default function AccessibilityWidget() {
   const [settings, setSettings] = useState<AccessibilitySettings>(DEFAULT_SETTINGS);
   const widgetRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const announce = useAriaLive();
+  const { announce } = useAriaLive();
 
   // Load settings from localStorage on mount
   useEffect(() => {

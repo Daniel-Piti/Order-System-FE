@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { agentAPI, publicAPI } from '../services/api';
-import type { ProductPublic, Category, Brand } from '../services/api';
+import type { ProductPublic, Product, Category, Brand } from '../services/api';
 import { formatPrice } from '../utils/formatPrice';
 import { resolveApiErr } from '../utils/apiErrorMessage';
 
@@ -401,9 +401,11 @@ export default function AgentProductsPage() {
                       <span className="text-xl font-bold text-purple-600">
                         {formatPrice(product.price)}
                       </span>
-                      {'minimumPrice' in product && product.minimumPrice != null && product.price > product.minimumPrice && (
+                      {'minimumPrice' in product &&
+                        (product as Product).minimumPrice != null &&
+                        product.price > (product as Product).minimumPrice && (
                         <span className="text-xs text-gray-400">
-                          מינימום {formatPrice(product.minimumPrice)}
+                          מינימום {formatPrice((product as Product).minimumPrice)}
                         </span>
                       )}
                     </div>

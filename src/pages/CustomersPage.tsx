@@ -105,7 +105,7 @@ export default function CustomersPage() {
 
   // Sort customers by name
   const agentNameMap = useMemo(() => {
-    const map = new Map<number, string>();
+    const map = new Map<string, string>();
     agents.forEach((agent) => {
       map.set(agent.id, `${agent.firstName} ${agent.lastName}`);
     });
