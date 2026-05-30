@@ -68,6 +68,8 @@ interface EditBusinessModalProps {
     phoneNumber: string;
     streetAddress: string;
     city: string;
+    minimumInvoiceSequenceNumber: number;
+    minimumCreditNoteSequenceNumber: number;
     imageUrl?: string | null;
   };
 }
@@ -87,6 +89,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
     phoneNumber: '',
     streetAddress: '',
     city: '',
+    minimumInvoiceSequenceNumber: '1',
+    minimumCreditNoteSequenceNumber: '1',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -107,6 +111,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
         phoneNumber: currentBusiness.phoneNumber,
         streetAddress: currentBusiness.streetAddress,
         city: currentBusiness.city,
+        minimumInvoiceSequenceNumber: String(currentBusiness.minimumInvoiceSequenceNumber),
+        minimumCreditNoteSequenceNumber: String(currentBusiness.minimumCreditNoteSequenceNumber),
       });
       setSelectedImage(null);
       setPreviewImage(null);
@@ -144,6 +150,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
       formData.phoneNumber !== currentBusiness.phoneNumber ||
       formData.streetAddress !== currentBusiness.streetAddress ||
       formData.city !== currentBusiness.city ||
+      formData.minimumInvoiceSequenceNumber !== String(currentBusiness.minimumInvoiceSequenceNumber) ||
+      formData.minimumCreditNoteSequenceNumber !== String(currentBusiness.minimumCreditNoteSequenceNumber) ||
       selectedImage !== null ||
       removeImage;
 
@@ -160,6 +168,9 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
 
     try {
       // 1. Update business details only (PUT /businesses/me)
+      const minimumInvoiceSequenceNumber = Number.parseInt(formData.minimumInvoiceSequenceNumber.trim(), 10);
+      const minimumCreditNoteSequenceNumber = Number.parseInt(formData.minimumCreditNoteSequenceNumber.trim(), 10);
+
       const detailsPayload = {
         name: formData.name.trim(),
         stateIdNumber: formData.stateIdNumber.trim(),
@@ -167,6 +178,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
         phoneNumber: formData.phoneNumber.trim(),
         streetAddress: formData.streetAddress.trim(),
         city: formData.city.trim(),
+        minimumInvoiceSequenceNumber,
+        minimumCreditNoteSequenceNumber,
       };
 
       const hasDetailsChanges =
@@ -175,7 +188,9 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
         detailsPayload.email !== currentBusiness.email ||
         detailsPayload.phoneNumber !== currentBusiness.phoneNumber ||
         detailsPayload.streetAddress !== currentBusiness.streetAddress ||
-        detailsPayload.city !== currentBusiness.city;
+        detailsPayload.city !== currentBusiness.city ||
+        detailsPayload.minimumInvoiceSequenceNumber !== currentBusiness.minimumInvoiceSequenceNumber ||
+        detailsPayload.minimumCreditNoteSequenceNumber !== currentBusiness.minimumCreditNoteSequenceNumber;
 
       if (hasDetailsChanges) {
         const r = await businessAPI.updateMyBusiness(detailsPayload);
@@ -242,6 +257,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
         ? value.slice(0, MAX_STREET_ADDRESS_LENGTH)
         : name === 'city'
         ? value.slice(0, MAX_CITY_LENGTH)
+        : name === 'minimumInvoiceSequenceNumber' || name === 'minimumCreditNoteSequenceNumber'
+        ? value.replace(/\D/g, '').slice(0, 9)
         : value;
     setFormData({
       ...formData,
@@ -320,6 +337,8 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
       phoneNumber: '',
       streetAddress: '',
       city: '',
+      minimumInvoiceSequenceNumber: '1',
+      minimumCreditNoteSequenceNumber: '1',
     });
     setSelectedImage(null);
     setPreviewImage(null);
@@ -470,6 +489,48 @@ export default function EditBusinessModal({ isOpen, onClose, onSuccess, fullBusi
             />
             {showErrors && fieldErrors.city && (
               <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="minimumInvoiceSequenceNumber" className="form-label">
+              מספר חשבונית מינימלי *
+            </label>
+            <input
+              id="minimumInvoiceSequenceNumber"
+              name="minimumInvoiceSequenceNumber"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={formData.minimumInvoiceSequenceNumber}
+              onChange={handleChange}
+              className={`form-input text-center font-mono ${showErrors && fieldErrors.minimumInvoiceSequenceNumber ? 'form-input-error' : ''}`}
+              placeholder="1"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.minimumInvoiceSequenceNumber && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.minimumInvoiceSequenceNumber}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="minimumCreditNoteSequenceNumber" className="form-label">
+              מספר זיכוי מינימלי *
+            </label>
+            <input
+              id="minimumCreditNoteSequenceNumber"
+              name="minimumCreditNoteSequenceNumber"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={formData.minimumCreditNoteSequenceNumber}
+              onChange={handleChange}
+              className={`form-input text-center font-mono ${showErrors && fieldErrors.minimumCreditNoteSequenceNumber ? 'form-input-error' : ''}`}
+              placeholder="1"
+              dir="ltr"
+            />
+            {showErrors && fieldErrors.minimumCreditNoteSequenceNumber && (
+              <p className="text-red-500 text-xs mt-1">{fieldErrors.minimumCreditNoteSequenceNumber}</p>
             )}
           </div>
 

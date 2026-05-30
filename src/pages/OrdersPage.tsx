@@ -844,9 +844,10 @@ export default function OrdersPage() {
                         }
                       }}
                     className="h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 rounded-full border-2 transition-all shadow-sm flex-shrink-0 bg-green-50 text-green-600 border-green-500 hover:bg-green-100 hover:shadow-lg whitespace-nowrap"
-                      title="זיכוי"
+                      title="חשבונית מס קבלה"
+                      aria-label="חשבונית מס קבלה"
                     >
-                      <span className="text-[11px] sm:text-xs font-semibold leading-none text-green-700">זיכוי</span>
+                      <span className="text-[11px] sm:text-xs font-semibold leading-none text-green-700">חשבונית מס קבלה</span>
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>

@@ -75,7 +75,8 @@ export type ApiErrorCode =
   | 'OVERRIDE_PRICE_LESS_THAN_MIN_PRICE'
   | 'PRODUCT_OVERRIDE_NOT_FOUND'
   | 'PRODUCT_OVERRIDE_ALREADY_EXISTS'
-  | 'ORDER_CREDIT_EXCEEDS_PRODUCTS_TOTAL';
+  | 'ORDER_CREDIT_EXCEEDS_PRODUCTS_TOTAL'
+  | 'MINIMUM_SEQUENCE_NUMBER_INVALID';
 
 export const API_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   INVALID_EMAIL_FORMAT: 'פורמט אימייל לא תקין',
@@ -151,6 +152,7 @@ export const API_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
   PRODUCT_OVERRIDE_NOT_FOUND: 'התאמת מחיר לא נמצאה',
   PRODUCT_OVERRIDE_ALREADY_EXISTS: 'כבר קיימת התאמת מחיר למוצר ולקוח אלה',
   ORDER_CREDIT_EXCEEDS_PRODUCTS_TOTAL: 'סכום הזיכוי גדול מסכום המוצרים',
+  MINIMUM_SEQUENCE_NUMBER_INVALID: 'מספר רץ מינימלי חייב להיות לפחות 1',
 };
 
 export interface FailureResponseBody {

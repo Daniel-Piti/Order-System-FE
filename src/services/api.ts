@@ -194,6 +194,8 @@ export interface Business {
   imageUrl: string | null;
   fileName: string | null;
   mimeType: string | null;
+  minimumInvoiceSequenceNumber: number;
+  minimumCreditNoteSequenceNumber: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -212,6 +214,8 @@ export interface UpdateBusinessDetailsRequest {
   phoneNumber: string;
   streetAddress: string;
   city: string;
+  minimumInvoiceSequenceNumber: number;
+  minimumCreditNoteSequenceNumber: number;
 }
 
 export interface UpdateBusinessDetailsResponse {
@@ -234,7 +238,7 @@ export const businessAPI = {
     return response.data;
   },
 
-  /** Update business details only (name, stateIdNumber, email, phoneNumber, streetAddress, city). */
+  /** Update business details (including minimum invoice/credit note sequence numbers). */
   updateMyBusiness: async (data: UpdateBusinessDetailsRequest): Promise<UpdateBusinessDetailsResponse> => {
     const response = await api.put<UpdateBusinessDetailsResponse>('/businesses/me', data);
     return response.data;

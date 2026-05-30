@@ -269,6 +269,25 @@ export function validateUserCreationForm(formData: {
 }
 
 /**
+ * Validates a positive integer sequence number (minimum 1).
+ */
+export function validateMinimumSequenceNumber(value: string, fieldName: string): string | null {
+  const trimmed = value.trim();
+  const requiredError = validateRequired(trimmed, fieldName);
+  if (requiredError) {
+    return requiredError;
+  }
+  if (!/^\d+$/.test(trimmed)) {
+    return `${fieldName} חייב להכיל ספרות בלבד`;
+  }
+  const parsed = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return `${fieldName} חייב להיות לפחות 1`;
+  }
+  return null;
+}
+
+/**
  * Validate business creation form
  */
 export function validateBusinessForm(formData: {
@@ -278,15 +297,32 @@ export function validateBusinessForm(formData: {
   phoneNumber: string;
   streetAddress: string;
   city: string;
+  minimumInvoiceSequenceNumber?: string;
+  minimumCreditNoteSequenceNumber?: string;
 }): ValidationResult {
-  return validateFields([
+  const fields: { field: string; error: string | null }[] = [
     { field: 'name', error: validateRequiredWithMaxLength(formData.name, 'Business name', MAX_NAME_LENGTH) },
     { field: 'stateIdNumber', error: validateStateIdNumber(formData.stateIdNumber, 'State ID number') },
     { field: 'email', error: validateEmail(formData.email, MAX_EMAIL_LENGTH) },
     { field: 'phoneNumber', error: validatePhoneNumberDigitsOnly(formData.phoneNumber, MAX_PHONE_LENGTH, 'Phone number') },
     { field: 'streetAddress', error: validateRequiredWithMaxLength(formData.streetAddress, 'Street address', MAX_STREET_ADDRESS_LENGTH) },
     { field: 'city', error: validateRequiredWithMaxLength(formData.city, 'City', MAX_CITY_LENGTH) },
-  ]);
+  ];
+
+  if (formData.minimumInvoiceSequenceNumber !== undefined) {
+    fields.push({
+      field: 'minimumInvoiceSequenceNumber',
+      error: validateMinimumSequenceNumber(formData.minimumInvoiceSequenceNumber, 'מספר חשבונית מינימלי'),
+    });
+  }
+  if (formData.minimumCreditNoteSequenceNumber !== undefined) {
+    fields.push({
+      field: 'minimumCreditNoteSequenceNumber',
+      error: validateMinimumSequenceNumber(formData.minimumCreditNoteSequenceNumber, 'מספר זיכוי מינימלי'),
+    });
+  }
+
+  return validateFields(fields);
 }
 
 export function validateAgentCreationForm(formData: {

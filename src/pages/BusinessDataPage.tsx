@@ -236,6 +236,26 @@ export default function BusinessDataPage() {
             </div>
           </div>
 
+          {/* Minimum invoice sequence number */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              מספר חשבונית מינימלי
+            </label>
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm font-mono">
+              {business.minimumInvoiceSequenceNumber}
+            </div>
+          </div>
+
+          {/* Minimum credit note sequence number */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              מספר זיכוי מינימלי
+            </label>
+            <div className="glass-input px-3 py-2 rounded-lg text-gray-800 text-sm font-mono">
+              {business.minimumCreditNoteSequenceNumber}
+            </div>
+          </div>
+
           {/* Created At */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -275,6 +295,8 @@ export default function BusinessDataPage() {
             phoneNumber: business.phoneNumber,
             streetAddress: business.streetAddress,
             city: business.city,
+            minimumInvoiceSequenceNumber: business.minimumInvoiceSequenceNumber,
+            minimumCreditNoteSequenceNumber: business.minimumCreditNoteSequenceNumber,
             imageUrl: business.imageUrl,
           }}
         />
